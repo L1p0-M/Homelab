@@ -13,7 +13,7 @@ TODO
 
 | Node | Model & Hardware | Hypervisor / OS | Key Roles & Workloads | Storage Setup |
 | :--- | :--- | :--- | :--- | :--- |
-| **PVE** | Supermicro H12SSL-I<br>`AMD EPYC 7252 (8C/16T)` / `128GB DDR4 ECC` | Proxmox VE | **Primary Compute & NAS**<br>• TrueNAS VM (PCIe Passthrough)<br>• Docker Prod (40+ Containers)<br>• Self-Hosted CI/CD Runner<br>• Home Assistant VM<br>• Media Server<br>• Monitoring VM & Grafana | **ZFS ZRAID1 Mirror**<br>• Pools: 3TB + 2TB + 2TB + 4TB + 1TB<br>• Direct Passthrough LSI HBA connected to Supermicro JBOD |
+| **PVE** | Supermicro H12SSL-I<br>`AMD EPYC 7252 (8C/16T)` / `128GB DDR4 ECC` | Proxmox VE | **Primary Compute & NAS**<br>• TrueNAS VM (PCIe Passthrough)<br>• Docker Prod (40+ Containers)<br>• Self-Hosted CI/CD Runner<br>• Home Assistant VM<br>• Media Server VM<br>• Monitoring VM & Grafana<br>•Wireguard VPN LXC<br>•Print & Scan Server VM(USB Passthrough)<br>• Cloudflare DDNS Updater LXC | **ZFS ZRAID1 Mirror**<br>• Pools: 3TB + 2TB + 2TB + 4TB + 1TB<br>• Direct Passthrough LSI HBA connected to Supermicro JBOD |
 | **BACKUP** | Supermicro 1U<br>`[CPU Modell]` / `RAM` | Proxmox VE | **Backup Target & Disaster Recovery**<br>• Automated WoL Target<br>• ZFS Replication & Rsync Receiver | High-Capacity ZFS Backup Pool |
 | **FIREWALL** | Asus P10S-M <br>`INTEL XEON E3-1270 V6 (4C/8T)` / `16GB DDR4` | Proxmox VE | **Firewall/Router/VLAN/DNS**<br> | 256GB 2,5" SSD |
 | **AI** | Supermicro X10DRC-LN4+<br>`2x INTEL XEON E5-2637 V3 (8C/16T)` / `128GB DDR4 ECC` / `RTX 3060 12GB` | Proxmox VE | **AI Workloads**<br>• Local LLM Hosting<br>• GPU Acceleration Passthrough | 128GB NVME SSD
