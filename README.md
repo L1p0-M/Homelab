@@ -20,7 +20,7 @@ TODO
 | **UPS** | Zinto UPS<br>`ZINTO800` | Dedicated LXC on PVE(Debian) & USB Passthrough | **Power Redundancy & Protection**<br>• Network UPS Tools (NUT)<br>• Automated Graceful Shutdown Trigger | |**IP:** 192.168.1.53 | 
 
 
-## 🛡️ Disaster Recovery & Backup Strategy (3-2-1 Rule)
+### 🛡️ Disaster Recovery & Backup Strategy (3-2-1 Rule)
 
 Data integrity and high availability are core priorities of this homelab architecture:
 
