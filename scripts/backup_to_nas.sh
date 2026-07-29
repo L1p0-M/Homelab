@@ -27,31 +27,36 @@ backup_proc_check(){
 	fi
 }
 
+process_backup() {
+	if [ $? == 1 ]; then
+		echo "Starting Backup Process..."
+		echo "Backing up Compose files..."
+		mkdir /backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")"
+		find /dockerconfig -name "docker-compose.yml" 2>/dev/null | while read -r file; do
+    		name=$(basename "$(dirname "$file")")
+    		cp "$file" "/backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")"/$name-"$(date +"%Y-%m-%d")".yml"
+		done
+		COUNT=$(ls /backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")" | wc -w)
+		echo "Backup of ${COUNT} Compose files successful :)"
+	else
+		echo "Mounting failed :("
+	fi
+}
+
+prune_backups() {
+	BACKUPCOUNT=$(ls /backuppool/Szerver/docker/compose/ | wc -w)
+	if [[ ${BACKUPCOUNT} -gt 5 ]]; then
+		echo "More than 5 backups found... Deleting the oldest one..."
+		cd /backuppool/Szerver/docker/compose/
+		rm -r "$(ls -t | tail -1)"
+		#git add .
+		#git commit -m "Backup $(date +"%Y-%m-%d")"
+		#git push
+	fi
+}
+
+
 drive_is_mounted
 backup_proc_check $?
-if [ $? == 1 ]; then
-	echo "Starting Backup Process..."
-	echo "Backing up Compose files..."
-	mkdir /backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")"
-	find /dockerconfig -print | grep -i docker-compose.yml
-	for i in /dockerconfig/*/docker-compose.yml; do
-  		name=$(basename $(dirname "$i"))
-  		cp "$i" "/backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")"/$name-"$(date +"%Y-%m-%d")".yml"
-	done
-	for i in /dockerconfig/*/*/docker-compose.yml; do
-  		name=$(basename $(dirname "$i"))
-  		cp "$i" "/backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")"/$name-"$(date +"%Y-%m-%d")".yml"
-	done
-	COUNT=$(ls /backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")" | wc -w)
-	echo "Backup of ${COUNT} Compose files successful :)"
-else
-	echo "Mounting failed :("
-fi
-BACKUPCOUNT=$(ls /backuppool/Szerver/docker/compose/ | wc -w)
-if [[ ${BACKUPCOUNT} -gt 5 ]]; then
-	cd /backuppool/Szerver/docker/compose/
-	rm -r "$(ls -t | tail -1)"
-	#git add .
-	#git commit -m "Backup $(date +"%Y-%m-%d")"
-	#git push
-fi
+process_backup
+prune_backups
