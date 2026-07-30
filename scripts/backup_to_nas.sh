@@ -32,7 +32,7 @@ process_backup() {
 		echo "Starting Backup Process..."
 		echo "Backing up Compose files..."
 		mkdir /backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")"
-		find /dockerconfig -name "docker-compose.yml" 2>/dev/null | while read -r file; do
+		find /dockerconfig -name "docker-compose.*" 2>/dev/null | while read -r file; do
     		name=$(basename "$(dirname "$file")")
     		cp "$file" "/backuppool/Szerver/docker/compose/"$(date +"%Y-%m-%d")"/$name-"$(date +"%Y-%m-%d")".yml"
 		done
