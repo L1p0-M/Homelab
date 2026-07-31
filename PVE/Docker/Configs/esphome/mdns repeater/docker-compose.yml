@@ -1,4 +1,4 @@
-version: '3'
+---
 services:
   mdns-repeater:
     image: monstrenyatko/mdns-repeater
