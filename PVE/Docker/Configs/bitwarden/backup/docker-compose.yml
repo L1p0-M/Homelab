@@ -16,8 +16,8 @@ services:
       - CRON_TIME=0 5 * * *
       - DELETE_AFTER=5
       - TIMESTAMP=true
-      - UID=1000 # enter user that has docker permission
-      - GID=1000 # enter group ID for docker
+      - UID=1000 
+      - GID=1000
       - BACKUP_ADD_DATABASE=true
       - BACKUP_ADD_ATTACHMENTS=true
       - BACKUP_ADD_CONFIG_JSON=true
