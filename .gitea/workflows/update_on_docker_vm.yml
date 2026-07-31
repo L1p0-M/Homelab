@@ -19,6 +19,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-	    cd /GITREPO/Docker
+	    	cd /GITREPO/Docker
             git pull
             bash /GITREPO/Docker/deploy.sh
