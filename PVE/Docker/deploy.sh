@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+git config --global --add safe.directory /home/l1p0/Homelab/PVE/Docker 2>/dev/null || true
 echo "==== 1. Pulling latest code from Git ===="
 cd /GITREPO/Docker
 git pull
