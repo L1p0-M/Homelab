@@ -1,0 +1,20 @@
+---
+services:
+    ytdl_material:
+        environment:
+            ALLOW_CONFIG_MUTATIONS: 'true'
+            ytdl_use_local_db: 'true'
+            write_ytdl_config: 'true'
+        restart: unless-stopped
+        volumes:
+            - /dockerconfig/youtube-dl/data/appdata:/app/appdata
+            - /hddpool2/youtube-dl/audio:/app/audio
+            - /hddpool2/youtube-dl/video:/app/video
+            - /dockerconfig/youtube-dl/data/subscriptions:/app/subscriptions
+            - /dockerconfig/youtube-dl/data/users:/app/users
+        container_name: youtube-dl
+        image: tzahi12345/youtubedl-material:latest
+networks:
+  default:
+    name: nginx_default
+    external: true

@@ -1,0 +1,16 @@
+---
+services:
+  peanut:
+    image: brandawg93/peanut:latest
+    container_name: PeaNUT
+    restart: unless-stopped
+    environment:
+      - NUT_HOST=${HOST}
+      - NUT_PORT=${PORT}
+      - WEB_PORT=8080
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+networks:
+  default:
+    name: nginx_default
+    external: true

@@ -1,0 +1,50 @@
+---
+services:
+  littlelink-server:
+    image: ghcr.io/techno-tim/littlelink-server:latest
+    container_name: littlelink-server
+    environment:
+      - META_TITLE=Lipovics Martin
+      - META_DESCRIPTION=Elektrotechnikus | PLC Programozó
+      - META_AUTHOR=Lipovics Martin
+      - LANG=hu
+      - META_INDEX_STATUS=all
+      - OG_SITE_NAME=Lipovics Martin
+      - OG_TITLE=Lipovics Martin
+      - OG_DESCRIPTION=The home of L1p0 Industries
+      - OG_URL=https://contact.l1p0-industries.hu
+      - OG_IMAGE=https://i.imgur.com/PQNoVs8.png
+      - OG_IMAGE_WIDTH=200
+      - OG_IMAGE_HEIGHT=200
+      - THEME=Dark
+      - FAVICON_URL=https://i.imgur.com/PQNoVs8.png
+      - AVATAR_URL=https://i.imgur.com/PQNoVs8.png
+      - AVATAR_2X_URL=https://i.imgur.com/XyjB91X.png
+      - AVATAR_ALT=Lipovics Martin Profilképe
+      - NAME=Lipovics Martin
+      - BIO=Elektrotechnikus | PLC Programozó | Hobbi Autószerelő  Linux Rajongó | Homelab
+      - BUTTON_ORDER=FACEBOOK,FACEBOOK_MESSENGER,WHATSAPP,TELEGRAM,GITHUB,REDDIT,STEAM,GOLFMK4,EMAIL
+      - CUSTOM_BUTTON_TEXT=Golf MK4 Project
+      - CUSTOM_BUTTON_URL=https://www.carstyling.com/kozosseg/auto/l1p0/volkswagen-golf-29736
+      - CUSTOM_BUTTON_COLOR=#0000ff
+      - CUSTOM_BUTTON_TEXT_COLOR=#ffffff
+      - CUSTOM_BUTTON_ALT_TEXT=Több infó/kép az autóról
+      - CUSTOM_BUTTON_NAME=GOLFMK4
+      - CUSTOM_BUTTON_ICON=fas car
+      - GITHUB=https://github.com/L1p0-M
+      - TELEGRAM=https://t.me/${PHONE}
+      - WHATSAPP=https://wa.me/${PHONE}
+      - EMAIL=office@l1p0-industries.hu
+      - EMAIL_TEXT=office@l1p0-industries.hu
+      - STEAM=https://steamcommunity.com/id/L1p0
+      - REDDIT=https://www.reddit.com/user/L1p0WasTaken
+      - FACEBOOK=https://www.facebook.com/lipovics.martin/
+      - FACEBOOK_MESSENGER=https://m.me/lipovics.martin
+      - FOOTER=L1p0 Industries © 2026
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+networks:
+  default:
+    name: nginx_default
+    external: true

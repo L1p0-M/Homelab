@@ -1,0 +1,28 @@
+---
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    environment:
+      DB_MYSQL_HOST: "db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: ${DB_USER}
+      DB_MYSQL_PASSWORD: ${DB_PASSWORD}
+      DB_MYSQL_NAME: ${DATABASE}
+    volumes:
+      - /dockerconfig/nginx/data/app:/data
+      - /dockerconfig/letsencrypt:/etc/letsencrypt
+  db:
+    image: 'jc21/mariadb-aria:latest'
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - /dockerconfig/nginx/data/mysql:/var/lib/mysql

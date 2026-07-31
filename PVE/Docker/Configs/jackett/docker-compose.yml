@@ -1,0 +1,17 @@
+---
+services:
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Budapest
+    volumes:
+      - /dockerconfig/jackett/config:/config
+      - /hdd/Movies:/downloads
+    restart: unless-stopped
+networks:
+  default:
+    name: nginx_default
+    external: true

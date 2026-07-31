@@ -1,0 +1,18 @@
+---
+services:
+  navidrome:
+    container_name: navidrome
+    image: deluan/navidrome:latest
+    user: 1000:1000
+    restart: unless-stopped
+    environment:
+      ND_LOGLEVEL: info
+      ND_SESSIONTIMEOUT: 24h
+      ND_BASEURL: ""
+    volumes:
+      - /dockerconfig/navidrome/data:/data
+      - /backuppool/Martin/Music/:/music:ro
+networks:
+  default:
+    name: nginx_default
+    external: true

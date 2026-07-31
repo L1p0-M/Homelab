@@ -1,0 +1,24 @@
+---
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Budapest
+      - WEBUI_PORT=8300
+    volumes:
+      - /dockerconfig/qbittorrent/config:/config
+      - /hddpool2:/hdd
+      - /hddpool3:/hdd1
+      - /hddpool21:/hdd2
+      - /hddpool4:/hdd3
+    ports:
+      - 51000:51000
+      - 51000:51000/udp
+    restart: unless-stopped
+networks:
+  default:
+    name: nginx_default
+    external: true

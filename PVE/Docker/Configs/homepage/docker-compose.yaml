@@ -1,0 +1,20 @@
+---
+services:
+  homepage:
+    restart: unless-stopped
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: home.local.l1p0-industries.hu
+    volumes:
+      - /dockerconfig/homepage/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dockerconfig/homepage/icons:/app/public/icons
+      - /hddpool3:/hddpool3
+      - /hddpool2:/hddpool2
+      - /hddpool21:/hddpool21
+      - /hddpool4:/hddpool4
+networks:
+  default:
+    name: nginx_default
+    external: true

@@ -1,0 +1,18 @@
+---
+services:
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: Radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Budapest
+    volumes:
+      - /dockerconfig/radarr/config:/config
+      - /hddpool2:/hdd
+      - /hddpool21:/hdd2
+    restart: unless-stopped
+networks:
+  default:
+    name: nginx_default
+    external: true

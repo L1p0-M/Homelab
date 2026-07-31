@@ -1,0 +1,16 @@
+---
+services:
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:develop
+    container_name: Prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Budapest
+    volumes:
+      - /dockerconfig/prowlarr/config:/config
+    restart: unless-stopped
+networks:
+  default:
+    name: nginx_default
+    external: true

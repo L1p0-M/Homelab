@@ -1,0 +1,28 @@
+---
+services:
+  bitwarden_backup:
+    image: bruceforce/vaultwarden-backup
+    container_name: BitWarden-backup
+    network_mode: bridge
+    restart: unless-stopped
+    init: true
+    volumes:
+      - /dockerconfig/bitwarden/data:/data
+      - /dockerconfig/bitwarden/backup/backups:/backups
+      - /dockerconfig/bitwarden/backup/logs:/logs
+    environment:
+      - BACKUP_DIR=/backups
+      - LOG_DIR=/logs
+      # EVERY DAY @ 5am
+      - CRON_TIME=0 5 * * *
+      - DELETE_AFTER=5
+      - TIMESTAMP=true
+      - UID=1000 # enter user that has docker permission
+      - GID=1000 # enter group ID for docker
+      - BACKUP_ADD_DATABASE=true
+      - BACKUP_ADD_ATTACHMENTS=true
+      - BACKUP_ADD_CONFIG_JSON=true
+      - BACKUP_ADD_ICON_CACHE=true
+      - BACKUP_ADD_RSA_KEY=true
+      - LOG_LEVEL=INFO
+      - TZ=Europe/Budapest

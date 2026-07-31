@@ -1,0 +1,19 @@
+---
+services:
+  esphome:
+    container_name: Esphome
+    image: esphome/esphome
+    volumes:
+      - /dockerconfig/esphome/config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /dockerconfig/esphome/cache:/cache
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - VIRTUAL_HOST=${DOMAIN}
+      - PASSWORD=${PASSWORD}
+      - USERNAME=${USERNAME}
+networks:
+  default:
+    name: nginx_default
+    external: true

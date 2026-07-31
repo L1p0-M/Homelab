@@ -1,0 +1,12 @@
+---
+services:
+    it-tools:
+        image: corentinth/it-tools
+        tty: true
+        stdin_open: true
+        container_name: it-tools
+        restart: unless-stopped
+networks:
+  default:
+    name: nginx_default
+    external: true

@@ -1,0 +1,33 @@
+services:
+  app:
+    image: fireflyiii/core:latest
+    hostname: firefly3
+    container_name: firefly3
+    restart: unless-stopped
+    volumes:
+      - /dockerconfig/firefly3/data/upload/:/var/www/html/storage/upload
+    env_file: .env
+    depends_on:
+      - db
+  db:
+    image: mariadb:lts
+    hostname: firefly3_db
+    container_name: firefly_3_db
+    restart: unless-stopped
+    env_file: .db.env
+    volumes:
+      - /dockerconfig/firefly3/data/mysql/:/var/lib/mysql
+  cron:
+    #
+    # To make this work, set STATIC_CRON_TOKEN in your .env file or as an environment variable and replace REPLACEME below
+    # The STATIC_CRON_TOKEN must be *exactly* 32 characters long
+    #
+    image: alpine
+    restart: always
+    container_name: firefly_iii_cron
+    command: sh -c "echo \"0 3 * * * wget -qO- http://firefly3:8080/api/v1/cron/${STATIC_CRON_TOKEN};echo\" | crontab - && crond -f -L /dev/stdout"
+
+networks:
+  default:
+    name: nginx_default
+    external: true

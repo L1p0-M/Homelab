@@ -1,0 +1,20 @@
+---
+services:
+  BitWarden:
+    container_name: BitWarden
+    environment:
+      - ADMIN_TOKEN=${TOKEN}
+      - SIGNUPS_ALLOWED=false
+      - INVITATIONS_ALLOWED=false
+      - ROCKET_PROFILE=release
+      - ROCKET_ADDRESS=0.0.0.0
+      - ROCKET_PORT=80
+    hostname: bitwarden
+    image: docker.io/vaultwarden/server:latest
+    restart: unless-stopped
+    volumes:
+      - /dockerconfig/bitwarden/data:/data
+networks:
+  default:
+    name: nginx_default
+    external: true

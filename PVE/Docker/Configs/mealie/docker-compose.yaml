@@ -1,0 +1,54 @@
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:latest
+    container_name: mealie
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1000M
+    volumes:
+      - /dockerconfig/mealie/data/:/app/data/
+    environment:
+      ALLOW_SIGNUP: "false"
+      PUID: 1000
+      PGID: 1000
+      TZ: Europe/Budapest
+      MAX_WORKERS: 1
+      WEB_CONCURRENCY: 1
+      DB_ENGINE: postgres
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_SERVER: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mealie
+      SECURITY_MAX_LOGIN_ATTEMPTS: 30
+      SECURITY_USER_LOCKOUT_TIME: 1
+      SMTP_PORT: 587
+      SMTP_FROM_NAME: Mealie
+      SMTP_AUTH_STRATEGY: TLS
+      SMTP_FROM_EMAIL: ${FROM_EMAIL}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - /dockerconfig/mealie/pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+networks:
+  default:
+    name: nginx_default
+    external: true

@@ -1,0 +1,17 @@
+services:
+  thememusicdownloader:
+    image: ghcr.io/l1p0-m/thememusicdownloader:latest
+    container_name: ThemeMusicDownloader
+    user: 1000:1000
+    environment:
+      - TOKEN=${TOKEN}
+    volumes:
+      - /hddpool2/plex/:/movies/hdd1/
+      - /hddpool21/plex/:/movies/hdd2/
+      - /hddpool3/series/:/series/hdd3/
+      - /hddpool4/series/:/series/hdd4/
+      - /dockerconfig/thememusicdownloader/config:/config
+networks:
+  default:
+    name: nginx_default
+    external: true

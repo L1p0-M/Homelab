@@ -1,0 +1,18 @@
+---
+services:
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Budapest
+    volumes:
+      - /dockerconfig/sonarr/config:/config
+      - /hddpool3:/hdd1
+      - /hddpool4:/hdd3
+    restart: unless-stopped
+networks:
+  default:
+    name: nginx_default
+    external: true

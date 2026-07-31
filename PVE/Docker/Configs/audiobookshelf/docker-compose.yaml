@@ -1,0 +1,15 @@
+services:
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:latest
+    volumes:
+      - /hddpool3/books/audiobook:/audiobooks
+      - /hddpool3/books/ebook:/ebooks
+      - /dockerconfig/audiobookshelf/config:/config
+      - /dockerconfig/audiobookshelf/data:/metadata
+    restart: unless-stopped
+
+networks:
+  default:
+    name: nginx_default
+    external: true
