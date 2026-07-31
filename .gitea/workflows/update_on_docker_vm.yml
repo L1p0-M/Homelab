@@ -1,0 +1,24 @@
+name: Update Docker VM Containers
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'PVE/Docker/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+      	uses: https://github.com/actions/checkout@v4
+
+      - name: Deploy to Docker Host via SSH
+        uses: https://github.com/appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+	    cd /GITREPO/Docker
+            git pull
+            bash /GITREPO/Docker/deploy.sh
