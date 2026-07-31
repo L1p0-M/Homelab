@@ -20,5 +20,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /GITREPO/Docker
+            git config --global --add safe.directory /home/l1p0/Homelab/PVE/Docker 2>/dev/null || true
             git pull
             bash /GITREPO/Docker/deploy.sh
