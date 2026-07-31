@@ -9,7 +9,7 @@ services:
       - TZ=Europe/Budapest
       - PASSWORD=${PASSWORD}
       - PROXY_DOMAIN=${DOMAIN}
-      - DEFAULT_WORKSPACE=/config/workspace #optional
+      - DEFAULT_WORKSPACE=/config/workspace
       - SUDO_PASSWORD=${SUDO_PASSWORD}
     volumes:
       - /dockerconfig/codeserver/config:/config
