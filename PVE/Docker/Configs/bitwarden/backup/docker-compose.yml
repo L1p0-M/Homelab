@@ -13,7 +13,6 @@ services:
     environment:
       - BACKUP_DIR=/backups
       - LOG_DIR=/logs
-      # EVERY DAY @ 5am
       - CRON_TIME=0 5 * * *
       - DELETE_AFTER=5
       - TIMESTAMP=true
