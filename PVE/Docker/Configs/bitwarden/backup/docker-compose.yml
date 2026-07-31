@@ -8,7 +8,7 @@ services:
     init: true
     volumes:
       - /dockerconfig/bitwarden/data:/data
-      - /dockerconfig/bitwarden/backup/backups:/backups
+      - /dockerconfig/bitwarden/backup/backups:/backups #backupdir
       - /dockerconfig/bitwarden/backup/logs:/logs
     environment:
       - BACKUP_DIR=/backups
