@@ -3,7 +3,7 @@
   "extends": [
     "config:recommended"
   ],
-  "recreateWhen": "auto",
+  "recreateWhen": "never",
   "enabledManagers": [
     "docker-compose"
   ],
