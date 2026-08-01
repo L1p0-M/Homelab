@@ -52,7 +52,7 @@ jobs:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
       fail-fast: false
-      steps:
+    steps:
       - name: Checkout repository
         uses: https://github.com/actions/checkout@v4
 
