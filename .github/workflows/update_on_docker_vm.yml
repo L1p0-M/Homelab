@@ -7,7 +7,7 @@ on:
       - 'PVE/Docker/**'
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       services: ${{ steps.set-matrix.outputs.services }}
       has_changes: ${{ steps.set-matrix.outputs.has_changes }}
@@ -45,7 +45,7 @@ jobs:
           echo "has_changes=true" >> $GITHUB_OUTPUT
 
   deploy-services:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
     strategy:
@@ -58,10 +58,9 @@ jobs:
         uses: https://github.com/actions/checkout@v4
 
       - name: Install SOPS
-        uses: https://github.com/nhedger/setup-sops@v2
+        uses: https://github.com/nhedger/setup-sops@v3
         with:
           version: "3.13.3"
-          token: ${{ secrets.GH_TOKEN }}
 
       - name: Decrypt .env file for "${{ matrix.service }}"
         env:
