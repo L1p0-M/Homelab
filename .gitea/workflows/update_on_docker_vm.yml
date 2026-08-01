@@ -57,9 +57,9 @@ jobs:
         uses: https://github.com/actions/checkout@v4
 
       - name: Install SOPS
-        uses: https://github.com/mdgreenway/setup-sops@v1
+        uses: https://github.com/nhedger/setup-sops@v2
         with:
-          version: 'v3.13.3'
+          version: "3.13.3"
 
       - name: Decrypt .env file for ${{ matrix.service }}
         env:
