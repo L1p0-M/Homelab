@@ -52,6 +52,7 @@ jobs:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
       fail-fast: false
+      max-parallel: 1
     steps:
       - name: Checkout repository
         uses: https://github.com/actions/checkout@v4
@@ -90,6 +91,7 @@ jobs:
           source: "PVE/Docker/Configs/${{ matrix.service }}/*"
           target: "/dockerconfig/${{ matrix.service }}"
           strip_components: 4
+          tar_exec: false
 
       - name: Execute Docker Compose Up
         uses: appleboy/ssh-action@v1.0.3
