@@ -13,13 +13,13 @@ jobs:
       has_changes: ${{ steps.set-matrix.outputs.has_changes }}
     steps:
       - name: Checkout Repository
-        uses: https://github.com/actions/checkout@v4
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
       - name: Get changed services
         id: changed-files
-        uses: https://github.com/tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@v44
         with:
           dir_names: true
           dir_names_max_depth: 5
@@ -55,10 +55,10 @@ jobs:
       max-parallel: 1
     steps:
       - name: Checkout repository
-        uses: https://github.com/actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Install SOPS
-        uses: https://github.com/nhedger/setup-sops@v3
+        uses: nhedger/setup-sops@v3
         with:
           version: "3.13.3"
 
@@ -73,7 +73,7 @@ jobs:
           fi
 
       - name: Deploy "${{ matrix.service }}" via SSH
-        uses: https://github.com/appleboy/ssh-action@v1.2.5
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -82,7 +82,7 @@ jobs:
             mkdir -p /dockerconfig/${{ matrix.service }}
 
       - name: Sync files to server
-        uses: https://github.com/appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@v0.1.4
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
