@@ -60,7 +60,7 @@ jobs:
         uses: https://github.com/nhedger/setup-sops@v2
         with:
           version: "3.13.3"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Decrypt .env file for ${{ matrix.service }}
         env:
