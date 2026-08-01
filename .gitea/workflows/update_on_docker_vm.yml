@@ -62,7 +62,7 @@ jobs:
           version: "3.13.3"
           token: ${{ secrets.GH_TOKEN }}
 
-      - name: Decrypt .env file for ${{ matrix.service }}
+      - name: Decrypt .env file for "${{ matrix.service }}"
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
         run: |
@@ -72,7 +72,7 @@ jobs:
             chmod 600 "$TARGET_DIR/.env"
           fi
 
-      - name: Deploy ${{ matrix.service }} via SSH
+      - name: Deploy "${{ matrix.service }}" via SSH
         uses: https://github.com/appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
@@ -87,9 +87,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "/PVE/Docker/Configs/${{ matrix.service }}/*"
+          source: "PVE/Docker/Configs/${{ matrix.service }}/*"
           target: "/dockerconfig/${{ matrix.service }}"
-          strip_components: 3
+          strip_components: 4
 
       - name: Execute Docker Compose Up
         uses: appleboy/ssh-action@v1.0.3
