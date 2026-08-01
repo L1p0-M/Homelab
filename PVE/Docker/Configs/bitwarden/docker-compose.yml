@@ -10,7 +10,7 @@ services:
       - ROCKET_ADDRESS=0.0.0.0
       - ROCKET_PORT=80
     hostname: bitwarden
-    image: docker.io/vaultwarden/server:latest
+    image: docker.io/vaultwarden/server:1.37.0
     restart: unless-stopped
     volumes:
       - /dockerconfig/bitwarden/data:/data
