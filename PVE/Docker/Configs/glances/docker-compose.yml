@@ -1,7 +1,7 @@
 ---
 services:
   glances:
-    image: nicolargo/glances:latest
+    image: nicolargo/glances:4.5.5
     container_name: Glances
     environment:
       - GLANCES_OPT=-w
