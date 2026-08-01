@@ -88,7 +88,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "PVE/Docker/Configs/${{ matrix.service }}/*"
+          source: "PVE/Docker/Configs/${{ matrix.service }}/"
           target: "/dockerconfig/${{ matrix.service }}"
           strip_components: 4
           tar_exec: false
