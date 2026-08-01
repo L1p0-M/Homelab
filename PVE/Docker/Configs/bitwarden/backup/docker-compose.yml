@@ -1,14 +1,14 @@
 ---
 services:
   bitwarden_backup:
-    image: bruceforce/vaultwarden-backup
+    image: bruceforce/vaultwarden-backup:2.1.6
     container_name: BitWarden-backup
     network_mode: bridge
     restart: unless-stopped
     init: true
     volumes:
       - /dockerconfig/bitwarden/data:/data
-      - /dockerconfig/bitwarden/backup/backups:/backups #backupdir
+      - /backuppool/Szerver/docker/backup/bitwarden:/backups
       - /dockerconfig/bitwarden/backup/logs:/logs
     environment:
       - BACKUP_DIR=/backups
