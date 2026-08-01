@@ -91,7 +91,7 @@ jobs:
           source: "PVE/Docker/Configs/${{ matrix.service }}/"
           target: "/dockerconfig/${{ matrix.service }}"
           strip_components: 4
-          tar_exec: false
+          tar_tmp_path: "/tmp"
 
       - name: Execute Docker Compose Up
         uses: appleboy/ssh-action@v1.0.3
