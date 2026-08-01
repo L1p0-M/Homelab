@@ -92,6 +92,16 @@ jobs:
           strip_components: 4
           tar_tmp_path: "/tmp"
 
+      - name: Fix permissions
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            chmod -R g+rwX /dockerconfig/${{ matrix.service }}
+            find /dockerconfig/${{ matrix.service }} -type d -exec chmod g+s {} +
+
       - name: Execute Docker Compose Up
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -102,16 +112,3 @@ jobs:
             cd /dockerconfig/${{ matrix.service }}
             docker compose pull
             docker compose up -d --remove-orphans
-
-
-
-      #- name: Deploy to Docker Host via SSH
-        # uses: https://github.com/appleboy/ssh-action@v1.2.5
-        # with:
-        #   host: ${{ secrets.SSH_HOST }}
-        #   username: ${{ secrets.SSH_USER }}
-        #   key: ${{ secrets.SSH_PRIVATE_KEY }}
-        #   script: |
-        #     cd /GITREPO/Docker
-        #     git pull
-        #     bash /GITREPO/Docker/deploy.sh
