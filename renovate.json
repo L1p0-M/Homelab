@@ -9,8 +9,10 @@
   ],
   "packageRules": [
     {
-      "matchPackagePatterns": ["*"],
-      "groupName": "Docker containers"
+      "groupName": "Docker containers",
+      "matchPackageNames": [
+        "*"
+      ]
     }
   ]
 }
