@@ -6,19 +6,110 @@ on:
     paths:
       - 'PVE/Docker/**'
 jobs:
-  deploy:
+  detect-changes:
     runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.set-matrix.outputs.services }}
+      has_changes: ${{ steps.set-matrix.outputs.has_changes }}
     steps:
       - name: Checkout Repository
         uses: https://github.com/actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: Deploy to Docker Host via SSH
+      - name: Get changed services
+        id: changed-files
+        uses: https://github.com/tj-actions/changed-files@v44
+        with:
+          dir_names: true
+          dir_names_max_depth: 5
+          files_yaml: |
+            configs:
+              - 'PVE/Docker/Configs/*/**'
+
+      - name: Build matrix array
+        id: set-matrix
+        run: |
+          CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
+          
+          if [ -z "$CHANGED_DIRS" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "services=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          SERVICES_JSON=$(echo "$CHANGED_DIRS" | tr ' ' '\n' | grep -oP 'PVE/Docker/Configs/\K[^/]+' | sort -u | jq -R . | jq -s -c .)
+          
+          echo "Affected services: $SERVICES_JSON"
+          echo "services=$SERVICES_JSON" >> $GITHUB_OUTPUT
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+
+  deploy-services:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+      fail-fast: false
+      steps:
+      - name: Checkout repository
+        uses: https://github.com/actions/checkout@v4
+
+      - name: Install SOPS
+        uses: https://github.com/mdgreenway/setup-sops@v1
+        with:
+          version: 'v3.13.3'
+
+      - name: Decrypt .env file for ${{ matrix.service }}
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          TARGET_DIR="PVE/Docker/Configs/${{ matrix.service }}"
+          if [ -f "$TARGET_DIR/.env.enc" ]; then
+            sops --input-type dotenv --output-type dotenv --decrypt "$TARGET_DIR/.env.enc" > "$TARGET_DIR/.env"
+            chmod 600 "$TARGET_DIR/.env"
+          fi
+
+      - name: Deploy ${{ matrix.service }} via SSH
         uses: https://github.com/appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /GITREPO/Docker
-            git pull
-            bash /GITREPO/Docker/deploy.sh
+            mkdir -p /dockerconfig/${{ matrix.service }}
+
+      - name: Sync files to server
+        uses: https://github.com/appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "/PVE/Docker/Configs/${{ matrix.service }}/*"
+          target: "/dockerconfig/${{ matrix.service }}"
+          strip_components: 3
+
+      - name: Execute Docker Compose Up
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /dockerconfig/${{ matrix.service }}
+            docker compose pull
+            docker compose up -d --remove-orphans
+
+
+
+      #- name: Deploy to Docker Host via SSH
+        # uses: https://github.com/appleboy/ssh-action@v1.2.5
+        # with:
+        #   host: ${{ secrets.SSH_HOST }}
+        #   username: ${{ secrets.SSH_USER }}
+        #   key: ${{ secrets.SSH_PRIVATE_KEY }}
+        #   script: |
+        #     cd /GITREPO/Docker
+        #     git pull
+        #     bash /GITREPO/Docker/deploy.sh
