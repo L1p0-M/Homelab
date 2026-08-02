@@ -1,0 +1,54 @@
+global:
+  scrape_interval: 1m
+
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 1m
+    static_configs:
+      - targets: ['localhost:9090']
+  - job_name: 'node'
+    static_configs:
+      - targets:
+        - node-exporter:9100
+        - ${NODE_IP}
+  - job_name: "hass"
+    scrape_interval: 60s
+    metrics_path: /api/prometheus
+    authorization:
+      credentials: "$HA_TOKEN"
+    scheme: http
+    static_configs:
+      - targets:
+          - $HA_HOST
+  - job_name: "cadvisor"
+    static_configs:
+      - targets:
+        - $CADVISOR_URL
+  - job_name: 'pve'
+    static_configs:
+      - targets:
+        - $PVE_URL
+    metrics_path: /pve
+    params:
+      module: [default]
+      cluster: ['1']
+      node: ['1']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: pve-exporter:9221
+  - job_name: "nut"
+    static_configs:
+      - targets:
+        - $NUT_HOST
+    metrics_path: /nut
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: nut-exporter:9995

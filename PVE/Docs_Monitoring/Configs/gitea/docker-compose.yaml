@@ -1,0 +1,39 @@
+---
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=mysql
+      - GITEA__database__HOST=${DB_HOST}
+      - GITEA__database__NAME=${DB_NAME}
+      - GITEA__database__USER=${DB_USER}
+      - GITEA__database__PASSWD=${DB_PASSWD}
+      - DISABLE_REGISTRATION=true
+    restart: unless-stopped
+    volumes:
+      - /dockerconfig/gitea/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3030:3000"
+      - "222:22"
+    depends_on:
+      - database
+
+  database:
+    image: mysql:8
+    restart: always
+    container_name: gitea-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWD}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWD}
+      - MYSQL_DATABASE=${DB_NAME}
+    volumes:
+      - /dockerconfig/gitea/mysql:/var/lib/mysql
+networks:
+  default:
+    name: gitea

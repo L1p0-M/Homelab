@@ -1,0 +1,5 @@
+default:
+  user: $USER
+  token_name: "$TOKEN_NAME"
+  token_value: "$TOKEN"
+  verify_ssl: true

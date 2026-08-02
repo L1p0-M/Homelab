@@ -1,0 +1,13 @@
+---
+services:
+    speedtest:
+       environment:
+           - ENABLE_LETSENCRYPT=false
+           - DOMAIN_NAME=${URL}
+           - USER_EMAIL=${EMAIL}
+       restart: unless-stopped
+       container_name: openspeedtest
+       ports:
+            - '30000:3000'
+            - '30001:3001'
+       image: openspeedtest/latest
