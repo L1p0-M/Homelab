@@ -84,7 +84,7 @@ jobs:
       - name: Sync files to server
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.SSH_MEDIA_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "PVE/Media/Configs/${{ matrix.service }}/"
