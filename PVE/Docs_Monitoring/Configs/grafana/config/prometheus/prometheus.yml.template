@@ -10,7 +10,7 @@ scrape_configs:
     static_configs:
       - targets:
         - node-exporter:9100
-        - ${NODE_IP}
+        - $NODE_IP
   - job_name: "hass"
     scrape_interval: 60s
     metrics_path: /api/prometheus
