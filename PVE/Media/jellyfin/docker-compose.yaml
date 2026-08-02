@@ -1,0 +1,21 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:10.11.5
+    container_name: jellyfin
+    user: 1000:1000
+    ports:
+      - 8096:8096/tcp
+      - 7359:7359/udp
+    volumes:
+      - /dockerconfig/jellyfin/config:/config
+      - /dev/shm:/cache
+      - /dockerconfig/jellyfin/app/jellyfin-web:/jellyfin/jellyfin-web
+      - /hddpool2/plex:/movies:ro
+      - /hddpool2/preroll:/preroll:ro
+      - /hddpool2/deutsch:/deutsch:ro
+      - /hddpool3/series:/series:ro
+      - /hddpool4/series:/series1:ro
+      - /hddpool21/plex:/movies1:ro
+    restart: 'unless-stopped'
+    environment:
+      - JELLYFIN_PublishedServerUrl=${URL}
