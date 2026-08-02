@@ -1,4 +1,3 @@
----
 services:
     it-tools:
         image: corentinth/it-tools

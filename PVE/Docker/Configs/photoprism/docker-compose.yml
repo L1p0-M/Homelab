@@ -1,7 +1,7 @@
 ---
 services:
   photoprism:
-    image: photoprism/photoprism:latest
+    image: photoprism/photoprism:260728
     restart: unless-stopped
     stop_grace_period: 10s
     depends_on:

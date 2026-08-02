@@ -1,4 +1,3 @@
----
 services:
   peanut:
     image: brandawg93/peanut:6.0.0

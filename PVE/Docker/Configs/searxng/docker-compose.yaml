@@ -1,3 +1,4 @@
+---
 services:
   redis:
     container_name: redis_searxng

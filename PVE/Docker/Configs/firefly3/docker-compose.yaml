@@ -1,6 +1,6 @@
 services:
   app:
-    image: fireflyiii/core:latest
+    image: fireflyiii/core:version-6.6.6
     hostname: firefly3
     container_name: firefly3
     restart: unless-stopped
