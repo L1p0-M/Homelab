@@ -75,7 +75,7 @@ jobs:
       - name: Deploy "${{ matrix.service }}" via SSH
         uses: appleboy/ssh-action@v1.2.5
         with:
-          host: ${{ secrets.SSH__MEDIA_HOST }}
+          host: ${{ secrets.SSH_MEDIA_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
