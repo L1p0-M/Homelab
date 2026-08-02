@@ -99,8 +99,12 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            chmod -R g+rwX /dockerconfig/${{ matrix.service }}
-            find /dockerconfig/${{ matrix.service }} -type d -exec chmod g+s {} +
+            find /dockerconfig/${{ matrix.service }}/docker-compose.* -type f -exec chown deploy:homelab-devs {} +
+            find /dockerconfig/${{ matrix.service }}/docker-compose.* -type f -exec chmod g+rwX {} +
+            if [[ -f "/dockerconfig/${{ matrix.service }}/.env" ]]; then
+              chown deploy:homelab-devs "/dockerconfig/${{ matrix.service }}/.env"
+              chmod g+rwX "/dockerconfig/${{ matrix.service }}/.env"
+            fi
 
       - name: Execute Docker Compose Up
         uses: appleboy/ssh-action@v1.0.3
