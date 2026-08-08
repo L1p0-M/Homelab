@@ -1,3 +1,4 @@
+---
 services:
   node-exporter:
     image: prom/node-exporter:v1.12.1
