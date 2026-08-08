@@ -2,6 +2,13 @@
 
 Welcome to the documentation and configuration repository for my self-hosted 4-node physical server cluster. This infrastructure powers my private cloud, automated disaster recovery pipelines, custom AI workloads, and CI/CD pipelines.
 
+<div align="center">
+ 
+[![Update Docker Containers](https://github.com/L1p0-M/Homelab/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy.yml)
+
+</div>
+
+
 ---
 
 ## 📐 Network & Architecture Topology
