@@ -1,0 +1,136 @@
+name: Update Docker Containers
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'PVE/Docker/**'
+      - 'PVE/Media/**'
+      - 'PVE/Docs_Monitoring/**'
+jobs:
+  detect-changes:
+    runs-on: self-hosted
+    outputs:
+      services: ${{ steps.changed-services.outputs.services }}
+      has_changes: ${{ steps.changed-services.outputs.has_changes }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Get changed services
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          dir_names: true
+          dir_names_max_depth: 5
+          files_yaml: |
+            configs:
+              - 'PVE/Docker/Configs/*/**'
+              - 'PVE/Media/Configs/*/**'
+              - 'PVE/Docs_Monitoring/Configs/*/**'
+
+      - name: Build array of changed services
+        id: changed-services
+        run: |
+          CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
+          python3 -u .github/workflows/scripts/get_changed_services.py $CHANGED_DIRS
+
+  deploy-services:
+    runs-on: self-hosted
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.detect-changes.outputs.services) }}
+      fail-fast: false
+      max-parallel: 1
+    steps:
+      - name: Check parameters
+        run: |
+          echo "Service: ${{ matrix.service }}"
+          echo "Node: ${{ matrix.NODE }}"
+          echo "VM: ${{ matrix.VM }}"
+          echo "Subdirs: ${{ matrix.Subdirs }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install SOPS
+        uses: nhedger/setup-sops@v3
+        with:
+          version: "3.13.3"
+
+      - name: Create environment variables
+        id: set-env
+        run: |
+          SSH_HOST="${{ secrets[format('SSH_HOST_{0}', matrix.VM)] }}"
+          if [ -z "${{ matrix.Subdirs }}" ]; then
+            TARGET_DIR="${{ matrix.service }}"
+          else
+            TARGET_DIR="${{ matrix.Subdirs }}/${{ matrix.service }}"
+          fi
+          echo "TARGET_DIR=$TARGET_DIR" >> $GITHUB_OUTPUT
+          echo "SSH_HOST=$SSH_HOST" >> $GITHUB_OUTPUT
+
+      - name: Decrypt .env file for "${{ matrix.service }}"
+        id: decrypt-env
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          echo "Target directory: ${{ steps.set-env.outputs.TARGET_DIR }}"
+          DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
+          echo "Working directory: $DIR"
+          if [ -f "$DIR/.env.enc" ]; then
+            sops --input-type dotenv --output-type dotenv --decrypt "$DIR/.env.enc" > "$DIR/.env"
+            chmod 600 "$DIR/.env"
+          fi
+          echo "WORKDIR=$DIR" >> $GITHUB_OUTPUT
+
+
+      - name: Creating Directory for "${{ matrix.service }}" via SSH
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ steps.set-env.outputs.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Creating directory: ${{ steps.set-env.outputs.TARGET_DIR }}"
+            mkdir -p /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}
+
+      - name: Sync files to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ steps.set-env.outputs.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "${{ steps.decrypt-env.outputs.WORKDIR }}/"
+          target: "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
+          strip_components: 4
+          tar_tmp_path: "/tmp"
+
+      - name: Fix permissions
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ steps.set-env.outputs.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chown ${{ secrets.SSH_USER }}:homelab-devs {} +
+            find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chmod g+rwX {} +
+            if [[ -f "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env" ]]; then
+              chown ${{ secrets.SSH_USER }}:homelab-devs "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
+              chmod g+rwX "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
+            fi
+
+      - name: Execute Docker Compose Up
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ steps.set-env.outputs.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
+            docker compose pull
+            docker compose up -d --remove-orphans
