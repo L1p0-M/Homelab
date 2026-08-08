@@ -42,8 +42,7 @@ scrape_configs:
         replacement: pve-exporter:9221
   - job_name: "nut"
     static_configs:
-      - targets:
-        - $NUT_HOST
+      - targets: ["$NUT_HOST"]
     metrics_path: /nut
     relabel_configs:
       - source_labels: [__address__]
