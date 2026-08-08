@@ -10,4 +10,4 @@ services:
        ports:
             - '30000:3000'
             - '30001:3001'
-       image: openspeedtest/latest
+       image: openspeedtest/latest:v2.0.6
