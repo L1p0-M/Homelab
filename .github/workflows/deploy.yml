@@ -35,7 +35,12 @@ jobs:
         id: changed-services
         run: |
           CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
-          python3 -u .github/workflows/scripts/get_changed_services.py $CHANGED_DIRS
+          if [ -n "$CHANGED_DIRS" ]; then
+            python3 -u .github/workflows/scripts/get_changed_services.py $CHANGED_DIRS
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "services=[]" >> $GITHUB_OUTPUT
+          fi
 
   deploy-services:
     runs-on: self-hosted
