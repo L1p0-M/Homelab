@@ -93,6 +93,22 @@ jobs:
           fi
           echo "WORKDIR=$DIR" >> $GITHUB_OUTPUT
 
+      - name: Create config files from templates for "${{ matrix.service }}"
+        run: |          
+          SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
+          find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
+            basedir=$(dirname "$template")
+            if [ -f "$basedir/.env" ]; then
+              echo "Loading environment variables from .env..."
+              set -a
+              source "$basedir/.env"
+              set +a
+            fi
+            output_file="${template%.template}"
+            echo "Processing: $template -> $output_file"
+            envsubst < "$template" > "$output_file"
+          done
+
 
       - name: Creating Directory for "${{ matrix.service }}" via SSH
         uses: appleboy/ssh-action@v1.2.5
