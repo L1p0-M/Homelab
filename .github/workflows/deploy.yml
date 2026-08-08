@@ -87,10 +87,11 @@ jobs:
           echo "Target directory: ${{ steps.set-env.outputs.TARGET_DIR }}"
           DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
           echo "Working directory: $DIR"
-          if [ -f "$DIR/.env.enc" ]; then
-            sops --input-type dotenv --output-type dotenv --decrypt "$DIR/.env.enc" > "$DIR/.env"
-            chmod 600 "$DIR/.env"
-          fi
+          find "$DIR" -type f -name ".env.enc" 2> /dev/null | while read -r encrypted_file; do
+            echo "Decrypting: $encrypted_file"
+            sops --input-type dotenv --output-type dotenv --decrypt "$encrypted_file" > "${encrypted_file%.enc}"
+            chmod 600 "${encrypted_file%.enc}"
+          done
           echo "WORKDIR=$DIR" >> $GITHUB_OUTPUT
 
       - name: Create config files from templates for "${{ matrix.service }}"
@@ -130,6 +131,7 @@ jobs:
           target: "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
           strip_components: 4
           tar_tmp_path: "/tmp"
+          tar_exec: "tar --no-same-owner --no-overwrite-dir -xvzf"
 
       - name: Fix permissions
         uses: appleboy/ssh-action@v1.2.5
