@@ -131,7 +131,6 @@ jobs:
           target: "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
           strip_components: 4
           tar_tmp_path: "/tmp"
-          tar_exec: "tar --no-same-owner --no-overwrite-dir -xvzf"
 
       - name: Fix permissions
         uses: appleboy/ssh-action@v1.2.5
