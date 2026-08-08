@@ -66,7 +66,7 @@ services:
       - /dockerconfig/grafana/config/pve-exporter/pve.yml:/etc/prometheus/pve.yml
     image: prompve/prometheus-pve-exporter:3.9.0
   nut-exporter:
-    image: hon95/prometheus-nut-exporter:1.2.0
+    image: hon95/prometheus-nut-exporter:1
     container_name: nut-exporter
     restart: unless-stopped
     environment:
