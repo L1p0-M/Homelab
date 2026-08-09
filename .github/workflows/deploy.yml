@@ -127,7 +127,7 @@ jobs:
           host: ${{ steps.set-env.outputs.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "${{ steps.decrypt-env.outputs.WORKDIR }}/"
+          source: "${{ steps.decrypt-env.outputs.WORKDIR }}/*"
           target: "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
           strip_components: 4
           tar_tmp_path: "/tmp"
