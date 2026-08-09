@@ -121,16 +121,33 @@ jobs:
             echo "Creating directory: ${{ steps.set-env.outputs.TARGET_DIR }}"
             mkdir -p /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}
 
-      - name: Sync files to server
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ steps.set-env.outputs.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "${{ steps.decrypt-env.outputs.WORKDIR }}/*"
-          target: "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
-          strip_components: 4
-          tar_tmp_path: "/tmp"
+      # - name: Sync files to server
+      #   uses: appleboy/scp-action@v0.1.4
+      #   with:
+      #     host: ${{ steps.set-env.outputs.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     source: "${{ steps.decrypt-env.outputs.WORKDIR }}/*"
+      #     target: "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
+      #     strip_components: 4
+      #     tar_tmp_path: "/tmp"
+
+      - name: Sync files to server via rsync
+        env:
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ steps.set-env.outputs.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          WORKDIR: ${{ steps.decrypt-env.outputs.WORKDIR }}
+          TARGET_DIR: ${{ steps.set-env.outputs.TARGET_DIR }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          rsync -avz \
+            "$WORKDIR/" "$SSH_USER@$SSH_HOST:/dockerconfig/$TARGET_DIR/"
 
       - name: Fix permissions
         uses: appleboy/ssh-action@v1.2.5
