@@ -1,3 +1,4 @@
+---
 services:
   watchtower:
     container_name: watchtower
