@@ -146,7 +146,8 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-          rsync -rltvz \
+          rsync -rlvz \
+            --no-times \
             --no-perms \
             --no-owner \
             --no-group \
