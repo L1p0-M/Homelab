@@ -1,14 +1,39 @@
 import os
 import argparse
 import json
+from pathlib import Path as pathlibpatch
 
 def get_changed_services(changed_dirs):
     service = {}
     for dir in changed_dirs:
         print(f"Changed directory: {dir}")
-        structure = dir.split("/")
-        service_name = structure[len(structure) - 1]
-        subdir_structure = "/".join(structure[3:-1]) if len(structure) > 3 else "config"
+        structure = remove_trailing_slashes(dir.split("/"))
+
+        if pathlibpatch(dir).joinpath("docker-compose.yml").exists() or pathlibpatch(dir).joinpath("docker-compose.yaml").exists():
+            service_name = structure[len(structure) - 1]
+            subdir_structure = "/".join(structure[3:-1]) if len(structure) > 3 else "config"
+
+        else:
+
+            print(f"Directory {dir} does not contain a docker-compose file. Searching for docker-compose file in parent directories.")
+            basedir_path = dir.split("/")
+            basedir_path.pop(len(basedir_path) - 1)
+            compose_files = ["docker-compose.yml", "docker-compose.yaml"]
+
+            while not any(pathlibpatch("/".join(basedir_path)).joinpath(compose_file).exists() for compose_file in compose_files):
+                if len(basedir_path) == 0:
+                    print(f"No docker-compose file found in the directory hierarchy for {dir}. Skipping.")
+                    set_github_output(False, {})
+                    return
+                
+                basedir_path.pop(len(basedir_path) - 1)
+                print(f"Checking parent directory: {"/".join(basedir_path)}")
+
+            print(f"Found docker-compose file in directory: {"/".join(basedir_path)}")
+            structure = basedir_path
+            structure = remove_trailing_slashes(structure)
+            service_name = structure[len(structure) - 1]
+            subdir_structure = "/".join(structure[3:-1]) if len(structure) > 3 else "config"
 
         service[service_name] = {
             "NODE": structure[0],
@@ -26,6 +51,15 @@ def get_changed_services(changed_dirs):
     
     print("No changed services detected.")
     set_github_output(False, {})
+
+def remove_trailing_slashes(structure):
+    while any(to_remove in structure for to_remove in ["..", "."]):
+        for i in range(len(structure)):
+            if structure[i] in ["..", "."]:
+                structure.pop(i)
+                break
+    return structure
+
 
 def convert_to_json(service):
     if isinstance(service, dict):
