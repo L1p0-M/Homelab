@@ -233,7 +233,7 @@ def send_email(msg):
     try:
         with smtplib.SMTP(f"{os.getenv('SMTP_SERVER')}", f"{os.getenv('SMTP_PORT')}") as server:
             server.starttls()
-            server.login(f"{os.getenv('SMTP_USER')}", f"{'SMTP_PASSWORD'}")
+            server.login(f"{os.getenv('SMTP_USER')}", f"{os.getenv('SMTP_PASSWORD')}")
             server.send_message(msg)
         print("E-Mail sent!")
     except Exception as e:
