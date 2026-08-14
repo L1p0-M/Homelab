@@ -87,7 +87,7 @@ docker run -d \
   -e SMTP_USER="watcher@example.com" \
   -e SMTP_PASSWORD="secretpassword" \
   -v /opt/docker/configs:/app/config:ro \
-  myuser/drift-watcher:latest
+  ghcr.io/l1p0-m/config-watcher-agent
 ```
 
 ---
@@ -99,7 +99,7 @@ Create a `docker-compose.yml` file on your host:
 ```yml
 services:
   drift-watcher:
-    image: myuser/drift-watcher:latest
+    image: ghcr.io/l1p0-m/config-watcher-agent:latest
     container_name: drift-watcher
     restart: unless-stopped
     environment:
