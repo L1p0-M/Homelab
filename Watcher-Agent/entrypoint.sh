@@ -17,7 +17,8 @@ fi
 } > /var/spool/cron/crontabs/root
 chmod 0600 /var/spool/cron/crontabs/root
 
-chown -R watcher:watcher /app
+chown watcher:watcher /app
+chown watcher:watcher /app/app.py
 mkdir -p "$CONFIGDIR"
 
 touch /var/log/cron.log
