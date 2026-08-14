@@ -127,7 +127,7 @@ def check_diffs():
     if not os.path.exists(f"/app/{repo}/{node}/{vm}/Configs/"):
         return False
     if repo and vm and node:
-        check_for_drifts(repo=repo, node=node, vm=vm, config_dir=config_dir):
+        check_for_drifts(repo=repo, node=node, vm=vm, config_dir=config_dir)
         host_dirs = f"{config_dir}"
         repo_dirs = f"/app/{repo}/{node}/{vm}/Configs/"
         check_for_news(host_dir=host_dirs, repo_dir=repo_dirs)
