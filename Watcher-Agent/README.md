@@ -21,14 +21,16 @@ It periodically scans specified directories, compares SHA-256 hashes, generates 
 
 The agent expects your Git repository to follow a specific path structure:
 
+```text
 <your-git-repo>/
-└── <NODE>/
-    └── <VM_NAME>/
-        └── Configs/
-            └── <service-name>/
-                ├── docker-compose.yml
-                ├── .env.enc
-                └── app.template
+  ├── <NODE>/
+  │   └── <VM_NAME>/
+  │       └── Configs/
+  │           └── <service-name>/
+  │               ├── docker-compose.yml
+  │               ├── .env.enc
+  │               └── app.template
+```
 
 * **`NODE`**: The physical or logical cluster node name.
 * **`VM_NAME`**: The specific VM or container host name.
@@ -69,6 +71,7 @@ If all SMTP variables are set, the agent will send an HTML report after every ru
 
 ### 1. Using Docker CLI
 
+```bash
 docker run -d \
   --name watcher-agent \
   --restart unless-stopped \
@@ -85,6 +88,7 @@ docker run -d \
   -e SMTP_PASSWORD="secretpassword" \
   -v /opt/docker/configs:/app/config:ro \
   myuser/drift-watcher:latest
+```
 
 ---
 
@@ -120,9 +124,13 @@ services:
       # Mount the host configuration path to matching CONFIGDIR inside container
       - /opt/docker/configs:/app/config:ro
 
+```
+
 Run the container:
 
+```bash
 docker compose up -d
+```
 
 ---
 
