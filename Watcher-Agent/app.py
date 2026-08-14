@@ -124,9 +124,10 @@ def check_diffs():
     vm = os.environ.get("VM_NAME")
     node = os.environ.get("NODE")
     config_dir = os.environ.get("CONFIGDIR")
-
+    if not os.path.exists(f"/app/{repo}/{node}/{vm}/Configs/"):
+        return False
     if repo and vm and node:
-        check_for_drifts(repo=repo, node=node, vm=vm, config_dir=config_dir)
+        check_for_drifts(repo=repo, node=node, vm=vm, config_dir=config_dir):
         host_dirs = f"{config_dir}"
         repo_dirs = f"/app/{repo}/{node}/{vm}/Configs/"
         check_for_news(host_dir=host_dirs, repo_dir=repo_dirs)
@@ -161,6 +162,7 @@ def check_for_drifts(repo, node, vm, config_dir):
                 else:
                     print(f"File not found on the host system: {target_files}, adding it to the report!")
                     DRIFTED_FILES["missing_from_host"].append(f"{target_files}")
+        return True
 
 
 def check_file_hash_diff(repo_file_path, host_file_path):
