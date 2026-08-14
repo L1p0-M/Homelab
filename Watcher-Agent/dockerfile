@@ -1,0 +1,15 @@
+FROM python:3.13.9-alpine
+RUN apk add --no-cache su-exec git tini
+RUN pip install --no-cache-dir jinja2 markdown
+
+ENV PYTHONUNBUFFERED=1
+COPY entrypoint.sh /entrypoint.sh
+
+RUN mkdir /app
+ADD app.py /app
+WORKDIR /app
+
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
+
+CMD [ "tail", "-f", "/var/log/cron.log" ]
