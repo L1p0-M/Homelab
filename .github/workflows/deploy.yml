@@ -7,6 +7,7 @@ on:
       - 'PVE/Docker/**'
       - 'PVE/Media/**'
       - 'PVE/Docs_Monitoring/**'
+      - 'PVE/CI_Worker/**'
 jobs:
   detect-changes:
     runs-on: self-hosted
@@ -30,6 +31,7 @@ jobs:
               - 'PVE/Docker/Configs/*/**'
               - 'PVE/Media/Configs/*/**'
               - 'PVE/Docs_Monitoring/Configs/*/**'
+              - 'PVE/CI_Worker/Configs/*/**'
 
       - name: Build array of changed services
         id: changed-services
