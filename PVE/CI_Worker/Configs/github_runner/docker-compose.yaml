@@ -1,0 +1,16 @@
+---
+services:
+    github-runner:
+        image: ghcr.io/l1p0-m/github-runner-docker:latest
+        privileged: true
+        container_name: github-runner
+        environment:
+            - REMOVE_RUNNER=false
+            - PUID=1000
+            - PGID=1000
+            - RUNNER_NAME=ci-worker
+            - REPO=L1p0-M/Homelab
+            - TOKEN=${TOKEN}
+        volumes:
+            - /dockerconfig/github_runner/docker_images:/var/lib/docker
+        restart: unless-stopped

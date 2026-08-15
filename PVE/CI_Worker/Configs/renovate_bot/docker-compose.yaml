@@ -1,0 +1,19 @@
+services:
+    renovate:
+        image: renovate/renovate:44.13
+        container_name: renovate_bot
+        restart: always
+        user: 1000:1000
+        volumes:
+            - /dockerconfig/renovate_bot/config.js:/usr/src/app/config.js
+            - /dockerconfig/renovate_bot/tmp:/tmp/renovate
+        environment:
+            - RENOVATE_BASE_DIR=/tmp/renovate
+            - RENOVATE_TOKEN=${TOKEN}
+            - RENOVATE_PLATFORM=github
+            - RENOVATE_GIT_AUTHOR=${AUTHOR}
+            - RENOVATE_SCHEDULE_INTERVAL=1h
+            - RENOVATE_IGNORE_PR_AUTHOR=true
+      #     - RENOVATE_AUTODISCOVER=true
+        command:
+            - L1p0-M/Homelab
