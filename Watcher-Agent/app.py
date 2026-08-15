@@ -7,6 +7,7 @@ from pathlib import Path as pathlibpath
 from jinja2 import Template
 import smtplib
 from email.message import EmailMessage
+from email.headerregistry import Address
 import markdown
 
 DRIFTED_FILES = {
@@ -224,8 +225,10 @@ def generate_email(markdown_report):
     envs = ["EMAIL_TO", "EMAIL_FROM", "SMTP_SERVER", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD"]
     if check_envs(envs):
         msg = EmailMessage()
-        msg['Subject'] = f"🛡️ Drift Report - {os.getenv('NODE')} / {os.getenv('VM_NAME')}"
-        msg['From'] = f"{os.getenv('EMAIL_FROM')}"
+        sender_email = f"{os.getenv('EMAIL_FROM')}"
+        sender = Address(display_name=f"{os.environ.get('EMAIL_FROM_NAME', 'Config Watcher')}", addr_spec=sender_email)
+        msg['Subject'] = f"Drift Report - {os.getenv('NODE')} / {os.getenv('VM_NAME')}"
+        msg['From'] = sender
         msg['To'] = f"{os.getenv('EMAIL_TO')}"
         msg.set_content(markdown_report)
         msg.add_alternative(styled_html, subtype='html')
