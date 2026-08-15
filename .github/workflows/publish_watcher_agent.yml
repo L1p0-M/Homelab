@@ -29,6 +29,12 @@ jobs:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+
+    - name: Read version from file
+      id: get_version
+      run: |
+        VERSION=$(cat ./Watcher-Agent/VERSION)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
     
     - name: Docker metadata
       id: meta
@@ -37,6 +43,8 @@ jobs:
         images: ghcr.io/l1p0-m/config-watcher-agent
         tags: |
           type=raw,value=latest
+          type=raw,value=${{ steps.get_version.outputs.version }}
+          type=raw,value=${{ steps.get_version.outputs.version }}-${{ github.sha }}
 
     - name: Build and push
       uses: docker/build-push-action@v6
