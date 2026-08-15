@@ -10,6 +10,7 @@ from email.message import EmailMessage
 from email.headerregistry import Address
 import markdown
 import difflib
+import re
 
 DRIFTED_FILES = {
     "drifted": [],
@@ -200,12 +201,13 @@ def generate_diff_text(repo_file_path, host_file_path):
             repo_lines = f_repo.read().splitlines()
             host_lines = f_host.read().splitlines()
 
-        diff = difflib.unified_diff(
-            repo_lines,
-            host_lines,
-            fromfile=f"Git Repo: {pathlibpath(repo_file_path).name} (repo)",
-            tofile=f"Host System: {pathlibpath(host_file_path).name} (host)",
-            lineterm="",
+        diff = list(
+            difflib.unified_diff(
+                repo_lines,
+                host_lines,
+                fromfile=f"[Git Repo]: {pathlibpath(repo_file_path).name}",
+                tofile=f"[Host System]: {pathlibpath(host_file_path).name}",
+            )
         )
         return "\n".join(diff)
     except Exception as e:
@@ -241,49 +243,69 @@ def generate_email(markdown_report):
         markdown_report, extensions=["tables", "fenced_code"]
     )
 
-    pre_inline_style = (
-        'style="background-color: #f6f8fa; border: 1px solid #e1e4e8; '
-        'padding: 12px; border-radius: 6px; font-family: monospace; '
-        'white-space: pre !important; word-wrap: normal; overflow-x: auto;"'
+    def colorize_code_block(match):
+        code_text = match.group(1)
+        lines = code_text.splitlines()
+        colored_lines = []
+
+        for line in lines:
+            if "[Git Repo]:" in line or "[Host System]:" in line:
+                colored_lines.append(
+                    f'<span style="color: #586069; font-weight: bold; display: block;">{line}</span>'
+                )
+                continue
+            elif line.startswith("-"):
+                colored_lines.append(
+                    f'<span style="background-color: #ffeef0; color: #b31d28; display: block;">{line}</span>'
+                )
+                continue
+            elif line.startswith("+"):
+                colored_lines.append(
+                    f'<span style="background-color: #e6ffec; color: #22863a; display: block;">{line}</span>'
+                )
+                continue
+            elif line.startswith("@"):
+                colored_lines.append(
+                    f'<span style="background-color: #f1f8ff; color: #0366d6; display: block;">{line}</span>'
+                )
+                continue
+            else:
+                colored_lines.append(
+                    f'<span style="display: block;">{line}</span>'
+                )
+                continue
+
+        inner_html = "".join(colored_lines)
+        return (
+            f'<pre style="background-color: #f6f8fa; border: 1px solid #e1e4e8; '
+            f'padding: 12px; border-radius: 6px; font-family: monospace; '
+            f'line-height: 1.45; overflow-x: auto;"><code>{inner_html}</code></pre>'
+        )
+
+    html_content = re.sub(
+        r'<pre><code(?: class="[^"]*")?>(.*?)</code></pre>',
+        colorize_code_block,
+        html_content,
+        flags=re.DOTALL,
     )
-    html_content = html_content.replace("<pre>", f"<pre {pre_inline_style}>")
-
-    colored_lines = []
-    for line in html_content.splitlines():
-        if line.startswith("+") and not line.startswith("+++"):
-            colored_lines.append(
-                f'<span style="background-color: #e6ffec; color: #24292e; display: block; width: 100%;">{line}</span>'
-            )
-        elif line.startswith("-") and not line.startswith("---"):
-            colored_lines.append(
-                f'<span style="background-color: #ffeef0; color: #24292e; display: block; width: 100%;">{line}</span>'
-            )
-        elif line.startswith("@"):
-            colored_lines.append(
-                f'<span style="background-color: #f1f8ff; color: #0366d6; display: block; width: 100%;">{line}</span>'
-            )
-        else:
-            colored_lines.append(line)
-
-    html_content = "\n".join(colored_lines)
 
     styled_html = f"""
-        <html>
-        <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; color: #24292e; line-height: 1.5; }}
-            table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
-            th, td {{ border: 1px solid #e1e4e8; padding: 8px; text-align: left; }}
-            th {{ background-color: #f6f8fa; }}
-            code {{ background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace; }}
-        </style>
-        </head>
-        <body>
-            {html_content}
-        </body>
-        </html>
-        """
-    
+    <html>
+    <head>
+    <style>
+        body {{ font-family: Arial, sans-serif; color: #24292e; line-height: 1.5; }}
+        table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
+        th, td {{ border: 1px solid #e1e4e8; padding: 8px; text-align: left; }}
+        th {{ background-color: #f6f8fa; }}
+        code {{ background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace; }}
+    </style>
+    </head>
+    <body>
+        {html_content}
+    </body>
+    </html>
+    """
+
     envs = ["EMAIL_TO", "EMAIL_FROM", "SMTP_SERVER", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD"]
     if check_envs(envs):
         msg = EmailMessage()
