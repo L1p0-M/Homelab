@@ -1,4 +1,3 @@
----
 services:
   drift-watcher:
     image: ghcr.io/l1p0-m/config-watcher-agent:v1.0.3
