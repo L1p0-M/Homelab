@@ -9,6 +9,7 @@ import smtplib
 from email.message import EmailMessage
 from email.headerregistry import Address
 import markdown
+import difflib
 
 DRIFTED_FILES = {
     "drifted": [],
@@ -40,8 +41,11 @@ REPORT_TEMPLATE = """
 *Files present on the host whose SHA-256 hashes differ from the Git repository:*
 
 {% if drifted %}
-{% for file in drifted %}
-- 📄 `{{ file }}`
+{% for item in drifted %}
+### 📄 `{{ item.path }}`
+```diff
+{{ item.diff }}
+```
 {% endfor %}
 {% else %}
 ✨ *No drift detected! All tracked files match the repository.*
@@ -125,16 +129,21 @@ def check_diffs():
     vm = os.environ.get("VM_NAME")
     node = os.environ.get("NODE")
     config_dir = os.environ.get("CONFIGDIR")
+
     if not os.path.exists(f"/app/{repo}/{node}/{vm}/Configs/"):
         return False
+    
     if repo and vm and node:
         check_for_drifts(repo=repo, node=node, vm=vm, config_dir=config_dir)
         host_dirs = f"{config_dir}"
         repo_dirs = f"/app/{repo}/{node}/{vm}/Configs/"
         check_for_news(host_dir=host_dirs, repo_dir=repo_dirs)
         generate_report()
-        if not os.environ.get("DRY_RUN", True):
+        if os.environ.get("DRY_RUN", True):
             print("Automatic fix is disabled, exiting...")
+            return
+        else:
+            print("Automatic fix is not implemented yet, exiting...")
             return
 
 def check_for_news(host_dir, repo_dir):
@@ -159,14 +168,14 @@ def check_for_drifts(repo, node, vm, config_dir):
                 if os.path.exists(host_path):
                     if not check_file_hash_diff(repo_file_path=target_files, host_file_path=host_path):
                         print(f"Drift found in {target_files} - {host_path}, adding it to the report!")
-                        DRIFTED_FILES["drifted"].append(f"{host_path}")
                 else:
                     print(f"File not found on the host system: {target_files}, adding it to the report!")
                     DRIFTED_FILES["missing_from_host"].append(f"{target_files}")
-        return True
+    return True
 
 
 def check_file_hash_diff(repo_file_path, host_file_path):
+    global DRIFTED_FILES
     repo_files_hash = get_sha265(target_file=repo_file_path)
     host_files_hash = get_sha265(host_file_path)
 
@@ -175,7 +184,32 @@ def check_file_hash_diff(repo_file_path, host_file_path):
         return True
     else:
         print("Drift found")
+        diff_text = generate_diff_text(repo_file_path, host_file_path)
+        DRIFTED_FILES["drifted"].append({
+            "path": str(host_file_path),
+            "repo_path": str(repo_file_path),
+            "diff": diff_text
+        })
         return False
+
+def generate_diff_text(repo_file_path, host_file_path):
+    try:
+        with open(repo_file_path, "r", encoding="utf-8", errors="replace") as f_repo, \
+             open(host_file_path, "r", encoding="utf-8", errors="replace") as f_host:
+            
+            repo_lines = f_repo.read().splitlines()
+            host_lines = f_host.read().splitlines()
+
+        diff = difflib.unified_diff(
+            repo_lines,
+            host_lines,
+            fromfile=f"Git Repo: {pathlibpath(repo_file_path).name} (repo)",
+            tofile=f"Host System: {pathlibpath(host_file_path).name} (host)",
+            lineterm="",
+        )
+        return "\n".join(diff)
+    except Exception as e:
+        return f"Error generating diff: {e}"
 
 def get_sha265(target_file):
     with open(target_file, "rb") as f:
@@ -203,25 +237,53 @@ def generate_report():
     generate_email(markdown_report=report_output)
 
 def generate_email(markdown_report):
-    html_content = markdown.markdown(markdown_report, extensions=['tables'])
+    html_content = markdown.markdown(
+        markdown_report, extensions=["tables", "fenced_code"]
+    )
+
+    pre_inline_style = (
+        'style="background-color: #f6f8fa; border: 1px solid #e1e4e8; '
+        'padding: 12px; border-radius: 6px; font-family: monospace; '
+        'white-space: pre !important; word-wrap: normal; overflow-x: auto;"'
+    )
+    html_content = html_content.replace("<pre>", f"<pre {pre_inline_style}>")
+
+    colored_lines = []
+    for line in html_content.splitlines():
+        if line.startswith("+") and not line.startswith("+++"):
+            colored_lines.append(
+                f'<span style="background-color: #e6ffec; color: #24292e; display: block; width: 100%;">{line}</span>'
+            )
+        elif line.startswith("-") and not line.startswith("---"):
+            colored_lines.append(
+                f'<span style="background-color: #ffeef0; color: #24292e; display: block; width: 100%;">{line}</span>'
+            )
+        elif line.startswith("@"):
+            colored_lines.append(
+                f'<span style="background-color: #f1f8ff; color: #0366d6; display: block; width: 100%;">{line}</span>'
+            )
+        else:
+            colored_lines.append(line)
+
+    html_content = "\n".join(colored_lines)
 
     styled_html = f"""
-    <html>
-    <head>
-    <style>
-        body {{ font-family: Arial, sans-serif; color: #333; line-height: 1.6; }}
-        table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
-        th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-        th {{ background-color: #f2f2f2; }}
-        code {{ background-color: #f4f4f4; padding: 2px 4px; border-radius: 4px; }}
-    </style>
-    </head>
-    <body>
-        {html_content}
-    </body>
-    </html>
-    """
-
+        <html>
+        <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; color: #24292e; line-height: 1.5; }}
+            table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
+            th, td {{ border: 1px solid #e1e4e8; padding: 8px; text-align: left; }}
+            th {{ background-color: #f6f8fa; }}
+            code {{ background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace; }}
+        </style>
+        </head>
+        <body>
+            {html_content}
+        </body>
+        </html>
+        """
+    
     envs = ["EMAIL_TO", "EMAIL_FROM", "SMTP_SERVER", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD"]
     if check_envs(envs):
         msg = EmailMessage()
