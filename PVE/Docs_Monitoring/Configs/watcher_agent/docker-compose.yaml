@@ -1,0 +1,24 @@
+---
+services:
+  drift-watcher:
+    image: ghcr.io/l1p0-m/config-watcher-agent:v1.0.3
+    container_name: watcher-agent
+    restart: unless-stopped
+    environment:
+      - REPO=L1p0-M/Homelab
+      - NODE=PVE
+      - VM_NAME=Docs_Monitoring
+      - CONFIGDIR=/app/dockerconfig
+      - CRON_SCHEDULE=0 23 * * mon   # Run every Monday at 23:00
+      - DRY_RUN=true
+      - PUID=1000
+      - PGID=1000
+      - EMAIL_TO=${EMAIL_TO}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_FROM_NAME=Watcher
+      - SMTP_SERVER=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    volumes:
+      - /dockerconfig:/app/dockerconfig:ro
