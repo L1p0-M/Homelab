@@ -1,5 +1,4 @@
 import os
-from time import sleep
 import urllib.request
 import subprocess
 import hashlib
@@ -11,6 +10,8 @@ from email.headerregistry import Address
 import markdown
 import difflib
 import re
+from shutil import move as movefile
+from shutil import copy2 as copyfile
 
 DRIFTED_FILES = {
     "drifted": [],
@@ -59,7 +60,7 @@ REPORT_TEMPLATE = """
 
 {% if missing_from_host %}
 {% for file in missing_from_host %}
-- 🚫 `{{ file }}`
+- 🚫 `{{ file.repo_path }}`
 {% endfor %}
 {% else %}
 ✨ *All repository files are present on the host!*
@@ -120,7 +121,8 @@ def check_pathes():
 def pull_changes(repo):
     os.chdir(f"/app/{repo.split('/')[1]}")
     try:
-        subprocess.run(["git", "pull"],check=True)
+        subprocess.run(["git", "fetch", "origin"],check=True)
+        subprocess.run(["git", "reset", "--hard", "origin/HEAD"],check=True)
         return True
     except Exception as e:
         print(f"Error while pulling changes from {repo}: {e}")
@@ -140,12 +142,58 @@ def check_diffs():
         repo_dirs = f"/app/{repo}/{node}/{vm}/Configs/"
         check_for_news(host_dir=host_dirs, repo_dir=repo_dirs)
         generate_report()
-        if os.environ.get("DRY_RUN", True):
+        if os.environ.get("DRY_RUN", "true").lower() == "true":
             print("Automatic fix is disabled, exiting...")
             return
         else:
-            print("Automatic fix is not implemented yet, exiting...")
+            print("Automatic fix is enabled, fixing drifts...")
+            auto_fix()
             return
+
+def auto_fix():
+    global DRIFTED_FILES
+
+    def fix_drifted():
+        for files in DRIFTED_FILES["drifted"]:
+            if files.get("path", False) and files.get("service", False) and os.path.exists(files.get("path")):
+                print(f"Fixing drift for file: {files.get("path")}...")
+
+                if not os.path.exists(f"/app/trash/{files.get("service")}"):
+                    os.makedirs(f"/app/trash/{files.get("service")}")
+
+                movefile(src=files.get("path"), dst=f"/app/trash/{files.get("service")}/{pathlibpath(files.get("path")).name}")
+                copyfile(src=files.get("repo_path"), dst=files.get("path"))
+                #movefile(src=files.get("repo_path"), dst=files.get("path"))
+
+    def fix_missing():
+        for files in DRIFTED_FILES["missing_from_host"]:
+            if files.get("repo_path", False) and files.get("path", False):
+                if os.path.exists(files.get("repo_path")) and not os.path.exists(files.get("path")):
+                    print(f"Adding missing {files.get("repo_path")}...")
+
+                    if not os.path.exists(pathlibpath(files.get("path")).parent):
+                        os.makedirs(name=pathlibpath(files.get("path")).parent, exist_ok=True)
+
+                    copyfile(src=files.get("repo_path"), dst=files.get("path"))
+                    #movefile(src=files.get("repo_path"), dst=files.get("path"))
+
+
+    def fix_news():
+        for files in DRIFTED_FILES["new_on_host"]:
+            if os.path.exists(files):
+                print(f"Moving new files from host to trash...")
+
+                movefile(src=files, dst=f"/app/trash/{pathlibpath(files).name}")
+
+    if DRIFTED_FILES:
+        try:
+            fix_drifted()
+            fix_missing()
+            fix_news()
+        except Exception as e:
+            print(f"Error while trying to fix drifts: {e}")
+            return
+
 
 def check_for_news(host_dir, repo_dir):
     global DRIFTED_FILES
@@ -167,18 +215,22 @@ def check_for_drifts(repo, node, vm, config_dir):
                 rel_path = target_files.relative_to(base_dir)
                 host_path = f"{config_dir}/{rel_path}"
                 if os.path.exists(host_path):
-                    if not check_file_hash_diff(repo_file_path=target_files, host_file_path=host_path):
+                    if not check_file_hash_diff(repo_file_path=target_files, host_file_path=host_path, service=services):
                         print(f"Drift found in {target_files} - {host_path}, adding it to the report!")
                 else:
                     print(f"File not found on the host system: {target_files}, adding it to the report!")
-                    DRIFTED_FILES["missing_from_host"].append(f"{target_files}")
+                    DRIFTED_FILES["missing_from_host"].append({
+                        "repo_path": str(target_files),
+                        "path": str(host_path),
+                        "service": str(services)
+                        })
     return True
 
 
-def check_file_hash_diff(repo_file_path, host_file_path):
+def check_file_hash_diff(repo_file_path, host_file_path, service):
     global DRIFTED_FILES
-    repo_files_hash = get_sha265(target_file=repo_file_path)
-    host_files_hash = get_sha265(host_file_path)
+    repo_files_hash = get_sha256(target_file=repo_file_path)
+    host_files_hash = get_sha256(host_file_path)
 
     if host_files_hash == repo_files_hash:
         print("No difference found")
@@ -189,7 +241,8 @@ def check_file_hash_diff(repo_file_path, host_file_path):
         DRIFTED_FILES["drifted"].append({
             "path": str(host_file_path),
             "repo_path": str(repo_file_path),
-            "diff": diff_text
+            "diff": diff_text,
+            "service": service
         })
         return False
 
@@ -213,7 +266,7 @@ def generate_diff_text(repo_file_path, host_file_path):
     except Exception as e:
         return f"Error generating diff: {e}"
 
-def get_sha265(target_file):
+def get_sha256(target_file):
     with open(target_file, "rb") as f:
         digest = hashlib.file_digest(f, "sha256")
         print(digest.hexdigest())

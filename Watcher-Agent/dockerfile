@@ -8,6 +8,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN mkdir /app
 ADD app.py /app
 WORKDIR /app
+RUN mkdir /app/trash
 
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]

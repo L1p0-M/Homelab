@@ -18,6 +18,7 @@ fi
 chmod 0600 /var/spool/cron/crontabs/root
 
 chown watcher:watcher /app
+chown watcher:watcher /app/trash
 chown watcher:watcher /app/app.py
 mkdir -p "$CONFIGDIR"
 
