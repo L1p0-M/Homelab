@@ -9,7 +9,7 @@ services:
       - VM_NAME=CI_Worker
       - CONFIGDIR=/app/dockerconfig
       - CRON_SCHEDULE=0 23 * * mon   # Run every Monday at 23:00
-      - DRY_RUN=true
+      - DRY_RUN=false
       - PUID=1000
       - PGID=1000
       - EMAIL_TO=${EMAIL_TO}
@@ -20,4 +20,5 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
     volumes:
-      - /dockerconfig:/app/dockerconfig:ro
+      - /dockerconfig:/app/dockerconfig
+      - /dockerconfig/watcher_agent/trash:/app/trash
