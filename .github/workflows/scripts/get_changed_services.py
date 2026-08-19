@@ -37,7 +37,7 @@ def get_changed_services(changed_dirs):
 
         name = service_name
         if service_name in service:
-            name = f"{service_name}_{structure[0]}"
+            name = f"{service_name}_{structure[1]}"
 
         service[name] = {
             "NODE": structure[0],
