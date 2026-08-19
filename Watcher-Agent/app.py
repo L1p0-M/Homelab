@@ -141,14 +141,12 @@ def check_diffs():
         host_dirs = f"{config_dir}"
         repo_dirs = f"/app/{repo}/{node}/{vm}/Configs/"
         check_for_news(host_dir=host_dirs, repo_dir=repo_dirs)
-        generate_report()
         if os.environ.get("DRY_RUN", "true").lower() == "true":
             print("Automatic fix is disabled, exiting...")
-            return
         else:
             print("Automatic fix is enabled, fixing drifts...")
             auto_fix()
-            return
+        generate_report()
 
 def auto_fix():
     global DRIFTED_FILES
@@ -181,9 +179,16 @@ def auto_fix():
     def fix_news():
         for files in DRIFTED_FILES["new_on_host"]:
             if os.path.exists(files):
-                print(f"Moving new files from host to trash...")
+                to_exclude = os.environ.get("EXCLUDE", "")
+                exclude = [x.strip() for x in to_exclude.split(",") if x.strip()]
+                print(exclude)
+                if pathlibpath(files).name not in exclude:
+                    print(f"Moving new files from host to trash...")
+                    movefile(src=files, dst=f"/app/trash/{pathlibpath(files).name}")
+                    continue
 
-                movefile(src=files, dst=f"/app/trash/{pathlibpath(files).name}")
+                print(f"'{pathlibpath(files).name}' is excluded... skipping")
+                continue
 
     if DRIFTED_FILES:
         try:

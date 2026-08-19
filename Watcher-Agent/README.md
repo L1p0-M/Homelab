@@ -1,8 +1,9 @@
 # 🛡️ Config Drift Watcher Agent
 
-A lightweight Dockerized monitoring agent that automatically detects **configuration drift** between a Git repository (Source of Truth) and host system configurations (e.g., Docker Compose files, `.env` files, templates).
+A lightweight Dockerized monitoring agent that automatically detects and resolves **configuration drift** between a Git repository (Source of Truth) and host system configurations (e.g., Docker Compose files, `.env` files, templates).
 
-It periodically scans specified directories, compares SHA-256 hashes, generates Markdown reports, and alerts you via **Emails**.
+It periodically scans specified directories, compares SHA-256 hashes, automatically repairs drifts (when enabled), generates Markdown reports, and alerts you via **Emails**.
+
 
 ---
 
@@ -11,6 +12,9 @@ It periodically scans specified directories, compares SHA-256 hashes, generates 
 * **Git-as-Source-of-Truth:** Automatically clones or pulls the latest configurations from a remote Git repository.
 * **Hash-based Drift Detection:** Computes SHA-256 digests to detect content mismatches on tracked files (`docker-compose.*`, `.env.enc`, `*.template`).
 * **Untracked & Missing File Discovery:** Identifies files missing on the host or new files added on the host.
+* **Automated Auto-Fix & Self-Healing:** Automatically restores drifted or missing files to match the repository state, and safely clears unneeded host files.
+* **Safe-Recovery Trash Mechanism:** Moves modified or untracked host files into a service-segmented `/app/trash` directory before overwriting, preventing permanent data loss.
+* **Flexible Exclusion Rules:** Supports comma-separated ignore lists (`EXCLUDE`) to preserve custom host files during automatic cleanup.
 * **Automated Email Reports:** Converts Markdown reports into styled HTML emails and sends them via SMTP.
 * **Scheduled Scans (Cron):** Runs periodically using `crond` and `tini` inside an Alpine-based lightweight container.
 * **Non-Root Execution:** Runs internal scripts safely using `su-exec` with configurable `PUID` and `PGID`.
@@ -41,14 +45,15 @@ The agent expects your Git repository to follow a specific path structure:
 
 | Variable | Required | Default | Description |
 | :--- | :---: | :---: | :--- |
-| `REPO` | **Yes** | — | Target repository in `owner/repo` format (e.g., `l1p0-m/homelab`). |
+| `REPO` | **Yes** | — | Target repository in `owner/repo` format (e.g., `L1p0-M/Homelab`). |
 | `NODE` | **Yes** | — | Node folder inside the repo. |
 | `VM_NAME` | **Yes** | — | VM folder inside the repo. |
 | `CONFIGDIR` | No | `/app/config` | Host configuration directory path inside the container. |
-| `DRY_RUN` | No | `true` | Currently used for controlling automatic fix actions. |
+| `DRY_RUN` | No | `true` | When set to `true`, the agent only detects and reports configuration drifts without making any changes. Set to `false` to enable automatic drift fixes. |
 | `CRON_SCHEDULE` | No | `0 23 * * mon` | Cron schedule string (Default: Every Monday at 23:00). |
 | `PUID` | No | `1000` | User ID for non-root execution. |
 | `PGID` | No | `1000` | Group ID for non-root execution. |
+| `EXCLUDE` | No | - | Optional comma-separated list of file/folder names to ignore during cleanup (e.g., `temp, .git, node_modules, teszt_folder`). Prevents newly created items on the host from being moved to trash. |
 
 ### 📧 SMTP / Email Configuration (Optional)
 
@@ -62,6 +67,26 @@ If all SMTP variables are set, the agent will send an HTML report after every ru
 | `SMTP_PORT` | Yes | SMTP server port (e.g., `587` or `465`). |
 | `SMTP_USER` | Yes | SMTP username for authentication. |
 | `SMTP_PASSWORD` | Yes | SMTP password for authentication. |
+
+---
+
+## 🔄 Automatic Fix & Remediation (`DRY_RUN=false`)
+
+When `DRY_RUN` is set to `false`, the agent transitions from passive monitoring to active **self-healing**. It automatically reconciles the host system with the Git repository:
+
+1. **Fixing Drifted Files:** 
+   * Moves the modified file on the host into `/app/trash/<service-name>/<filename>` for recovery purposes.
+   * Copies the fresh, authoritative version from the Git repository back to the host path.
+2. **Restoring Missing Files:**
+   * Detects files present in the repo but missing on the host.
+   * Creates necessary parent directories on the host and copies the file from Git.
+3. **Cleaning Up Untracked Files:**
+   * Identifies new, untracked files or folders created directly on the host.
+   * Checks the item name against the `EXCLUDE` environment variable.
+   * If **not excluded**, moves the item safely into `/app/trash/<item-name>`.
+   * If **excluded**, skips the item completely.
+
+> 💡 **Tip:** Bind-mount `/app/trash` to your host to retain access to backups of replaced or deleted files.
 
 ---
 
@@ -86,7 +111,9 @@ docker run -d \
   -e SMTP_PORT="587" \
   -e SMTP_USER="watcher@example.com" \
   -e SMTP_PASSWORD="secretpassword" \
-  -v /opt/docker/configs:/app/config:ro \
+  -e DRY_RUN=false \
+  -v ./trash:/app/trash \
+  -v /opt/docker/configs:/app/config \
   ghcr.io/l1p0-m/config-watcher-agent
 ```
 
@@ -109,7 +136,7 @@ services:
       - VM_NAME=docker-host-vm
       - CONFIGDIR=/app/config
       - CRON_SCHEDULE=0 23 * * mon   # Run every Monday at 23:00
-      - DRY_RUN=true
+      - DRY_RUN=false
       - PUID=1000
       - PGID=1000
 
@@ -122,7 +149,9 @@ services:
       - SMTP_PASSWORD=secretpassword
     volumes:
       # Mount the host configuration path to matching CONFIGDIR inside container
-      - /opt/docker/configs:/app/config:ro
+      - /opt/docker/configs:/app/config
+      # Bindmount the /app/trash folder to your host to access backed-up/deleted files
+      - ./trash:/app/trash
 
 ```
 
@@ -143,7 +172,8 @@ docker compose up -d
    * Clones or pulls the configured Git repository (`REPO`).
    * Iterates through tracked template/config files (`docker-compose.*`, `.env.enc`, `*.template`).
    * Calculates **SHA-256** checksums to compare files on the host vs. repository.
-   * Detects untracked host files or missing Git files.
+   * Identifies drifted, missing, or newly created files on the host.
+   * **Executes Auto-Fix:** If `DRY_RUN=false`, automatically replaces drifted files, restores missing ones, and moves non-excluded untracked files to `/app/trash`.
    * Renders a Jinja2 Markdown report saved locally to `/app/drift_report.md`.
    * Sends the styled HTML report via SMTP (if configured).
 
