@@ -184,6 +184,14 @@ def auto_fix():
                 print(exclude)
                 if pathlibpath(files).name not in exclude:
                     print(f"Moving new files from host to trash...")
+
+                    if os.path.isdir(files):
+                        for target_files in pathlibpath(files).rglob("docker-compose.*"):
+                            print(f"Found a docker-compose file inside the folder... Compose down is needed! {target_files}")
+                            os.chdir(pathlibpath(target_files).parent)
+                            subprocess.run(["docker", "compose", "down"],check=False)
+                            continue
+
                     movefile(src=files, dst=f"/app/trash/{pathlibpath(files).name}")
                     continue
 

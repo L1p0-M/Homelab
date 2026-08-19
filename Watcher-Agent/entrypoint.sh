@@ -5,10 +5,25 @@ export CONFIGDIR=${CONFIGDIR:-/app/config}
 export DRY_RUN=${DRY_RUN:-true}
 CRON_SCHEDULE=${CRON_SCHEDULE:-"0 23 * * mon"}
 
+
 if ! id -u watcher >/dev/null 2>&1; then
     addgroup -g "$PGID" watcher 2>/dev/null || true
     adduser -u "$PUID" -G watcher -D -h /home/watcher -s /bin/ash watcher
+
+    if [ -S /var/run/docker.sock ]; then
+        DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+        DOCKER_GROUP=$(getent group "$DOCKER_GID" | cut -d: -f1)
+
+        if [ -z "$DOCKER_GROUP" ]; then
+            DOCKER_GROUP="dockersock"
+            addgroup -g "$DOCKER_GID" "$DOCKER_GROUP" 2>/dev/null || true
+        fi
+        addgroup watcher "$DOCKER_GROUP" 2>/dev/null || true
+    fi
 fi
+
+
+
 
 {
     echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

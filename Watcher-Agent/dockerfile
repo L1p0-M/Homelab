@@ -1,5 +1,5 @@
 FROM python:3.13.9-alpine
-RUN apk add --no-cache su-exec git tini
+RUN apk add --no-cache su-exec git tini docker-cli docker-cli-compose
 RUN pip install --no-cache-dir jinja2 markdown
 
 ENV PYTHONUNBUFFERED=1
