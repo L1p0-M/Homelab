@@ -1,7 +1,7 @@
 ---
 services:
   drift-watcher:
-    image: ghcr.io/l1p0-m/config-watcher-agent:v1.0.3
+    image: ghcr.io/l1p0-m/config-watcher-agent:v1.1.0
     container_name: watcher-agent
     restart: unless-stopped
     environment:
