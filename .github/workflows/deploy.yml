@@ -56,7 +56,7 @@ jobs:
     steps:
       - name: Check parameters
         run: |
-          echo "Service: ${{ matrix.service }}"
+          echo "Service: ${{ matrix.Service }}"
           echo "Node: ${{ matrix.NODE }}"
           echo "VM: ${{ matrix.VM }}"
           echo "Subdirs: ${{ matrix.Subdirs }}"
@@ -74,14 +74,14 @@ jobs:
         run: |
           SSH_HOST="${{ secrets[format('SSH_HOST_{0}', matrix.VM)] }}"
           if [ -z "${{ matrix.Subdirs }}" ]; then
-            TARGET_DIR="${{ matrix.service }}"
+            TARGET_DIR="${{ matrix.Service }}"
           else
-            TARGET_DIR="${{ matrix.Subdirs }}/${{ matrix.service }}"
+            TARGET_DIR="${{ matrix.Subdirs }}/${{ matrix.Service }}"
           fi
           echo "TARGET_DIR=$TARGET_DIR" >> $GITHUB_OUTPUT
           echo "SSH_HOST=$SSH_HOST" >> $GITHUB_OUTPUT
 
-      - name: Decrypt .env file for "${{ matrix.service }}"
+      - name: Decrypt .env file for "${{ matrix.Service }}"
         id: decrypt-env
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
@@ -96,7 +96,7 @@ jobs:
           done
           echo "WORKDIR=$DIR" >> $GITHUB_OUTPUT
 
-      - name: Create config files from templates for "${{ matrix.service }}"
+      - name: Create config files from templates for "${{ matrix.Service }}"
         run: |          
           SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
           find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
@@ -113,7 +113,7 @@ jobs:
           done
 
 
-      - name: Creating Directory for "${{ matrix.service }}" via SSH
+      - name: Creating Directory for "${{ matrix.Service }}" via SSH
         uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ steps.set-env.outputs.SSH_HOST }}

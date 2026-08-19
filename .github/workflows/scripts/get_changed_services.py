@@ -35,7 +35,11 @@ def get_changed_services(changed_dirs):
             service_name = structure[len(structure) - 1]
             subdir_structure = "/".join(structure[3:-1]) if len(structure) > 3 else "config"
 
-        service[service_name] = {
+        name = service_name
+        if service_name in service:
+            name = f"{service_name}_{structure[0]}"
+
+        service[name] = {
             "NODE": structure[0],
             "VM": structure[1],
             "Service": service_name,
