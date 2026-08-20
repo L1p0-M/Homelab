@@ -12,6 +12,7 @@ import difflib
 import re
 from shutil import move as movefile
 from shutil import copy2 as copyfile
+from datetime import datetime
 
 DRIFTED_FILES = {
     "drifted": [],
@@ -102,7 +103,6 @@ def check_pathes():
 
     url = f"https://github.com/{repo}"
     with urllib.request.urlopen(url) as response:
-        print(response.status)
         if response.status == 200:
             if not os.path.exists(f'/app/{repo.split("/")[1]}'):
                 print("Github repo found! Cloning...")
@@ -119,15 +119,16 @@ def check_pathes():
         return False
 
 def pull_changes(repo):
-    os.chdir(f"/app/{repo.split('/')[1]}")
+    repo_dir=f"/app/{repo.split('/')[1]}"
     try:
-        subprocess.run(["git", "fetch", "origin"],check=True)
-        subprocess.run(["git", "reset", "--hard", "origin/HEAD"],check=True)
+        subprocess.run(["git", "fetch", "origin"], cwd=repo_dir, check=True)
+        subprocess.run(["git", "reset", "--hard", "origin/HEAD"],cwd=repo_dir, check=True)
         return True
     except Exception as e:
         print(f"Error while pulling changes from {repo}: {e}")
 
 def check_diffs():
+    global DRIFTED_FILES
     repo = os.environ.get("REPO").split("/")[1]
     vm = os.environ.get("VM_NAME")
     node = os.environ.get("NODE")
@@ -146,7 +147,10 @@ def check_diffs():
         else:
             print("Automatic fix is enabled, fixing drifts...")
             auto_fix()
-        generate_report()
+
+        if any(len(files) > 0 for files in DRIFTED_FILES.values()):
+            generate_report()
+        print(f"{datetime.now().strftime('%Y-%m-%d, %H:%M')} - Check completed. Status: OK")
 
 def auto_fix():
     global DRIFTED_FILES
@@ -154,49 +158,60 @@ def auto_fix():
     def fix_drifted():
         for files in DRIFTED_FILES["drifted"]:
             if files.get("path", False) and files.get("service", False) and os.path.exists(files.get("path")):
-                print(f"Fixing drift for file: {files.get("path")}...")
+                print(f"Fixing drift for file: {files.get('path')}...")
 
-                if not os.path.exists(f"/app/trash/{files.get("service")}"):
-                    os.makedirs(f"/app/trash/{files.get("service")}")
+                if not os.path.exists(f"/app/trash/{files.get('service')}"):
+                    os.makedirs(f"/app/trash/{files.get('service')}")
 
-                movefile(src=files.get("path"), dst=f"/app/trash/{files.get("service")}/{pathlibpath(files.get("path")).name}")
+                movefile(src=files.get("path"), dst=f"/app/trash/{files.get('service')}/{pathlibpath(files.get('path')).name}")
                 copyfile(src=files.get("repo_path"), dst=files.get("path"))
-                #movefile(src=files.get("repo_path"), dst=files.get("path"))
 
     def fix_missing():
         for files in DRIFTED_FILES["missing_from_host"]:
             if files.get("repo_path", False) and files.get("path", False):
                 if os.path.exists(files.get("repo_path")) and not os.path.exists(files.get("path")):
-                    print(f"Adding missing {files.get("repo_path")}...")
+                    print(f"Adding missing {files.get('repo_path')}...")
 
                     if not os.path.exists(pathlibpath(files.get("path")).parent):
                         os.makedirs(name=pathlibpath(files.get("path")).parent, exist_ok=True)
 
                     copyfile(src=files.get("repo_path"), dst=files.get("path"))
-                    #movefile(src=files.get("repo_path"), dst=files.get("path"))
 
 
     def fix_news():
+        def compose_down(file):
+            try:
+                subprocess.run(["docker", "compose", "down"], cwd=pathlibpath(file).parent, check=True)
+                print("'docker compose down' is ready! Now we can remove the files!")
+                return True
+            except Exception as e:
+                print(f"Failed to run docker compose down on {file}: {e}... Continue without removing it!")
+                return False
+
         for files in DRIFTED_FILES["new_on_host"]:
+
             if os.path.exists(files):
-                to_exclude = os.environ.get("EXCLUDE", "")
-                exclude = [x.strip() for x in to_exclude.split(",") if x.strip()]
-                print(exclude)
-                if pathlibpath(files).name not in exclude:
-                    print(f"Moving new files from host to trash...")
 
-                    if os.path.isdir(files):
-                        for target_files in pathlibpath(files).rglob("docker-compose.*"):
-                            print(f"Found a docker-compose file inside the folder... Compose down is needed! {target_files}")
-                            os.chdir(pathlibpath(target_files).parent)
-                            subprocess.run(["docker", "compose", "down"],check=False)
-                            continue
-
-                    movefile(src=files, dst=f"/app/trash/{pathlibpath(files).name}")
+                if check_excludes(file=pathlibpath(files).name):
+                    print(f"'{pathlibpath(files).name}' is excluded... skipping")
                     continue
 
-                print(f"'{pathlibpath(files).name}' is excluded... skipping")
-                continue
+                print(f"Moving new files from host to trash...")
+                compose_found = False
+                compose_success = True
+                
+                if os.path.isdir(files):
+                    for target_files in pathlibpath(files).rglob("docker-compose.*"):
+                        print(f"Found a docker-compose file inside the folder... Compose down is needed! {target_files}")
+                        compose_found = True
+                        compose_success = compose_down(file=target_files)
+                        if not compose_success:
+                            break
+
+                if not compose_success and compose_found:
+                    continue
+
+                movefile(src=files, dst=f"/app/trash/{pathlibpath(files).name}")
 
     if DRIFTED_FILES:
         try:
@@ -212,6 +227,10 @@ def check_for_news(host_dir, repo_dir):
     global DRIFTED_FILES
     if os.path.exists(host_dir) and os.path.exists(repo_dir):
         for host_config_dirs in os.listdir(host_dir):
+
+            if check_excludes(file=host_config_dirs):
+                continue
+
             if host_config_dirs not in os.listdir(repo_dir):
                 print(f"Found NEW configs in {host_config_dirs}, adding it to the report!")
                 DRIFTED_FILES["new_on_host"].append(f"{pathlibpath(host_dir).joinpath(host_config_dirs)}")
@@ -240,13 +259,19 @@ def check_for_drifts(repo, node, vm, config_dir):
     return True
 
 
+def check_excludes(file):
+    to_exclude = os.environ.get("EXCLUDE", "")
+    exclude = [x.strip() for x in to_exclude.split(",") if x.strip()]
+    if file in exclude:
+        return True
+    return False
+
 def check_file_hash_diff(repo_file_path, host_file_path, service):
     global DRIFTED_FILES
     repo_files_hash = get_sha256(target_file=repo_file_path)
     host_files_hash = get_sha256(host_file_path)
 
     if host_files_hash == repo_files_hash:
-        print("No difference found")
         return True
     else:
         print("Drift found")
@@ -282,7 +307,6 @@ def generate_diff_text(repo_file_path, host_file_path):
 def get_sha256(target_file):
     with open(target_file, "rb") as f:
         digest = hashlib.file_digest(f, "sha256")
-        print(digest.hexdigest())
         return digest.hexdigest()
 
 def generate_report():
@@ -298,7 +322,6 @@ def generate_report():
         missing_from_host=DRIFTED_FILES["missing_from_host"],
         new_on_host=DRIFTED_FILES["new_on_host"],
     )
-    print(report_output)
 
     with open("/app/drift_report.md", "w", encoding="utf-8") as f:
         f.write(report_output)

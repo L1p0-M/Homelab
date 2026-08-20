@@ -54,6 +54,7 @@ The agent expects your Git repository to follow a specific path structure:
 | `PUID` | No | `1000` | User ID for non-root execution. |
 | `PGID` | No | `1000` | Group ID for non-root execution. |
 | `EXCLUDE` | No | - | Optional comma-separated list of file/folder names to ignore during cleanup (e.g., `temp, .git, node_modules, teszt_folder`). Prevents newly created items on the host from being moved to trash. |
+| `TZ` | No | `Europe/Budapest` | Specify a timezone to use, see this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). |
 
 ### 📧 SMTP / Email Configuration (Optional)
 
@@ -112,8 +113,10 @@ docker run -d \
   -e SMTP_USER="watcher@example.com" \
   -e SMTP_PASSWORD="secretpassword" \
   -e DRY_RUN=false \
+  -e TZ=Europe/Budapest \
   -v ./trash:/app/trash \
   -v /opt/docker/configs:/app/config \
+  -v /var/run/docker.sock:/var/run/docker.sock \
   ghcr.io/l1p0-m/config-watcher-agent
 ```
 
@@ -139,6 +142,7 @@ services:
       - DRY_RUN=false
       - PUID=1000
       - PGID=1000
+      - TZ=Europe/Budapest
 
       # Email Notifications
       - EMAIL_TO=admin@example.com
@@ -152,6 +156,8 @@ services:
       - /opt/docker/configs:/app/config
       # Bindmount the /app/trash folder to your host to access backed-up/deleted files
       - ./trash:/app/trash
+      # Mount docker socket for automatic compose downs
+      - /var/run/docker.sock:/var/run/docker.sock
 
 ```
 

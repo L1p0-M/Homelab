@@ -5,6 +5,10 @@ export CONFIGDIR=${CONFIGDIR:-/app/config}
 export DRY_RUN=${DRY_RUN:-true}
 CRON_SCHEDULE=${CRON_SCHEDULE:-"0 23 * * mon"}
 
+export TZ=${TZ:-Europe/Budapest}
+if [ -f "/usr/share/zoneinfo/$TZ" ]; then
+    ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime
+fi
 
 if ! id -u watcher >/dev/null 2>&1; then
     addgroup -g "$PGID" watcher 2>/dev/null || true
@@ -45,7 +49,6 @@ cat << EOF
 #       Watcher-Agent       #            
 #############################
 EOF
-su-exec watcher python /app/app.py >> /var/log/cron.log 2>&1
-cat /var/log/cron.log
+su-exec watcher python /app/app.py 2>&1 | tee -a /var/log/cron.log
 exec su-exec watcher "$@"
 

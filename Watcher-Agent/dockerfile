@@ -1,5 +1,5 @@
 FROM python:3.13.9-alpine
-RUN apk add --no-cache su-exec git tini docker-cli docker-cli-compose
+RUN apk add --no-cache su-exec git tini docker-cli docker-cli-compose tzdata
 RUN pip install --no-cache-dir jinja2 markdown
 
 ENV PYTHONUNBUFFERED=1
@@ -13,4 +13,4 @@ RUN mkdir /app/trash
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh"]
 
-CMD [ "tail", "-f", "/var/log/cron.log" ]
+CMD [ "tail", "-n", "0", "-f", "/var/log/cron.log" ]
