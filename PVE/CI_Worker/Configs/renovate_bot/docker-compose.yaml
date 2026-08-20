@@ -17,5 +17,4 @@ services:
       #     - RENOVATE_AUTODISCOVER=true
             - RENOVATE_CRON_SCHEDULE=0 * * * *
             - RENOVATE_REPOSITORY_CACHE=enabled
-        command:
-            - L1p0-M/Homelab
+            - RENOVATE_REPOSITORIES=L1p0-M/Homelab
