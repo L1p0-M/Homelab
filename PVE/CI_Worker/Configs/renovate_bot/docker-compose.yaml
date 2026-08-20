@@ -15,6 +15,6 @@ services:
             - RENOVATE_SCHEDULE_INTERVAL=1h
             - RENOVATE_IGNORE_PR_AUTHOR=true
       #     - RENOVATE_AUTODISCOVER=true
-            - RENOVATE_CRON_SCHEDULE=0 * * * *
+            - SCHEDULE=0 * * * *
             - RENOVATE_REPOSITORY_CACHE=enabled
             - RENOVATE_REPOSITORIES=L1p0-M/Homelab
