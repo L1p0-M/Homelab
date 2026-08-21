@@ -5,7 +5,8 @@
   ],
   "recreateWhen": "never",
   "enabledManagers": [
-    "docker-compose"
+    "docker-compose",
+    "dockerfile"
   ],
   "packageRules": [
     {
