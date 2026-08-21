@@ -1,6 +1,6 @@
 services:
     renovate:
-        image: renovate/renovate:44.35
+        image: renovate/renovate:44.37
         container_name: renovate_bot
         restart: always
         user: 1000:1000
