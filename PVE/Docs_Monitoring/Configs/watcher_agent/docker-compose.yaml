@@ -21,6 +21,8 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - EXCLUDE=watchtower, drawio, bookstack
+      - TZ=Europe/Budapest
     volumes:
       - /dockerconfig:/app/dockerconfig
       - /dockerconfig/watcher_agent/trash:/app/trash
+      - /var/run/docker.sock:/var/run/docker.sock
