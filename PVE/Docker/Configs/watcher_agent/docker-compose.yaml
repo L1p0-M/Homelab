@@ -20,7 +20,8 @@ services:
       - SMTP_PORT=587
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - EXCLUDE=letsencrypt
+      - EXCLUDE=letsencrypt, .sops.yaml
     volumes:
       - /dockerconfig:/app/dockerconfig
       - /dockerconfig/watcher_agent/trash:/app/trash
+      - /var/run/docker.sock:/var/run/docker.sock
