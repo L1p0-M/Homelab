@@ -10,10 +10,16 @@
   ],
   "packageRules": [
     {
-      "groupName": "Docker containers",
-      "matchPackageNames": [
-        "*"
-      ]
+      "description": "Dockerfiles to one pr/file",
+      "matchManagers": ["dockerfile"],
+      "separateMajorMinor": true,
+      "commitMessageTopic": "Dockerfile: Update {{{depName}}} version"
+    },
+    {
+      "description": "Docker Compose fles to one groupped pr",
+      "matchManagers": ["docker-compose"],
+      "groupName": "Docker Compose dependencies",
+      "commitMessageTopic": "Docker Compose: Update {{{depName}}} version"
     }
   ]
 }
