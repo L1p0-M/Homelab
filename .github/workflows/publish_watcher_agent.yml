@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Build&Publish Watcher-Agent
 on:
   push:
     branches:
