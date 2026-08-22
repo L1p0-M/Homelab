@@ -16,8 +16,8 @@
       "matchStrings": [
         "^(?<currentValue>\\d+\\.\\d+(\\.\\d+)?)\\s*$"
       ],
-      "depNameTemplate": "renovate/renovate",
-      "packageNameTemplate": "Renovate/VERSION",
+      "depNameTemplate": "ghcr.io/l1p0-m/renovate-cron",
+      "packageNameTemplate": "renovate/renovate",
       "datasourceTemplate": "docker"
     }
   ],
