@@ -1,0 +1,15 @@
+# renovate: datasource=docker depName=renovate/renovate
+FROM renovate/renovate:44.37
+
+USER root
+RUN sed -i 's|http://archive.ubuntu.com/ubuntu/|http://hu.archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || \
+    sed -i 's|http://archive.ubuntu.com/ubuntu/|http://hu.archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list 2>/dev/null || true && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends cron tzdata tini && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
+CMD [ "cron", "-f" ]
