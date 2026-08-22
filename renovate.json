@@ -25,20 +25,20 @@
     {
       "matchPackageNames": ["renovate/renovate"],
       "groupName": "Renovate updates",
-      "commitMessageTopic": "Renovate: Update Version"
+      "commitMessageTopic": "Renovate: {{{depName}}}"
     },
     {
       "description": "Dockerfiles to one pr/file",
       "matchManagers": ["dockerfile"],
       "separateMajorMinor": true,
       "excludePackageNames": ["renovate/renovate"],
-      "commitMessageTopic": "Dockerfile: Update {{{depName}}} version"
+      "commitMessageTopic": "Dockerfile: {{{depName}}}"
     },
     {
       "description": "Docker Compose fles to one groupped pr",
       "matchManagers": ["docker-compose"],
       "groupName": "Docker Compose dependencies",
-      "commitMessageTopic": "Docker Compose: Update {{{depName}}} version"
+      "commitMessageTopic": "Docker Compose: {{{depName}}}"
     }
   ]
 }
