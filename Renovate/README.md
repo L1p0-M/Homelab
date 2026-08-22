@@ -4,6 +4,8 @@ A lightweight, secure, and fully automated **Renovatebot** Docker image with an 
 
 The official Renovate Docker image is designed for one-off runs or CI/CD pipelines. This project enables running Renovate continuously in the background on self-hosted infrastructure (Homelab, VPS, K8s) without relying on host-level schedulers.
 
+[![Build&Pulish Renovate-Cron](https://github.com/L1p0-M/Homelab/actions/workflows/publish_renovate.yml/badge.svg)](https://github.com/L1p0-M/Homelab/actions/workflows/publish_renovate.yml)
+
 ---
 
 ## 💡 Why This Was Needed (The Problem & Solution)
