@@ -5,8 +5,9 @@ Welcome to the documentation and configuration repository for my self-hosted 4-n
 <div align="center">
  
 [![Update Docker Containers](https://github.com/L1p0-M/Homelab/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy.yml)
-[![License: MIT](https://img.shields.io/github/license/L1p0-M/Homelab)](LICENSE)
 [![Build&Pulish Renovate-Cron](https://github.com/L1p0-M/Homelab/actions/workflows/publish_renovate.yml/badge.svg)](https://github.com/L1p0-M/Homelab/actions/workflows/publish_renovate.yml)
+[![Build&Publish Watcher-Agent](https://github.com/L1p0-M/Homelab/actions/workflows/publish_watcher_agent.yml/badge.svg)](https://github.com/L1p0-M/Homelab/actions/workflows/publish_watcher_agent.yml)
+[![License: MIT](https://img.shields.io/github/license/L1p0-M/Homelab)](LICENSE)
 
 </div>
 
