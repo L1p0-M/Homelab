@@ -24,7 +24,7 @@
   "packageRules": [
     {
       "matchPackageNames": ["renovate/renovate"],
-      "groupName": "Renovate updates",
+      "groupName": "Renovate",
       "commitMessageTopic": "Renovate: {{{depName}}}"
     },
     {
