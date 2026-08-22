@@ -4,10 +4,10 @@ on:
     branches:
       - main
     paths:
-      - 'PVE/Docker/**'
-      - 'PVE/Media/**'
-      - 'PVE/Docs_Monitoring/**'
-      - 'PVE/CI_Worker/**'
+      - 'PVE/Docker/Configs/**'
+      - 'PVE/Media/Configs/**'
+      - 'PVE/Docs_Monitoring/Configs/**'
+      - 'PVE/CI_Worker/Configs/**'
 jobs:
   detect-changes:
     runs-on: self-hosted
