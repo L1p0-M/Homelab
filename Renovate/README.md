@@ -37,8 +37,8 @@ Official Renovate images do not include an internal scheduler. Running it on a s
 ---
 
 ## ⏰ `CRON_SCHEDULE` Usage
-
-The **`CRON_SCHEDULE`** environment variable defines how frequently Renovate scans your repositories using standard Cron syntax.
+> [!NOTE]
+> The **`CRON_SCHEDULE`** environment variable defines how frequently Renovate scans your repositories using standard Cron syntax.
 
 ### Common Examples:
 
