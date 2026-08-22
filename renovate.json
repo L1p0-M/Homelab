@@ -17,7 +17,7 @@
         "^(?<currentValue>\\d+\\.\\d+(\\.\\d+)?)\\s*$"
       ],
       "depNameTemplate": "renovate/renovate",
-      "packageNameTemplate": "renovate-cron",
+      "packageNameTemplate": "Renovate/VERSION",
       "datasourceTemplate": "docker"
     }
   ],
