@@ -8,6 +8,24 @@
     "docker-compose",
     "dockerfile"
   ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^VERSION$"],
+      "matchStrings": [
+        "(?<currentValue>\\d+\\.\\d+(\\.\\d+)?)"
+      ],
+      "depNameTemplate": "renovate/renovate",
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["renovate/renovate"],
+      "groupName": "Renovate updates"
+      "commitMessageTopic": "Renovate: Update Version"
+    }
+  ],
   "packageRules": [
     {
       "description": "Dockerfiles to one pr/file",
