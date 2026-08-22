@@ -1,9 +1,8 @@
 services:
     renovate:
-        image: renovate/renovate:44.37
+        image: ghcr.io/l1p0-m/renovate-cron:44.37
         container_name: renovate_bot
         restart: always
-        user: 1000:1000
         volumes:
             - /dockerconfig/renovate_bot/config.js:/usr/src/app/config.js
             - /dockerconfig/renovate_bot/tmp:/tmp/renovate
@@ -15,6 +14,8 @@ services:
             - RENOVATE_SCHEDULE_INTERVAL=1h
             - RENOVATE_IGNORE_PR_AUTHOR=true
       #     - RENOVATE_AUTODISCOVER=true
-            - SCHEDULE=0 * * * *
+            - CRON_SCHEDULE=0 * * * *
+            - PGID=1000
+            - PUID=1000
             - RENOVATE_REPOSITORY_CACHE=enabled
             - RENOVATE_REPOSITORIES=L1p0-M/Homelab
