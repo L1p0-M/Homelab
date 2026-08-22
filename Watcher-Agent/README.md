@@ -4,6 +4,7 @@ A lightweight Dockerized monitoring agent that automatically detects and resolve
 
 It periodically scans specified directories, compares SHA-256 hashes, automatically repairs drifts (when enabled), generates Markdown reports, and alerts you via **Emails**.
 
+[![Build&Publish Watcher-Agent](https://github.com/L1p0-M/Homelab/actions/workflows/publish_watcher_agent.yml/badge.svg)](https://github.com/L1p0-M/Homelab/actions/workflows/publish_watcher_agent.yml)
 
 ---
 
