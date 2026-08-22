@@ -1,0 +1,12 @@
+*.env
+!*.env.enc
+
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.*
+
+crash.log
+crash.*.log
+
+*.tfvars.secret
