@@ -40,5 +40,11 @@
       "groupName": "Docker Compose dependencies",
       "commitMessageTopic": "Docker Compose: {{{depName}}}"
     }
+  ],
+  "hostRules": [
+    {
+      "matchHost": "lscr.io",
+      "maxRequestsPerSecond": 2
+    }
   ]
 }
