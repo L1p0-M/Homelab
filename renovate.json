@@ -6,7 +6,8 @@
   "recreateWhen": "never",
   "enabledManagers": [
     "docker-compose",
-    "dockerfile"
+    "dockerfile",
+    "custom.regex"
   ],
   "customManagers": [
     {
@@ -24,13 +25,12 @@
       "matchPackageNames": ["renovate/renovate"],
       "groupName": "Renovate updates",
       "commitMessageTopic": "Renovate: Update Version"
-    }
-  ],
-  "packageRules": [
+    },
     {
       "description": "Dockerfiles to one pr/file",
       "matchManagers": ["dockerfile"],
       "separateMajorMinor": true,
+      "excludePackageNames": ["renovate/renovate"],
       "commitMessageTopic": "Dockerfile: Update {{{depName}}} version"
     },
     {
