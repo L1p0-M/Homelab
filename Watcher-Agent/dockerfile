@@ -1,4 +1,4 @@
-FROM python:3.13.9-alpine
+FROM python:3.14.7-alpine
 RUN apk add --no-cache su-exec git tini docker-cli docker-cli-compose tzdata
 RUN pip install --no-cache-dir jinja2 markdown
 
