@@ -21,7 +21,8 @@ Official Renovate images do not include an internal scheduler. Running it on a s
 
 ## ⚙️ Environment Variables
 
-> ℹ️ **Full Official Support:** Every single environment variable supported by official Renovate works out-of-the-box here (e.g., `RENOVATE_PLATFORM`, `RENOVATE_AUTODISCOVER`, `LOG_LEVEL`, `RENOVATE_TOKEN`, etc.).  
+> [!NOTE]
+> **Full Official Support:** Every single environment variable supported by official Renovate works out-of-the-box here (e.g., `RENOVATE_PLATFORM`, `RENOVATE_AUTODISCOVER`, `LOG_LEVEL`, `RENOVATE_TOKEN`, etc.).  
 > Check the official [Renovate Configuration Options Documentation](https://docs.renovatebot.com/configuration-options/) for all available flags.
 
 ### Wrapper-Specific Variables
@@ -61,6 +62,8 @@ services:
     restart: unless-stopped
     environment:
       - TZ=Europe/Budapest
+      - PGID=1000
+      - PUID=1000
       # Cron schedule: Once every hour
       - CRON_SCHEDULE=0 * * * *
       # Platform Personal Access Token
