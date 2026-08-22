@@ -22,7 +22,7 @@
   "packageRules": [
     {
       "matchPackageNames": ["renovate/renovate"],
-      "groupName": "Renovate updates"
+      "groupName": "Renovate updates",
       "commitMessageTopic": "Renovate: Update Version"
     }
   ],
