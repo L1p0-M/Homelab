@@ -17,7 +17,8 @@ startup_up_delay   = 80
 scsi_hardware      = "virtio-scsi-pci"
 iothread           = false
 description        = <<-EOT
-            ![Docker logo](https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/docker-moby.png)
+            <div align='center'>
+            <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/docker-moby.png" height="70px" width="100px"/>
 
             # Docker Host VM
             ### Ezen a Virtuális gépen megy minden ami Docker!
