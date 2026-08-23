@@ -44,7 +44,10 @@ variable "ip_address" { type = string } # in the format: "192.168.1.50/24"
 
 variable "gateway" { type = string }
 
-variable "template_vm_id" { type = number }
+variable "template_vm_id" {
+  type = number
+  default = null 
+}
 
 variable "ssh_public_key" {
   type = string
@@ -77,6 +80,42 @@ variable startup_order {
   default     = 0
 }
 
+variable bios_type {
+  type        = string
+  default     = "seabios"
+}
+
+variable efi_disk {
+  type        = string
+  default     = "local-lvm"
+}
+
+variable scsi_hardware {
+  type        = string
+  default     = "virtio-scsi-single"
+}
+
+variable description {
+  type        = string
+  default     = null
+}
+
+variable tablet_device {
+  type        = bool
+  default     = false
+}
+
+variable iothread {
+  type        = bool
+  default     = true
+}
+
+
+
+
+
+
+
 
 
 resource "proxmox_virtual_environment_vm" "vm" {
@@ -84,8 +123,11 @@ resource "proxmox_virtual_environment_vm" "vm" {
   node_name   = var.node_name
   vm_id       = var.vm_id
   keyboard_layout = "en-us"
-  scsi_hardware = "virtio-scsi-single"
+  scsi_hardware = var.scsi_hardware
+  description = var.description
   tags        = var.tags
+  bios        = var.bios_type
+  tablet_device = var.tablet_device
 
   dynamic "clone" {
     for_each = var.template_vm_id != null ? [1] : []
@@ -110,7 +152,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
     size         = var.disk_size_gb
     discard      = "on"
     ssd          = true
-    iothread     = true
+    iothread     = var.iothread
   }
 
   network_device {
@@ -151,6 +193,15 @@ resource "proxmox_virtual_environment_vm" "vm" {
       }
     }
   }
+  dynamic "efi_disk" {
+    for_each = var.bios_type == "ovmf" ? [1] : []
+    content {
+      datastore_id = var.efi_disk
+      file_format  = "raw"
+      type         = "4m"
+    }
+  }
+
   lifecycle {
     ignore_changes = [
       initialization,
