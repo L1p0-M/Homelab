@@ -110,7 +110,25 @@ variable iothread {
   default     = true
 }
 
+variable "usb_passthrough" {
+  type = list(object({
+    host    = optional(string)
+    mapping = optional(string)
+    usb3    = optional(bool, false)
+  }))
+  default     = []
+}
 
+variable "hostpci" {
+  type = list(object({
+    device = optional(string)
+    id     = optional(string)
+    pcie   = optional(bool, false)
+    rombar = optional(bool, false)
+    xvga   = optional(bool, false)
+  }))
+  default     = []
+}
 
 
 
@@ -175,6 +193,27 @@ resource "proxmox_virtual_environment_vm" "vm" {
     trim    = false
     timeout = "15m"
     type    = "virtio"
+  }
+
+  dynamic "usb" {
+    for_each = var.usb_passthrough
+    content {
+      mapping = usb.value.mapping
+      host    = usb.value.host
+      usb3    = usb.value.usb3
+
+    }
+  }
+
+  dynamic "hostpci" {
+    for_each = var.hostpci
+    content {
+      device = hostpci.value.device
+      id     = hostpci.value.id
+      pcie   = hostpci.value.pcie
+      rombar = hostpci.value.rombar
+      xvga   = hostpci.value.xvga
+    }
   }
 
   dynamic "initialization" {
