@@ -23,14 +23,6 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": [
-        "linuxserver/**",
-        "lscr.io/linuxserver/**",
-        "ghcr.io/linuxserver/**"
-      ],
-      "versioning": "regex:^(?:(?<compatibility>.*?)-)?(?<major>v?\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)[\\.-]*r?(?<build>\\d+)*-*r?(?<release>\\w+)*$"
-    },
-    {
       "matchPackageNames": ["renovate/renovate"],
       "groupName": "Renovate",
       "commitMessageTopic": "Renovate: {{{depName}}}"
