@@ -1,6 +1,6 @@
 services:
     renovate:
-        image: ghcr.io/l1p0-m/renovate-cron:44.37
+        image: ghcr.io/l1p0-m/renovate-cron:44.39
         container_name: renovate_bot
         restart: always
         volumes:
