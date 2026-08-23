@@ -1,6 +1,6 @@
 services:
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:develop
+    image: lscr.io/linuxserver/prowlarr:develop@sha256:2b2db31bb446db2dd29ac0596bfd82847f5778c93620917604c07d7d654a921e
     container_name: Prowlarr
     environment:
       - PUID=1000
