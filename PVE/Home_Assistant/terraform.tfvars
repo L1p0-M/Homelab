@@ -19,11 +19,10 @@ efi_disk           = "local-lvm"
 scsi_hardware      = "virtio-scsi-pci"
 iothread           = false
 description        = <<-EOT
-            ![HA logo](https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant-alt.png)
+            <div align='center'>
+            <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant-alt.png" height="70px" width="80px"/>
 
             # Home Assistant OS
-            ### https://github.com/tteck/Proxmox
             ### IOT Szerver
             ### IP: 192.168.1.22
-            [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/D1D7EP4GF)
         EOT
