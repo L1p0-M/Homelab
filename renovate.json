@@ -23,6 +23,16 @@
   ],
   "packageRules": [
     {
+      "matchPackageNames": [
+        "lscr.io/linuxserver/**",
+        "ghcr.io/linuxserver/**",
+        "linuxserver/**"
+      ],
+      "pinDigests": true,
+      "digest": {
+        "enabled": true
+    },
+    {
       "matchPackageNames": ["renovate/renovate"],
       "groupName": "Renovate",
       "commitMessageTopic": "Renovate: {{{depName}}}"
