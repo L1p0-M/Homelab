@@ -14,29 +14,43 @@ variable "cpu_cores" {
   type = number
   default = 2 
 }
+
+variable "cpu_type" {
+  type = string
+  default = "host"
+}
+
 variable "memory_mb" {
   type = number
   default = 2048
 }
+
 variable "disk_size_gb" {
   type = number
   default = 32 
 }
+
 variable "storage_name" {
   type = string
   default = "local-lvm"
 }
+
 variable "network_bridge" {
   type = string
   default = "vmbr0"
 }
-variable "ip_address" { type = string } # pl. "192.168.1.50/24"
+
+variable "ip_address" { type = string } # in the format: "192.168.1.50/24"
+
 variable "gateway" { type = string }
+
 variable "template_vm_id" { type = number }
+
 variable "ssh_public_key" {
   type = string
   default = null
 }
+
 variable "user_password" {
   type = string
   sensitive = true
@@ -83,7 +97,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   cpu {
     cores = var.cpu_cores
-    type  = "host"
+    type  = var.cpu_type
   }
 
   memory {
