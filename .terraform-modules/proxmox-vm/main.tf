@@ -7,174 +7,101 @@ terraform {
   }
 }
 
-variable "node_name" { type = string }
-variable "vm_id" { type = number }
-variable "vm_name" { type = string }
-variable "cpu_cores" {
-  type = number
-  default = 2 
-}
-
-variable "cpu_type" {
-  type = string
-  default = "host"
-}
-
-variable "memory_mb" {
-  type = number
-  default = 2048
-}
-
-variable "disk_size_gb" {
-  type = number
-  default = 32 
-}
-
-variable "storage_name" {
-  type = string
-  default = "local-lvm"
-}
-
-variable "network_bridge" {
-  type = string
-  default = "vmbr0"
-}
-
-variable "ip_address" { type = string } # in the format: "192.168.1.50/24"
-
-variable "gateway" { type = string }
-
-variable "template_vm_id" {
-  type = number
-  default = null 
-}
-
-variable "ssh_public_key" {
-  type = string
-  default = null
-}
-
-variable "user_password" {
-  type = string
+variable "sensitive" {
+  type = object({
+    user_password  = optional(string, null)
+    ssh_public_key = optional(string, null)
+  })
+  default   = {}
   sensitive = true
-  default = null
 }
 
-variable "tags" {
-  type        = list
-  default     = null
+variable "node_config" {
+  type = object({
+    node_name    = string
+    gateway      = string
+  })
 }
 
-variable startup_down_delay {
-  type        = number
-  default     = -1
+variable "config" {
+  type = object({
+    vm_id           = number
+    vm_name         = string
+    cpu_cores    = optional(number, 2)
+    cpu_type     = optional(string, "host")
+    memory_mb    = optional(number, 2048)
+    memory_swap  = optional(number, 512)
+    disk_size_gb = optional(number, 32)
+    storage_name = optional(string, "local-lvm")
+    ip_address   = string # in the format: "192.168.1.50/24"
+    description  = optional(string, null)
+    tags         = optional(list(string), null)
+    bios_type    = optional(string, "seabios")
+    efi_disk     = optional(string, "local-lvm")
+    iothread     = optional(bool, true)
+    tablet_device  = optional(bool, false)
+    image_storage  = optional(string, "local")
+    network_bridge = optional(string, "vmbr0")
+    startup_down_delay = optional(number, -1)
+    startup_up_delay   = optional(number, -1)
+    startup_order      = optional(number, 0)
+    template_vm_id     = optional(number, null)
+    scsi_hardware      = optional(string, "virtio-scsi-single")
+    usb_passthrough    = optional(list(object({
+      host    = optional(string)
+      mapping = optional(string)
+      usb3    = optional(bool, false)
+    })), [])
+    hostpci            = optional(list(object({
+      device = optional(string)
+      id     = optional(string)
+      pcie   = optional(bool, false)
+      rombar = optional(bool, false)
+      xvga   = optional(bool, false)
+    })), [])
+  })
 }
-
-variable startup_up_delay {
-  type        = number
-  default     = -1
-}
-
-variable startup_order {
-  type        = number
-  default     = 0
-}
-
-variable bios_type {
-  type        = string
-  default     = "seabios"
-}
-
-variable efi_disk {
-  type        = string
-  default     = "local-lvm"
-}
-
-variable scsi_hardware {
-  type        = string
-  default     = "virtio-scsi-single"
-}
-
-variable description {
-  type        = string
-  default     = null
-}
-
-variable tablet_device {
-  type        = bool
-  default     = false
-}
-
-variable iothread {
-  type        = bool
-  default     = true
-}
-
-variable "usb_passthrough" {
-  type = list(object({
-    host    = optional(string)
-    mapping = optional(string)
-    usb3    = optional(bool, false)
-  }))
-  default     = []
-}
-
-variable "hostpci" {
-  type = list(object({
-    device = optional(string)
-    id     = optional(string)
-    pcie   = optional(bool, false)
-    rombar = optional(bool, false)
-    xvga   = optional(bool, false)
-  }))
-  default     = []
-}
-
-
-
-
-
 
 
 resource "proxmox_virtual_environment_vm" "vm" {
-  name        = var.vm_name
-  node_name   = var.node_name
-  vm_id       = var.vm_id
+  name        = var.config.vm_name
+  node_name   = var.node_config.node_name
+  vm_id       = var.config.vm_id
   keyboard_layout = "en-us"
-  scsi_hardware = var.scsi_hardware
-  description = var.description
-  tags        = var.tags
-  bios        = var.bios_type
-  tablet_device = var.tablet_device
+  scsi_hardware = var.config.scsi_hardware
+  description = var.config.description
+  tags        = var.config.tags
+  bios        = var.config.bios_type
+  tablet_device = var.config.tablet_device
 
   dynamic "clone" {
-    for_each = var.template_vm_id != null ? [1] : []
+    for_each = var.config.template_vm_id != null ? [1] : []
     content {
-      vm_id = var.template_vm_id
+      vm_id = var.config.template_vm_id
       full  = true
     }
   }
 
   cpu {
-    cores = var.cpu_cores
-    type  = var.cpu_type
+    cores = var.config.cpu_cores
+    type  = var.config.cpu_type
   }
 
   memory {
-    dedicated = var.memory_mb
+    dedicated = var.config.memory_mb
   }
 
   disk {
-    datastore_id = var.storage_name
+    datastore_id = var.config.storage_name
     interface    = "scsi0"
-    size         = var.disk_size_gb
+    size         = var.config.disk_size_gb
     discard      = "on"
     ssd          = true
-    iothread     = var.iothread
+    iothread     = var.config.iothread
   }
 
   network_device {
-    bridge = var.network_bridge
+    bridge = var.config.network_bridge
     firewall = true
   }
 
@@ -183,9 +110,9 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   startup {
-    down_delay = var.startup_down_delay
-    up_delay   = var.startup_up_delay
-    order      = var.startup_order
+    down_delay = var.config.startup_down_delay
+    up_delay   = var.config.startup_up_delay
+    order      = var.config.startup_order
   }
 
   agent {
@@ -196,7 +123,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   dynamic "usb" {
-    for_each = var.usb_passthrough
+    for_each = var.config.usb_passthrough
     content {
       mapping = usb.value.mapping
       host    = usb.value.host
@@ -206,7 +133,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   dynamic "hostpci" {
-    for_each = var.hostpci
+    for_each = var.config.hostpci
     content {
       device = hostpci.value.device
       id     = hostpci.value.id
@@ -217,25 +144,25 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   dynamic "initialization" {
-    for_each = var.ip_address != null ? [1] : []
+    for_each = var.config.ip_address != null ? [1] : []
     content {
-      datastore_id = var.storage_name
+      datastore_id = var.config.storage_name
       ip_config {
         ipv4 {
-          address = var.ip_address
-          gateway = var.gateway
+          address = var.config.ip_address
+          gateway = var.node_config.gateway
         }
       }
       user_account {
-        keys     = compact([var.ssh_public_key])
+        keys     = compact([var.sensitive.ssh_public_key])
         username = "l1p0"
       }
     }
   }
   dynamic "efi_disk" {
-    for_each = var.bios_type == "ovmf" ? [1] : []
+    for_each = var.config.bios_type == "ovmf" ? [1] : []
     content {
-      datastore_id = var.efi_disk
+      datastore_id = var.config.efi_disk
       file_format  = "raw"
       type         = "4m"
     }
