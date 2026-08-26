@@ -11,6 +11,4 @@ services:
             - RUNNER_NAME=ci-worker
             - REPO=L1p0-M/Homelab
             - TOKEN=${TOKEN}
-        volumes:
-            - /dockerconfig/github_runner/docker_images:/var/lib/docker
         restart: unless-stopped
