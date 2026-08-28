@@ -1,0 +1,163 @@
+name: Plan Proxmox VM/LXC Updates
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - '**/terraform.tfvars'
+
+  workflow_dispatch:
+    inputs:
+      force_vm:
+        description: 'Directory of the VM/LXC you want to force the run on(e.g.: PVE/WHPrinter)'
+        required: false
+        default: ''
+jobs:
+  detect-changes:
+    runs-on: self-hosted
+    outputs:
+      vms: ${{ steps.changed-services.outputs.vms }}
+      has_changes: ${{ steps.changed-services.outputs.has_changes }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Get changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          dir_names: true
+          dir_names_max_depth: 5
+          files_yaml: |
+            configs:
+              - 'PVE/*/**'
+
+      - name: Build array of changed VM/LXC
+        id: changed-services
+        run: |
+          CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
+          if [ -n "$CHANGED_DIRS" ]; then
+            python3 -u .github/workflows/scripts/get_changed_vms.py $CHANGED_DIRS
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "vms=[]" >> $GITHUB_OUTPUT
+          fi
+
+  plan-changes:
+    runs-on: self-hosted
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    permissions:
+      pull-requests: write
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.detect-changes.outputs.vms) }}
+      fail-fast: false
+      max-parallel: 2
+    steps:
+      - name: Check parameters
+        run: |
+          echo "Node: ${{ matrix.NODE }}"
+          echo "VM: ${{ matrix.VM }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Create environment variables
+        id: set-env
+        run: |
+          PROXMOX_VE_ENDPOINT="${{ secrets[format('PROXMOX_VE_ENDPOINT_{0}', matrix.NODE)] }}"
+          PROXMOX_VE_API_TOKEN="${{ secrets[format('PROXMOX_VE_API_TOKEN_{0}', matrix.NODE)] }}"
+          PROXMOX_VE_INSECURE="true"
+          AWS_ACCESS_KEY_ID="${{ secrets.CF_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY="${{ secrets.CF_SECRET_ACCESS_KEY }}"
+          CF_ENDPOINT_URL="${{ secrets.CF_ENDPOINT_URL }}"
+          NODE_NAME="${{ matrix.NODE }}"
+          TARGET_NAME="${{ matrix.VM }}"
+          TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $NODE_NAME/$TARGET_NAME/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' )
+
+          echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_ENV
+          echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_ENV
+          echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+          echo "CF_ENDPOINT_URL=$CF_ENDPOINT_URL" >> $GITHUB_ENV
+          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_ENV
+          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_ENV
+
+          echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_OUTPUT
+
+      - name: Create needed terraform files from template for "${{ matrix.VM }}"
+        run: |
+          TARGET_TYPE="${{ steps.set-env.outputs.TARGET_TYPE }}"
+          if [ "${TARGET_TYPE^^}" == "LXC" ]; then   
+            BASEDIR="proxmox-lxc"
+          elif [ "${TARGET_TYPE^^}" == "VM" ]; then
+            BASEDIR="proxmox-vm"
+          fi
+          echo "Creating backend.tf from template..."
+          envsubst < ".terraform-modules/backend/backend.tf.template" > "$NODE_NAME/$TARGET_NAME/backend.tf"
+          echo "Creating main.tf from template..."
+          cp ".terraform-modules/$BASEDIR/main.tf.template" "$NODE_NAME/$TARGET_NAME/main.tf"
+          echo "Creating variables.tf from template..."
+          cp ".terraform-modules/$BASEDIR/variables.tf" "$NODE_NAME/$TARGET_NAME/variables.tf"
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Run Terraform init for "${{ matrix.VM }}"
+        run: |
+          cd "${NODE_NAME}/${TARGET_NAME}"
+          terraform init -input=false
+
+      - name: Run Terraform plan for "${{ matrix.VM }}"
+        run: |
+          cd "${NODE_NAME}/${TARGET_NAME}"
+          terraform plan -var-file=../node.tfvars -no-color > plan_output.txt
+          cat plan_output.txt
+
+      - name: Comment Plan output on PR
+        uses: actions/github-script@v9
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const planFile = `${process.env.NODE_NAME}/${process.env.TARGET_NAME}/plan_output.txt`;
+            
+            let planText = "";
+            if (fs.existsSync(planFile)) {
+              planText = fs.readFileSync(planFile, 'utf8');
+            } else {
+              planText = "Plan output file not found.";
+            }
+
+            // GitHub limit is 65,000 char
+            const maxLen = 60000;
+            if (planText.length > maxLen) {
+              planText = planText.substring(0, maxLen) + "\n... (truncated)";
+            }
+
+            const output = `### 📋 Terraform Plan: \`${process.env.NODE_NAME}/${process.env.TARGET_NAME}\`
+            
+            <details><summary>Show Plan Output</summary>
+
+            \`\`\`hcl
+            ${planText}
+            \`\`\`
+
+            </details>
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+        
+
