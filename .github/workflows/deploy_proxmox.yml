@@ -2,7 +2,7 @@ name: Deploy/Update Proxmox VM/LXC
 on:
   push:
     branches:
-      - dev
+      - main
     paths:
       - '**/terraform.tfvars'
 
