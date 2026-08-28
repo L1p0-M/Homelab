@@ -1,3 +1,8 @@
+variable "target_type" {
+  type        = string
+  description = "Required for CI/CD Pipeline to know the type to use"
+}
+
 variable "sensitive" {
   type = object({
     ssh_public_key = optional(string, null)

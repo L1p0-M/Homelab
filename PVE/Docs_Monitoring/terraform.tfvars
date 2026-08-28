@@ -1,3 +1,5 @@
+target_type = "VM"
+
 config = {
     vm_id          = 105
     vm_name        = "Docs-Monitoring"

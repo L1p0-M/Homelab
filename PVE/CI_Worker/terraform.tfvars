@@ -1,3 +1,5 @@
+target_type = "VM"
+
 config = {
     vm_id          = 106
     vm_name        = "CI-Worker"

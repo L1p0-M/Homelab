@@ -1,3 +1,5 @@
+target_type = "VM"
+
 config = {
     vm_id          = 100
     vm_name        = "Docker"

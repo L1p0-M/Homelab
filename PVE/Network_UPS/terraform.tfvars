@@ -1,3 +1,5 @@
+target_type = "LXC"
+
 config = {
     id             = 102
     name           = "Network-UPS"

@@ -1,3 +1,5 @@
+target_type = "VM"
+
 config = {
   vm_id          = 120
   vm_name        = "WHPrinter"

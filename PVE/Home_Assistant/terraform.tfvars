@@ -1,3 +1,5 @@
+target_type = "VM"
+
 config = {
     vm_id          = 101
     vm_name        = "Home-Assistant"

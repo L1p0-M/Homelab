@@ -1,4 +1,4 @@
-module "proxmox_vm" {
+module "proxmox_lxc" {
   source = "../../.terraform-modules/proxmox-lxc"
   node_config = var.node_config
   config      = var.config

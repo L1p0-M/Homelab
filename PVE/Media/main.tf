@@ -1,6 +1,0 @@
-module "proxmox_vm" {
-  source = "../../.terraform-modules/proxmox-vm"
-  node_config = var.node_config
-  config      = var.config
-  sensitive   = var.sensitive
-}

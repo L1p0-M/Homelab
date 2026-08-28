@@ -1,3 +1,5 @@
+target_type = "VM"
+
 config = {
     vm_id          = 109
     vm_name        = "Media"
@@ -14,5 +16,6 @@ config = {
     ]
     startup_order  = 6
     storage_name   = "local-lvm"
+    tablet_device  = true
 
 }

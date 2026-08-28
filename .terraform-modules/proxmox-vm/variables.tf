@@ -1,3 +1,8 @@
+variable "target_type" {
+  type        = string
+  description = "Required for CI/CD Pipeline to know the type to use(OPTIONS ARE 'VM' OR 'LXC')"
+}
+
 variable "sensitive" {
   type = object({
     user_password  = optional(string, null)

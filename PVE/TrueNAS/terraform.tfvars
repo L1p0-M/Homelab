@@ -1,3 +1,5 @@
+target_type = "VM"
+
 config = {
     vm_id          = 103
     vm_name        = "TrueNAS"

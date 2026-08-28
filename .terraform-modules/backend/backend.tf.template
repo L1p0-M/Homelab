@@ -1,0 +1,27 @@
+terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = ">= 0.60.0"
+    }
+  }
+
+  backend "s3" {
+    bucket = "terraform-homelab"
+    key    = "${NODE_NAME}/${TARGET_NAME}/terraform.tfstate"
+
+    endpoints = {
+      s3 = "${CF_ENDPOINT_URL}"
+    }
+
+    region = "auto"
+
+    skip_credentials_validation = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    skip_metadata_api_check     = true
+    use_path_style              = true
+  }
+}
