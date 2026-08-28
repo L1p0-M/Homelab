@@ -16,7 +16,7 @@ config = {
   storage_name    = "local-lvm"
   scsi_hardware   = "virtio-scsi-single"
   iothread        = true
-  tablet_device   = true
+  tablet_device   = false
   usb_passthrough = [
     {
       host = "03f0:8911"

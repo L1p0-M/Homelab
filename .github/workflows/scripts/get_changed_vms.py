@@ -14,8 +14,7 @@ def get_changed_services(changed_dirs):
             vm_name = structure[len(structure) - 1]
         else:
             print(f"Directory {dir} does not contain a terraform.tfvars file. Skipping...")
-            set_github_output(False, {})
-            return
+            continue
 
         name = vm_name
         if vm_name in vms:
@@ -56,7 +55,8 @@ def set_github_output(has_changes, vms):
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
             f.write(f"has_changes={str(has_changes).lower()}\n")
-            f.write(f"services={vms}\n")
+            f.write(f"vms={vms}\n")
+            print("Github output is set!")
 
 
 if __name__ == "__main__":
