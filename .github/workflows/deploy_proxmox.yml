@@ -9,7 +9,7 @@ jobs:
   detect-changes:
     runs-on: self-hosted
     outputs:
-      services: ${{ steps.changed-services.outputs.services }}
+      vms: ${{ steps.changed-services.outputs.vms }}
       has_changes: ${{ steps.changed-services.outputs.has_changes }}
     steps:
       - name: Checkout Repository
@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Get changed services
+      - name: Get changed Files
         id: changed-files
         uses: tj-actions/changed-files@v47
         with:
@@ -27,7 +27,7 @@ jobs:
             configs:
               - 'PVE/*/**'
 
-      - name: Build array of changed services
+      - name: Build array of changed VM/LXC
         id: changed-services
         run: |
           CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
