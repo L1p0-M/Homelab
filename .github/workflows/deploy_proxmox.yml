@@ -59,14 +59,15 @@ jobs:
       - name: Create environment variables
         id: set-env
         run: |
-          PROXMOX_VE_ENDPOINT ="${{ secrets[format('PROXMOX_VE_ENDPOINT_{0}', matrix.NODE)] }}"
-          PROXMOX_VE_API_TOKEN ="${{ secrets[format('PROXMOX_VE_API_TOKEN_{0}', matrix.NODE)] }}"
-          PROXMOX_VE_INSECURE = "true"
-          AWS_ACCESS_KEY_ID = ${{ secrets.CF_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY = ${{ secrets.CF_SECRET_ACCESS_KEY }}
-          CF_ENDPOINT_URL = ${{ secrets.CF_ENDPOINT_URL }}
-          NODE_NAME = ${{ matrix.NODE }}
-          TARGET_NAME = ${{ matrix.VM }}
+          PROXMOX_VE_ENDPOINT="${{ secrets[format('PROXMOX_VE_ENDPOINT_{0}', matrix.NODE)] }}"
+          PROXMOX_VE_API_TOKEN="${{ secrets[format('PROXMOX_VE_API_TOKEN_{0}', matrix.NODE)] }}"
+          PROXMOX_VE_INSECURE="true"
+          AWS_ACCESS_KEY_ID="${{ secrets.CF_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY="${{ secrets.CF_SECRET_ACCESS_KEY }}"
+          CF_ENDPOINT_URL="${{ secrets.CF_ENDPOINT_URL }}"
+          NODE_NAME="${{ matrix.NODE }}"
+          TARGET_NAME="${{ matrix.VM }}"
+          TARGET_TYPE="${{ grep -E '^\s*target_type\s*=' ../../../$NODE_NAME/$VM/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' }}"
 
           echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_OUTPUT
           echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_OUTPUT
@@ -76,10 +77,12 @@ jobs:
           echo "CF_ENDPOINT_URL=$CF_ENDPOINT_URL" >> $GITHUB_OUTPUT
           echo "NODE_NAME=$NODE_NAME" >> $GITHUB_OUTPUT
           echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_OUTPUT
+          echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_OUTPUT
           echo "SSH_HOST=$SSH_HOST" >> $GITHUB_OUTPUT
 
-      # - name: Create config files from templates for "${{ matrix.Service }}"
-      #   run: |          
+      # - name: Create backend.tf file from template for "${{ matrix.VM }}"
+      #   run: |
+      #     if steps.set-env.outputs.TARGET_TYPE          
       #     SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
       #     find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
       #       basedir=$(dirname "$template")
