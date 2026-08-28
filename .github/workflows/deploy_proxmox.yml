@@ -67,7 +67,7 @@ jobs:
           CF_ENDPOINT_URL="${{ secrets.CF_ENDPOINT_URL }}"
           NODE_NAME="${{ matrix.NODE }}"
           TARGET_NAME="${{ matrix.VM }}"
-          TARGET_TYPE="${{ grep -E '^\s*target_type\s*=' ../../../$NODE_NAME/$VM/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' }}"
+          TARGET_TYPE=$(grep -E '^\s*target_type\s*=' /$NODE_NAME/$TARGET_NAME/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' )
 
           echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_OUTPUT
           echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_OUTPUT
