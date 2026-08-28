@@ -95,6 +95,20 @@ jobs:
           echo "Creating variables.tf from template..."
           cp ".terraform-modules/$BASEDIR/variables.tf" "$NODE_NAME/$TARGET_NAME/variables.tf"
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Run Terraform init for "${{ matrix.VM }}"
+        run: |
+          cd "$NODE_NAME/$TARGET_NAME"
+          terraform init -input=false
+
+      - name: Run Terraform plan for "${{ matrix.VM }}"
+        run: |
+          cd "$NODE_NAME/$TARGET_NAME"
+          terraform plan -var-file=../node.tfvars
+
+
       # - name: Fix permissions
       #   uses: appleboy/ssh-action@v1.2.5
       #   with:
