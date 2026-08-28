@@ -9,53 +9,32 @@ def get_changed_services(changed_dirs):
         print(f"Changed directory: {dir}")
         structure = remove_trailing_slashes(dir.split("/"))
         print(structure)
-        return 
-    return
 
-    #     if pathlibpatch(dir).joinpath("terraform.tfvars").exists() or pathlibpatch(dir).joinpath("terraform.tfvars").exists():
-    #         service_name = structure[len(structure) - 1]
-    #         subdir_structure = "/".join(structure[3:-1]) if len(structure) > 3 else "config"
+        if pathlibpatch(dir).joinpath("terraform.tfvars").exists():
+            vm_name = structure[len(structure) - 1]
+        else:
+            print(f"Directory {dir} does not contain a terraform.tfvars file. Skipping...")
+            set_github_output(False, {})
+            return
 
-    #     else:
+        name = vm_name
+        if vm_name in vms:
+            name = f"{vm_name}_{structure[0]}"
 
-    #         print(f"Directory {dir} does not contain a docker-compose file. Searching for docker-compose file in parent directories.")
-    #         basedir_path = dir.split("/")
-    #         basedir_path.pop(len(basedir_path) - 1)
-    #         compose_files = ["docker-compose.yml", "docker-compose.yaml"]
+        vms[name] = {
+            "NODE": structure[0],
+            "VM": vm_name,
+        }
+    print(f"Service: {vms}")
 
-    #         while not any(pathlibpatch("/".join(basedir_path)).joinpath(compose_file).exists() for compose_file in compose_files):
-    #             if len(basedir_path) == 0:
-    #                 print(f"No docker-compose file found in the directory hierarchy for {dir}. Skipping.")
-    #                 set_github_output(False, {})
-    #                 return
-                
-    #             basedir_path.pop(len(basedir_path) - 1)
-    #             print(f"Checking parent directory: {"/".join(basedir_path)}")
-
-    #         print(f"Found docker-compose file in directory: {"/".join(basedir_path)}")
-    #         structure = basedir_path
-    #         structure = remove_trailing_slashes(structure)
-    #         service_name = structure[len(structure) - 1]
-    #         subdir_structure = "/".join(structure[3:-1]) if len(structure) > 3 else "config"
-
-    #     name = service_name
-    #     if service_name in service:
-    #         name = f"{service_name}_{structure[1]}"
-
-    #     changed_vms[name] = {
-    #         "NODE": structure[0],
-    #         "VM": structure[1],
-    #     }
-    # print(f"Service: {vms}")
-
-    # if changed_vms:
-    #     print(f"Changed vms: {vms}")
-    #     json_output = convert_to_json(changed_vms)
-    #     set_github_output(True, json_output)
-    #     return
+    if vms:
+        print(f"Changed VM/LXC: {vms}")
+        json_output = convert_to_json(vms)
+        set_github_output(True, json_output)
+        return
     
-    # print("No changed services detected.")
-    # set_github_output(False, {})
+    print("No changed services detected.")
+    set_github_output(False, {})
 
 def remove_trailing_slashes(structure):
     while any(to_remove in structure for to_remove in ["..", "."]):
@@ -73,11 +52,11 @@ def convert_to_json(service):
         return json_string
     return "{}"
 
-def set_github_output(has_changes, services):
+def set_github_output(has_changes, vms):
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a") as f:
             f.write(f"has_changes={str(has_changes).lower()}\n")
-            f.write(f"services={services}\n")
+            f.write(f"services={vms}\n")
 
 
 if __name__ == "__main__":
