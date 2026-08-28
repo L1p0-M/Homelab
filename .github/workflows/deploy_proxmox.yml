@@ -1,0 +1,111 @@
+name: Deploy/Update Proxmox VM/LXC
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - '**/terraform.tfvars'
+jobs:
+  detect-changes:
+    runs-on: self-hosted
+    outputs:
+      services: ${{ steps.changed-services.outputs.services }}
+      has_changes: ${{ steps.changed-services.outputs.has_changes }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - name: Get changed services
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          dir_names: true
+          dir_names_max_depth: 5
+          files_yaml: |
+            configs:
+              - 'PVE/*/**'
+
+      - name: Build array of changed services
+        id: changed-services
+        run: |
+          CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
+          if [ -n "$CHANGED_DIRS" ]; then
+            python3 -u .github/workflows/scripts/get_changed_vms.py $CHANGED_DIRS
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "vms=[]" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-services:
+    runs-on: self-hosted
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.detect-changes.outputs.vms) }}
+      fail-fast: false
+      max-parallel: 2
+    steps:
+      - name: Check parameters
+        run: |
+          echo "Node: ${{ matrix.NODE }}"
+          echo "VM: ${{ matrix.VM }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Create environment variables
+        id: set-env
+        run: |
+          PROXMOX_VE_ENDPOINT ="${{ secrets[format('PROXMOX_VE_ENDPOINT_{0}', matrix.NODE)] }}"
+          PROXMOX_VE_API_TOKEN ="${{ secrets[format('PROXMOX_VE_API_TOKEN_{0}', matrix.NODE)] }}"
+          PROXMOX_VE_INSECURE = "true"
+          AWS_ACCESS_KEY_ID = ${{ secrets.CF_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY = ${{ secrets.CF_SECRET_ACCESS_KEY }}
+          CF_ENDPOINT_URL = ${{ secrets.CF_ENDPOINT_URL }}
+          NODE_NAME = ${{ matrix.NODE }}
+          TARGET_NAME = ${{ matrix.VM }}
+
+          echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_OUTPUT
+          echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_OUTPUT
+          echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_OUTPUT
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_OUTPUT
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_OUTPUT
+          echo "CF_ENDPOINT_URL=$CF_ENDPOINT_URL" >> $GITHUB_OUTPUT
+          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_OUTPUT
+          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_OUTPUT
+          echo "SSH_HOST=$SSH_HOST" >> $GITHUB_OUTPUT
+
+      # - name: Create config files from templates for "${{ matrix.Service }}"
+      #   run: |          
+      #     SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
+      #     find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
+      #       basedir=$(dirname "$template")
+      #       if [ -f "$basedir/.env" ]; then
+      #         echo "Loading environment variables from .env..."
+      #         set -a
+      #         source "$basedir/.env"
+      #         set +a
+      #       fi
+      #       output_file="${template%.template}"
+      #       echo "Processing: $template -> $output_file"
+      #       envsubst < "$template" > "$output_file"
+      #     done
+
+  
+
+      # - name: Fix permissions
+      #   uses: appleboy/ssh-action@v1.2.5
+      #   with:
+      #     host: ${{ steps.set-env.outputs.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     script: |
+      #       find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chown ${{ secrets.SSH_USER }}:homelab-devs {} +
+      #       find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chmod g+rwX {} +
+      #       if [[ -f "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env" ]]; then
+      #         chown ${{ secrets.SSH_USER }}:homelab-devs "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
+      #         chmod g+rwX "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
+      #       fi
