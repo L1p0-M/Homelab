@@ -69,35 +69,31 @@ jobs:
           TARGET_NAME="${{ matrix.VM }}"
           TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $NODE_NAME/$TARGET_NAME/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' )
 
-          echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_OUTPUT
-          echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_OUTPUT
-          echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_OUTPUT
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_OUTPUT
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_OUTPUT
-          echo "CF_ENDPOINT_URL=$CF_ENDPOINT_URL" >> $GITHUB_OUTPUT
-          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_OUTPUT
-          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_OUTPUT
+          echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_ENV
+          echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_ENV
+          echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+          echo "CF_ENDPOINT_URL=$CF_ENDPOINT_URL" >> $GITHUB_ENV
+          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_ENV
+          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_ENV
+
           echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_OUTPUT
-          echo "SSH_HOST=$SSH_HOST" >> $GITHUB_OUTPUT
 
-      # - name: Create backend.tf file from template for "${{ matrix.VM }}"
-      #   run: |
-      #     if steps.set-env.outputs.TARGET_TYPE          
-      #     SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
-      #     find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
-      #       basedir=$(dirname "$template")
-      #       if [ -f "$basedir/.env" ]; then
-      #         echo "Loading environment variables from .env..."
-      #         set -a
-      #         source "$basedir/.env"
-      #         set +a
-      #       fi
-      #       output_file="${template%.template}"
-      #       echo "Processing: $template -> $output_file"
-      #       envsubst < "$template" > "$output_file"
-      #     done
-
-  
+      - name: Create needed terraform files from template for "${{ matrix.VM }}"
+        run: |
+          TARGET_TYPE="${{ steps.set-env.outputs.TARGET_TYPE }}"
+          if [ "${TARGET_TYPE^^}" == "LXC" ]; then   
+            BASEDIR="proxmox-lxc"
+          elif [ "${TARGET_TYPE^^}" == "VM" ]; then
+            BASEDIR="proxmox-vm"
+          fi
+          echo "Creating backend.tf from template..."
+          envsubst < ".terraform-modules/backend/backend.tf.template" > "$NODE_NAME/$TARGET_NAME/backend.tf"
+          echo "Creating main.tf from template..."
+          cp ".terraform-modules/$BASEDIR/main.tf.template" "$NODE_NAME/$TARGET_NAME/main.tf"
+          echo "Creating variables.tf from template..."
+          cp ".terraform-modules/$BASEDIR/variables.tf" "$NODE_NAME/$TARGET_NAME/variables.tf"
 
       # - name: Fix permissions
       #   uses: appleboy/ssh-action@v1.2.5
