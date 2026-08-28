@@ -5,6 +5,13 @@ on:
       - dev
     paths:
       - '**/terraform.tfvars'
+
+  workflow_dispatch:
+    inputs:
+      force_vm:
+        description: 'Directory of the VM/LXC you want to force the run on(e.g.: PVE/WHPrinter)'
+        required: false
+        default: ''
 jobs:
   detect-changes:
     runs-on: self-hosted
@@ -108,17 +115,7 @@ jobs:
           cd "${NODE_NAME}/${TARGET_NAME}"
           terraform plan -var-file=../node.tfvars
 
-
-      # - name: Fix permissions
-      #   uses: appleboy/ssh-action@v1.2.5
-      #   with:
-      #     host: ${{ steps.set-env.outputs.SSH_HOST }}
-      #     username: ${{ secrets.SSH_USER }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     script: |
-      #       find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chown ${{ secrets.SSH_USER }}:homelab-devs {} +
-      #       find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chmod g+rwX {} +
-      #       if [[ -f "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env" ]]; then
-      #         chown ${{ secrets.SSH_USER }}:homelab-devs "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
-      #         chmod g+rwX "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
-      #       fi
+      - name: Deploy Changes to "${{ matrix.VM }}"
+        run: |
+          cd "${NODE_NAME}/${TARGET_NAME}"
+          terraform apply -var-file=../node.tfvars -auto-approve
