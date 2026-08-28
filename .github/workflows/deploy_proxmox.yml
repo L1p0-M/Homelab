@@ -100,7 +100,7 @@ jobs:
 
       - name: Run Terraform init for "${{ matrix.VM }}"
         run: |
-          cd "$NODE_NAME/$TARGET_NAME"
+          cd "${NODE_NAME}/${TARGET_NAME}"
           terraform init -input=false
 
       - name: Run Terraform plan for "${{ matrix.VM }}"
