@@ -1,4 +1,3 @@
----
 services:
     github-runner:
         image: ghcr.io/l1p0-m/github-runner-docker:latest
