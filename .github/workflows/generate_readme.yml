@@ -35,6 +35,7 @@ jobs:
       - name: Generate README file for VM/LXC
         id: changed-services
         run: |
+          pip install python-hcl2 jinja2
           python3 -u .github/workflows/scripts/generate_readme.py ${{ inputs.dir }}
 
       - name: Pull request README.md
