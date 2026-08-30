@@ -47,6 +47,9 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.BOT_TOKEN }}
+          committer: "Cortana [bot] <cortana@l1p0-industries.hu>"
+          author: "Cortana [bot] <cortana@l1p0-industries.hu>"
+          assignees: "L1p0-M"
           commit-message: "CI: Automatic README.md Update"
           branch: "readme-updates"
           title: "Update README.md"
