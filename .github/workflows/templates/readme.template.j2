@@ -4,6 +4,7 @@
 [![Environment](https://img.shields.io/badge/Environment-{{ data.environment | default('Production') }}-blue)]()
 [![Type](https://img.shields.io/badge/Type-{{ data.type | upper }}-blue)]()
 
+
 {{ data.description }}
 
 ---
@@ -37,7 +38,7 @@
 | Service Name | Port / Protocol | Access |
 | :--- | :--- | :--- |
 {% for port_info in data.ports -%}
-| **{{ port_info.name }}** | `{{ port_info.port }}/{{ port_info.protocol | default('tcp') }}` | '{{ port_info.access }}' |
+| **{{ port_info.name }}** | `{{ port_info.port }}/{{ port_info.protocol | default('tcp') }}` | `{{ port_info.access }}` |
 {% endfor -%}
 {% else %}
 *No public Web or API ports declared for this service.*
