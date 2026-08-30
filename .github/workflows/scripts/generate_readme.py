@@ -7,6 +7,7 @@ from pathlib import Path as pathlibpath
 import yaml
 import hcl2
 from datetime import datetime
+from shutil import move as movefile
 
 
 def get_data_from_metadata(directory):
@@ -95,12 +96,12 @@ def generate_readme(template, data):
         print(f"Error while generating RADME.md: {e}")
         return False
 
-def rename_readme(dir):
+def move_readme(dir):
     dir_path = pathlibpath(dir)
     if os.path.exists(dir_path) and os.path.exists("README.md"):
-        name = dir_path.name
-        os.rename(src="README.md", dst=f"{name}-README.md")
-        print(f"README file saved as: {name}-README.md")
+        name = dir_path.joinpath("README.md")
+        movefile(src="README.md", dst={name})
+        print(f"README file saved as: {name}")
         return True
     return False
 
@@ -122,7 +123,7 @@ if __name__ == "__main__":
                 data = generate_data_for_readme(metadata=metadata_data, tfvars=tfvars_data, node=node_data)
                 template = get_readme_template()
                 if generate_readme(template=template, data=data):
-                    rename_readme(dir=dir)
+                    move_readme(dir=dir)
 
     except KeyboardInterrupt:
         print("Script interrupted by user. Exiting.")

@@ -13,6 +13,11 @@ on:
         description: 'Directory of the VM/LXC you want to force the run on(e.g.: PVE/WHPrinter)'
         required: true
         default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+  
 jobs:
   detect-changes:
     runs-on: self-hosted
@@ -38,6 +43,11 @@ jobs:
           pip install python-hcl2 jinja2 pyyaml
           python3 -u .github/workflows/scripts/generate_readme.py ${{ inputs.dir }}
 
-      - name: Pull request README.md
-        run: |
-          cat *-README.md
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          commit-message: "CI: Automatic README.md Update"
+          branch: "readme-updates"
+          title: "Update README.md"
+          body: "**Automatic README.md Update**"
