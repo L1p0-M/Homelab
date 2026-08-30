@@ -1,0 +1,18 @@
+name: "Media"
+description: "This Media VM runs only my media server: **Jellyfin**, because its one of my only one public facing services(with a reverse Proxy), I wanted to have it in its own VM for more Security"
+environment: "Production"
+type: "VM"
+status: "Active"
+os: "Ubuntu"
+ports:
+  - name: "Local WebUI"
+    port: 8096
+    protocol: "tcp"
+    access: "Internal/External"
+  - name: "Jellyfin Discovery"
+    port: 7359
+    protocol: "udp"
+    access: "Internal"
+docker:
+  - "Jellyfin"
+  - "[Watcher-Agent](ghcr.io/l1p0-m/config-watcher-agent)"

@@ -1,0 +1,11 @@
+name: "CI-Worker"
+description: "This VM runs every CI specific tool: Renovate, Github-Runner, Gitea-Runner"
+environment: "Production"
+type: "VM"
+status: "Active"
+os: "Ubuntu"
+docker:
+  - "[Renovate-Cron](ghcr.io/l1p0-m/renovate-cron)"
+  - "[Github-Runner](ghcr.io/l1p0-m/github-runner-docker)"
+  - "Gitea_Runner"
+  - "[Watcher-Agent](ghcr.io/l1p0-m/config-watcher-agent)"
