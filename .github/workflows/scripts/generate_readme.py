@@ -100,7 +100,7 @@ def move_readme(dir):
     dir_path = pathlibpath(dir)
     if os.path.exists(dir_path) and os.path.exists("README.md"):
         name = dir_path.joinpath("README.md")
-        movefile(src="README.md", dst={name})
+        movefile(src="README.md", dst=name)
         print(f"README file saved as: {name}")
         return True
     return False
