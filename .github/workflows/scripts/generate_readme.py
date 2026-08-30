@@ -87,7 +87,7 @@ def generate_readme(template, data):
             data=data,
             generation_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
-        with open('README.md', 'w') as f:
+        with open('generated-README.md', 'w') as f:
             f.write(output)
         print("README.md successfully generated!")
         return True
@@ -98,9 +98,9 @@ def generate_readme(template, data):
 
 def move_readme(dir):
     dir_path = pathlibpath(dir)
-    if os.path.exists(dir_path) and os.path.exists("README.md"):
+    if os.path.exists(dir_path) and os.path.exists("generated-README.md"):
         name = dir_path.joinpath("README.md")
-        movefile(src="README.md", dst=name)
+        movefile(src="generated-README.md", dst=name)
         print(f"README file saved as: {name}")
         return True
     return False
