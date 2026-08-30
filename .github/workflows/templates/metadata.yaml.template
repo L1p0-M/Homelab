@@ -1,0 +1,18 @@
+name: "examplename"
+description: "example description of the vm"
+environment: "Production"
+type: "VM"
+status: "Active"
+os: "Debian"
+ports:
+  - name: "example webui"
+    port: 80
+    protocol: "tcp"
+    access: "internal/example.local.mydomain.hu"
+  - name: "tesztui"
+    port: 443
+    protocol: "tcp"
+    access: "External/example.mydomain.hu"
+docker:
+  - "nginx"
+  - "mydockerservice"
