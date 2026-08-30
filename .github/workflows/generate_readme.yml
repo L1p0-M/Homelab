@@ -1,0 +1,42 @@
+name: Generate README.md for VMs/LXCs
+on:
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - '**/terraform.tfvars'
+  #     - '**/metadata.yaml'
+
+  workflow_dispatch:
+    inputs:
+      dir:
+        description: 'Directory of the VM/LXC you want to force the run on(e.g.: PVE/WHPrinter)'
+        required: true
+        default: ''
+jobs:
+  detect-changes:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # - name: Get changed Files
+      #   id: changed-files
+      #   uses: tj-actions/changed-files@v47
+      #   with:
+      #     dir_names: true
+      #     dir_names_max_depth: 5
+      #     files_yaml: |
+      #       configs:
+      #         - 'PVE/*/**'
+
+      - name: Generate README file for VM/LXC
+        id: changed-services
+        run: |
+          python3 -u .github/workflows/scripts/generate_readme.py ${{ inputs.dir }}
+
+      - name: Pull request README.md
+        run: |
+          cat *-README.md
