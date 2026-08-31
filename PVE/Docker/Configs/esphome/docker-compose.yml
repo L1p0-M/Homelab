@@ -2,7 +2,7 @@
 services:
   esphome:
     container_name: Esphome
-    image: esphome/esphome:2026.8.1
+    image: esphome/esphome:2026.8.2
     volumes:
       - /dockerconfig/esphome/config:/config
       - /etc/localtime:/etc/localtime:ro
