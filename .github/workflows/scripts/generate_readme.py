@@ -104,8 +104,8 @@ def generate_pr_summary(readme_datas):
     
     if readme_count == 1:
         readme = readme_datas[0]
-        title = f"docs(gitops): Auto-update documentation for [{readme['data']['name']}]"
-        branch_name = f"docs/readme-update-{readme['data']['name'].lower()}"
+        title = f"docs(gitops): Auto-update documentation for [{readme['name']}]"
+        branch_name = f"docs/readme-update-{readme['name'].lower()}"
     else:
         title = f"docs(gitops): Auto-update documentation for {readme_count} VMs/LXCs"
         branch_name = "docs/readme-update-batch"
@@ -119,7 +119,7 @@ def generate_pr_summary(readme_datas):
     ]
     
     for vms in readme_datas:
-        pr_body_lines.append(f"| **{vms['data']['name']}** | `{vms['data']['vmid']}` | `{vms['data']['ip_address']}` | `{vms['data']['path']}` |")
+        pr_body_lines.append(f"| **{vms['name']}** | `{vms['vmid']}` | `{vms['ip_address']}` | `{vms['path']}` |")
         
     pr_body_lines.extend([
         "\n---",
