@@ -15,16 +15,18 @@ def get_data_from_metadata(directory):
     if os.path.exists(metadata_path):
         with open(metadata_path, 'r') as f:
             yaml_data = yaml.load(f, Loader=yaml.FullLoader)
-    if yaml_data:
-        return yaml_data
+        if yaml_data:
+            return yaml_data
+    return False
 
 def get_data_from_tfvars(directory):
     tfvars_path = pathlibpath(directory).joinpath("terraform.tfvars")
     if os.path.exists(tfvars_path):
         with open(tfvars_path, "r") as f:
             tfvars_data = hcl2.load(f)
-    if tfvars_data:
-        return tfvars_data
+        if tfvars_data:
+            return tfvars_data
+    return False
 
 def get_readme_template():
     with open('.github/workflows/templates/readme.template.j2', 'r') as f:
@@ -163,11 +165,12 @@ if __name__ == "__main__":
                 metadata_data = get_data_from_metadata(dir)
                 tfvars_data = get_data_from_tfvars(dir)
                 node_data = get_data_from_node(dir)
-                data = generate_data_for_readme(metadata=metadata_data, tfvars=tfvars_data, node=node_data, dir=dir)
-                readme_datas.append(data)
-                template = get_readme_template()
-                if generate_readme(template=template, data=data):
-                    move_readme(dir=dir)
+                if node_data and tfvars_data and metadata_data:
+                    data = generate_data_for_readme(metadata=metadata_data, tfvars=tfvars_data, node=node_data, dir=dir)
+                    readme_datas.append(data)
+                    template = get_readme_template()
+                    if generate_readme(template=template, data=data):
+                        move_readme(dir=dir)
             if readme_datas:
                 generate_pr_summary(readme_datas=readme_datas)
 
