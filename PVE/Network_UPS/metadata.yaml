@@ -1,3 +1,4 @@
+name: "Network-UPS"
 description: "This lightweight LXC Container runs Network-UPS-Tools(NUT),that monitors the main UPS via USB Passthrough. Triggers the automatic **Gracefull Shutdown** of the Nodes"
 environment: "Production"
 type: "LXC"

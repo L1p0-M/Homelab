@@ -1,4 +1,5 @@
-description: "This lightweight LXC Container runs my Wireguard VPN Server,that helps me connectect back to my home network **Securely**"
+name: "Wireguard"
+description: "This lightweight LXC Container runs my Wireguard VPN Server,that helps me to connect back to my home network **Securely**"
 environment: "Production"
 type: "LXC"
 status: "Active"

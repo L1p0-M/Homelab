@@ -1,3 +1,4 @@
+name: "Home-Assistant"
 description: "This VM runs everything releated to Smart-Home"
 environment: "Production"
 type: "VM"
