@@ -1,11 +1,11 @@
-# 🖥️ MEDIA
+# 🖥️ UNKNOWN
 
 [![Status](https://img.shields.io/badge/Status-Active-blue)]()
 [![Environment](https://img.shields.io/badge/Environment-Production-blue)]()
 [![Type](https://img.shields.io/badge/Type-VM-blue)]()
 
 
-This Media VM runs only my media server: **Jellyfin**, because its one of my only one public facing services(with a reverse Proxy), I wanted to have it in its own VM for more Security
+This VM runs every service that Monitors or Documents the Infrastructure: Grafana, Prometheus...
 
 ---
 
@@ -13,10 +13,10 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 | Property | Value |
 | :--- | :--- |
-| **Hostname** | `Media` |
-| **IP Address** | `192.168.1.252` |
+| **Hostname** | `Docs-Monitoring` |
+| **IP Address** | `192.168.1.26` |
 | **Proxmox Node** | `PVE` |
-| **VM / LXC ID** | `109` |
+| **VM / LXC ID** | `105` |
 | **OS** | `Ubuntu` |
 
 ---
@@ -25,10 +25,10 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 | Resource | Allocated Amount |
 | :--- | :--- |
-| **CPU Cores** | `10 vCPU` |
-| **RAM Memory** | `16384 MB` |
+| **CPU Cores** | `2 vCPU` |
+| **RAM Memory** | `2048 MB` |
 | **Root Disk** | `32 GB` |
-| **Storage Pool** | `local-lvm` |
+| **Storage Pool** | `Unknown` |
 
 ---
 
@@ -37,8 +37,8 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 | Service Name | Port / Protocol | Access |
 | :--- | :--- | :--- |
-| **Local WebUI** | `8096/tcp` | `Internal/External` |
-| **Jellyfin Discovery** | `7359/udp` | `Internal` |
+| **Prometheus WebUI** | `9090/tcp` | `Internal` |
+| **Grafana** | `3000/tcp` | `Internal` |
 
 
 
@@ -46,7 +46,14 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 ### Running Docker Stacks
 This node is responsible for managing the following Docker stacks:
-- 📦 Jellyfin
+- 📦 Grafana
+- 📦 Prometheus
+- 📦 Gitea
+- 📦 Node-Exporter
+- 📦 NUT-Exporter
+- 📦 PVE-Exporter
+- 📦 CAdvisor
+- 📦 OpenSpeedTest
 - 📦 [Watcher-Agent](https://ghcr.io/l1p0-m/config-watcher-agent)
 
 
