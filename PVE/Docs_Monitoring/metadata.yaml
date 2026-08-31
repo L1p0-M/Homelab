@@ -1,4 +1,4 @@
-description: "This VM runs every service that Monitors or Documents the Infrastructure: Grafana, Prometheus...  
+description: "This VM runs every service that Monitors or Documents the Infrastructure: Grafana, Prometheus..."
 environment: "Production"
 type: "VM"
 status: "Active"
