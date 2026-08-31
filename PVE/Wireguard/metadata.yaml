@@ -1,0 +1,14 @@
+description: "This lightweight LXC Container runs my Wireguard VPN Server,that helps me connectect back to my home network **Securely**"
+environment: "Production"
+type: "LXC"
+status: "Active"
+os: "Debian"
+ports:
+  - name: "Wireguard"
+    port: 51820
+    protocol: "udp"
+    access: "Internal/External"
+  - name: "WGDashboard"
+    port: 10086
+    protocol: "tcp"
+    access: "Internal"

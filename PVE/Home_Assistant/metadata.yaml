@@ -1,0 +1,12 @@
+description: "This VM runs everything releated to Smart-Home"
+environment: "Production"
+type: "VM"
+status: "Active"
+os: "HAOS"
+ports:
+  - name: "Home Assistant WebUI"
+    port: 8123
+    protocol: "tcp"
+    access: "Internal/External"
+docker:
+  - "Home-Assistant"

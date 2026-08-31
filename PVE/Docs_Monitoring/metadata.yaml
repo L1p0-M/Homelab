@@ -1,0 +1,24 @@
+description: "This VM runs every service that Monitors or Documents the Infrastructure: Grafana, Prometheus...  
+environment: "Production"
+type: "VM"
+status: "Active"
+os: "Ubuntu"
+ports:
+  - name: "Prometheus WebUI"
+    port: 9090
+    protocol: "tcp"
+    access: "Internal"
+  - name: "Grafana"
+    port: 3000
+    protocol: "tcp"
+    access: "Internal"
+docker:
+  - "Grafana"
+  - "Prometheus"
+  - "Gitea"
+  - "Node-Exporter"
+  - "NUT-Exporter"
+  - "PVE-Exporter"
+  - "CAdvisor"
+  - "OpenSpeedTest"
+  - "[Watcher-Agent](https://ghcr.io/l1p0-m/config-watcher-agent)"
