@@ -163,7 +163,7 @@ if __name__ == "__main__":
                 metadata_data = get_data_from_metadata(dir)
                 tfvars_data = get_data_from_tfvars(dir)
                 node_data = get_data_from_node(dir)
-                data = generate_data_for_readme(metadata=metadata_data, tfvars=tfvars_data, node=node_data)
+                data = generate_data_for_readme(metadata=metadata_data, tfvars=tfvars_data, node=node_data, dir=dir)
                 readme_datas.append(data)
                 template = get_readme_template()
                 if generate_readme(template=template, data=data):
