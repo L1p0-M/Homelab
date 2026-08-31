@@ -1,11 +1,11 @@
-# 🖥️ MEDIA
+# 🖥️ UNKNOWN
 
 [![Status](https://img.shields.io/badge/Status-Active-blue)]()
 [![Environment](https://img.shields.io/badge/Environment-Production-blue)]()
 [![Type](https://img.shields.io/badge/Type-VM-blue)]()
 
 
-This Media VM runs only my media server: **Jellyfin**, because its one of my only one public facing services(with a reverse Proxy), I wanted to have it in its own VM for more Security
+This VM runs everything releated to Smart-Home
 
 ---
 
@@ -13,11 +13,11 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 | Property | Value |
 | :--- | :--- |
-| **Hostname** | `Media` |
-| **IP Address** | `192.168.1.252` |
+| **Hostname** | `Home-Assistant` |
+| **IP Address** | `192.168.1.22` |
 | **Proxmox Node** | `PVE` |
-| **VM / LXC ID** | `109` |
-| **OS** | `Ubuntu` |
+| **VM / LXC ID** | `101` |
+| **OS** | `HAOS` |
 
 ---
 
@@ -25,8 +25,8 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 | Resource | Allocated Amount |
 | :--- | :--- |
-| **CPU Cores** | `10 vCPU` |
-| **RAM Memory** | `16384 MB` |
+| **CPU Cores** | `2 vCPU` |
+| **RAM Memory** | `4096 MB` |
 | **Root Disk** | `32 GB` |
 | **Storage Pool** | `local-lvm` |
 
@@ -37,8 +37,7 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 | Service Name | Port / Protocol | Access |
 | :--- | :--- | :--- |
-| **Local WebUI** | `8096/tcp` | `Internal/External` |
-| **Jellyfin Discovery** | `7359/udp` | `Internal` |
+| **Home Assistant WebUI** | `8123/tcp` | `Internal/External` |
 
 
 
@@ -46,8 +45,7 @@ This Media VM runs only my media server: **Jellyfin**, because its one of my onl
 
 ### Running Docker Stacks
 This node is responsible for managing the following Docker stacks:
-- 📦 Jellyfin
-- 📦 [Watcher-Agent](https://ghcr.io/l1p0-m/config-watcher-agent)
+- 📦 Home-Assistant
 
 
 ---
