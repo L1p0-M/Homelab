@@ -44,7 +44,7 @@ jobs:
           pip install python-hcl2 jinja2 pyyaml
           CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
           INPUT_DISPATCH='${{ inputs.dir }}'
-          if [-n "$INPUT_DISPATCH" ]; then
+          if [ -n "$INPUT_DISPATCH" ]; then
             python3 -u .github/workflows/scripts/generate_readme.py $INPUT_DISPATCH
           else
             python3 -u .github/workflows/scripts/generate_readme.py $CHANGED_DIRS
