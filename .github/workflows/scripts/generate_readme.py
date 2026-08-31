@@ -51,7 +51,7 @@ def clean_vals(val):
         return {k: clean_vals(v) for k, v in val.items()}
 
 
-def generate_data_for_readme(metadata, tfvars, node):
+def generate_data_for_readme(metadata, tfvars, node, dir):
     tfvars_config = tfvars.get("config", {})
     node_config = node.get("node_config", {})
     raw_ip = tfvars_config.get("ip_address", metadata.get("ip_address", "Unknown"))
@@ -64,6 +64,7 @@ def generate_data_for_readme(metadata, tfvars, node):
         "ports": metadata.get("ports", None),
         "docker": metadata.get("docker", None),
         "os": metadata.get("os", "Unknown"),
+        "path": str(dir),
 
         "type": tfvars.get("target_type", "Unknown"),
         "ip_address": clean_ip,
@@ -96,6 +97,47 @@ def generate_readme(template, data):
         print(f"Error while generating RADME.md: {e}")
         return False
 
+def generate_pr_summary(readme_datas):
+    readme_count = len(readme_datas)
+    
+    if readme_count == 1:
+        readme = readme_datas[0]
+        title = f"docs(gitops): Auto-update documentation for [{readme['data']['name']}]"
+        branch_name = f"docs/readme-update-{readme['data']['name'].lower()}"
+    else:
+        title = f"docs(gitops): Auto-update documentation for {readme_count} VMs/LXCs"
+        branch_name = "docs/readme-update-batch"
+
+    pr_body_lines = [
+        "### Automated Infrastructure Documentation Update\n",
+        f"GitOps Pipeline successfully processed and updated **{readme_count} VM(s)/LXC(s)** based on the latest configuration changes.\n",
+        "#### Updated Nodes Summary\n",
+        "| Node / Service | VM ID | IP Address | Directory Path |",
+        "| :--- | :--- | :--- | :--- |"
+    ]
+    
+    for vms in readme_datas:
+        pr_body_lines.append(f"| **{vms['data']['name']}** | `{vms['data']['vmid']}` | `{vms['data']['ip_address']}` | `{vms['data']['path']}` |")
+        
+    pr_body_lines.extend([
+        "\n---",
+        "#### Updated Components per Node",
+        "- [x] `README.md` *(rendered Jinja2 infrastructure documentation)*",
+        "\n---",
+        "> 🤖 *Generated automatically via CI/CD Pipeline. Please review and merge.*"
+    ])
+    
+    pr_body = "\n".join(pr_body_lines)
+
+    github_output = os.getenv('GITHUB_OUTPUT')
+    if github_output:
+        with open(github_output, 'a') as f:
+            f.write(f"pr_title={title}\n")
+            f.write(f"pr_branch={branch_name}\n")
+            f.write("pr_body<<EOF\n")
+            f.write(f"{pr_body}\n")
+            f.write("EOF\n")
+
 def move_readme(dir):
     dir_path = pathlibpath(dir)
     if os.path.exists(dir_path) and os.path.exists("generated-README.md"):
@@ -115,15 +157,19 @@ if __name__ == "__main__":
         print(f"Changed directories: {args.changed_dirs}")
 
         if args.changed_dirs != []:
+            readme_datas = []
             directory = args.changed_dirs
             for dir in directory:
                 metadata_data = get_data_from_metadata(dir)
                 tfvars_data = get_data_from_tfvars(dir)
                 node_data = get_data_from_node(dir)
                 data = generate_data_for_readme(metadata=metadata_data, tfvars=tfvars_data, node=node_data)
+                readme_datas.append(data)
                 template = get_readme_template()
                 if generate_readme(template=template, data=data):
                     move_readme(dir=dir)
+            if readme_datas:
+                generate_pr_summary(readme_datas=readme_datas)
 
     except KeyboardInterrupt:
         print("Script interrupted by user. Exiting.")
