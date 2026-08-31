@@ -114,7 +114,7 @@ def generate_pr_summary(readme_datas):
         "### Automated Infrastructure Documentation Update\n",
         f"GitOps Pipeline successfully processed and updated **{readme_count} VM(s)/LXC(s)** based on the latest configuration changes.\n",
         "#### Updated Nodes Summary\n",
-        "| Node / Service | VM ID | IP Address | Directory Path |",
+        "| Name | ID | IP Address | Directory Path |",
         "| :--- | :--- | :--- | :--- |"
     ]
     
