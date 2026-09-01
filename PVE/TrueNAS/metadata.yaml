@@ -1,0 +1,23 @@
+name: "TrueNAS"
+description: "This VM runs my virtualized TrueNAS server, which is used for redundant **ZFS Mirror** storage and backup of my homelab"
+environment: "Production"
+type: "VM"
+status: "Active"
+os: "TrueNAS Scale"
+ports:
+  - name: "TrueNAS WebUI"
+    port: 80
+    protocol: "tcp"
+    access: "Internal"
+  - name: "TrueNAS NFS Share"
+    port: 2049
+    protocol: "tcp/udp"
+    access: "Internal"
+  - name: "TrueNAS SSH"
+    port: 22
+    protocol: "tcp"
+    access: "Internal"
+  - name: "TrueNAS SMB Share"
+    port: 445
+    protocol: "tcp"
+    access: "Internal"
