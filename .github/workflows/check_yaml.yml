@@ -95,8 +95,7 @@ jobs:
           done
           touch "$dir/.env.ci"
 
-          COMPOSE_ENV_FILES="$dir/.env.ci"
-          docker compose -f "${{ matrix.files }}" config -q
+          docker compose --env-file "$dir/.env.ci" -f "${{ matrix.files }}" config -q
           response=$?
 
           rm -f "$dir/.env.ci"
