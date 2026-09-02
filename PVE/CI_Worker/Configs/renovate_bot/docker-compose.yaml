@@ -18,4 +18,4 @@ services:
             - PGID=1000
             - PUID=1000
             - RENOVATE_REPOSITORY_CACHE=enabled
-            - RENOVATE_REPOSITORIES=L1p0-M/Homelab
+            - RENOVATE_REPOSITORIES=L1p0-M/Homelab, L1p0-M/github-runner-docker
