@@ -43,6 +43,7 @@ jobs:
     if: needs.detect-changes.outputs.has_changes == 'true'
     permissions:
       pull-requests: read
+      contents: read
     strategy:
       matrix:
         files: ${{ fromJson(needs.detect-changes.outputs.files) }}
@@ -57,7 +58,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.x'
 
