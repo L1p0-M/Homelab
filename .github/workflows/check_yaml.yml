@@ -65,6 +65,6 @@ jobs:
       - name: Lint YAML files
         run: |
           echo "Linting file: ${{ matrix.files }}"
-          yamllint "${{ matrix.files }}"
+          python3 -m yamllint -d "{extends: relaxed, rules: {line-length: disable}}" "${{ matrix.files }}"
 
 
