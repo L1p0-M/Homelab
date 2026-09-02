@@ -66,3 +66,39 @@ jobs:
         run: |
           echo "Linting file: ${{ matrix.files }}"
           python3 -m yamllint -d "{extends: relaxed, rules: {line-length: disable}}" "${{ matrix.files }}"
+
+  check-compose:
+    runs-on: self-hosted
+    needs: [detect-changes, check-yaml]
+    if: needs.detect-changes.outputs.has_changes == 'true' && (contains(needs.detect-changes.outputs.files, 'docker-compose.yml') || contains(needs.detect-changes.outputs.files, 'docker-compose.yaml'))
+    strategy:
+      matrix:
+        files: ${{ fromJson(needs.detect-changes.outputs.files) }}
+      fail-fast: false
+      max-parallel: 2
+    steps:
+      - name: Check parameters
+        run: |
+          echo "File: ${{ matrix.files }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Validate Compose File
+        if: endsWith(matrix.files, 'docker-compose.yml') || endsWith(matrix.files, 'docker-compose.yaml')
+        run: |
+          echo "Checking Compose file: ${{ matrix.files }}"
+          dir=$(dirname "${{ matrix.files }}")
+          
+          grep -oE '\$\{?[A-Za-z0-9_]+' "${{ matrix.files }}" | tr -d '${' | sort -u | while read -r var; do
+            echo "${var}=REDACTED" >> "$dir/.env.ci"
+          done
+          touch "$dir/.env.ci"
+
+          docker compose --env-file "$dir/.env.ci" -f "${{ matrix.files }}" config -q
+          response=$?
+
+          rm -f "$dir/.env.ci"
+          exit $response
+
+    
