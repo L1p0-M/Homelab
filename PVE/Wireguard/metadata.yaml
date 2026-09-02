@@ -3,7 +3,7 @@ description: "This lightweight LXC Container runs my Wireguard VPN Server,that h
 environment: "Production"
 type: "LXC"
 status: "Active"
-os: "Debian"
+os: "Debian_"
 ports:
   - name: "Wireguard"
     port: 51820
