@@ -45,13 +45,13 @@ jobs:
       pull-requests: read
     strategy:
       matrix:
-        include: ${{ fromJson(needs.detect-changes.outputs.files) }}
+        files: ${{ fromJson(needs.detect-changes.outputs.files) }}
       fail-fast: false
       max-parallel: 2
     steps:
       - name: Check parameters
         run: |
-          echo "File: ${{ matrix.include }}"
+          echo "File: ${{ matrix.files }}"
 
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -68,7 +68,7 @@ jobs:
         
       - name: Lint YAML files
         run: |
-          echo "Linting file: ${{ matrix.include }}"
-          yamllint "${{ matrix.include }}"
+          echo "Linting file: ${{ matrix.files }}"
+          yamllint "${{ matrix.files }}"
 
 
