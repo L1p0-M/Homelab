@@ -10,6 +10,7 @@ on:
 jobs:
   detect-changes:
     runs-on: self-hosted
+    name: "Detect Changed YAML Files"
     outputs:
       files: ${{ steps.changed-files.outputs.all_changed_files }}
       has_changes: ${{ steps.changed-files.outputs.any_changed }}
@@ -83,3 +84,16 @@ jobs:
 
           rm -f "$dir/.env.ci"
           exit $response
+
+  check-yaml-response:
+    name: "YAML Linter Response"
+    runs-on: self-hosted
+    needs: [detect-changes, check-yaml]
+    steps:
+      - name: Verify Checks Results
+        run: |
+          if [[ "${{ needs.check-yaml.result }}" == "failure" || "${{ needs.check-yaml.result }}" == "cancelled" ]]; then
+            echo "YAML or Compose check failed!"
+            exit 1
+          fi
+          echo "Everything looks good! All YAML files and Compose files are valid."
