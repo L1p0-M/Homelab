@@ -6,7 +6,7 @@ services:
         volumes:
             - /dockerconfig/renovate_bot/config.js:/usr/src/app/config.js
             - /dockerconfig/renovate_bot/tmp:/tmp/renovate
-        environments:
+        environment:
             - RENOVATE_BASE_DIR=/tmp/renovate
             - RENOVATE_TOKEN=${TOKEN}
             - RENOVATE_PLATFORM=github
