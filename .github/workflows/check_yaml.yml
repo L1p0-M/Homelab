@@ -38,6 +38,7 @@ jobs:
 
   check-yaml:
     runs-on: self-hosted
+    name: "YAML Syntax Check"
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
     permissions:
