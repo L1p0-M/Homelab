@@ -97,7 +97,7 @@ jobs:
           echo "WORKDIR=$DIR" >> $GITHUB_OUTPUT
 
       - name: Create config files from templates for "${{ matrix.Service }}"
-        run: |          
+        run: |
           SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
           find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
             basedir=$(dirname "$template")
@@ -122,17 +122,6 @@ jobs:
           script: |
             echo "Creating directory: ${{ steps.set-env.outputs.TARGET_DIR }}"
             mkdir -p /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}
-
-      # - name: Sync files to server
-      #   uses: appleboy/scp-action@v0.1.4
-      #   with:
-      #     host: ${{ steps.set-env.outputs.SSH_HOST }}
-      #     username: ${{ secrets.SSH_USER }}
-      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-      #     source: "${{ steps.decrypt-env.outputs.WORKDIR }}/*"
-      #     target: "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
-      #     strip_components: 4
-      #     tar_tmp_path: "/tmp"
 
       - name: Sync files to server via rsync
         env:
@@ -179,3 +168,8 @@ jobs:
             cd "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
             docker compose pull
             docker compose up -d --remove-orphans
+
+      - name: Cleanup unused Docker Images
+        run: |
+          echo "Cleaning up unused Docker images..."
+          docker image prune -af --filter "until=24h"
