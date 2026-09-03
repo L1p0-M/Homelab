@@ -97,7 +97,7 @@ jobs:
           echo "WORKDIR=$DIR" >> $GITHUB_OUTPUT
 
       - name: Create config files from templates for "${{ matrix.Service }}"
-        run: |          
+        run: |
           SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
           find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
             basedir=$(dirname "$template")
