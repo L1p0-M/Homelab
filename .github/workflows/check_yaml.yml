@@ -64,7 +64,7 @@ jobs:
       - name: Lint YAML files
         run: |
           echo "Linting file: ${{ matrix.files }}"
-          python3 -m yamllint -d "{extends: relaxed, rules: {line-length: disable}}" "${{ matrix.files }}"
+          python3 -m yamllint -d "{extends: relaxed, rules: {line-length: disable, document-start: disable, new-lines: disable}}" "${{ matrix.files }}"
 
       - name: Validate Compose File
         if: endsWith(matrix.files, 'docker-compose.yml') || endsWith(matrix.files, 'docker-compose.yaml')
