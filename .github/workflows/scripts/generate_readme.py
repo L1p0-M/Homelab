@@ -25,7 +25,7 @@ def get_data_from_tfvars(directory):
         with open(tfvars_path, "r") as f:
             tfvars_data = hcl2.load(f)
         if tfvars_data:
-            return tfvars_data
+            return clean_vals(tfvars_data)
     return False
 
 def get_readme_template():
@@ -82,7 +82,7 @@ def generate_data_for_readme(metadata, tfvars, node, dir):
         "tags": tfvars_config.get("tags", []),
         "proxmox_node": node_config.get("node_name").upper(),
     }
-    return clean_vals(data)
+    return data
 
 def generate_readme(template, data):
     try:
