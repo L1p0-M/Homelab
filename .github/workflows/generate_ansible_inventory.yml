@@ -29,7 +29,7 @@ jobs:
       - name: Generate Ansible Inventory file for VM/LXC
         id: generate-inventory
         run: |
-          python3 -u .github/workflows/scripts/get_ansible_inventory.py --output /ansible/inventory.ini --search ./
+          python3 -u .github/workflows/scripts/get_ansible_inventory.py --output ansible/inventory.ini --search ./
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
