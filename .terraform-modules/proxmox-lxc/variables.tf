@@ -1,6 +1,12 @@
 variable "target_type" {
   type        = string
-  description = "Required for CI/CD Pipeline to know the type to use"
+  description = "Required for CI/CD Pipeline to know the type to use(OPTIONS ARE 'VM' OR 'LXC')"
+}
+
+variable "ansible_groups" {
+  type        = list(string)
+  default     = []
+  description = "Required for CI/CD Pipeline to know which Ansible groups to use"
 }
 
 variable "sensitive" {
