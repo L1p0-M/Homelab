@@ -11,7 +11,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  
+
 jobs:
   update-inventory:
     runs-on: self-hosted
@@ -29,9 +29,7 @@ jobs:
       - name: Generate Ansible Inventory file for VM/LXC
         id: generate-inventory
         run: |
-          pip install python-hcl2 jinja2 pyyaml
-            python3 -u .github/workflows/scripts/get_ansible_inventory.py --output /ansible/inventory.ini --search ./
-
+          python3 -u .github/workflows/scripts/get_ansible_inventory.py --output /ansible/inventory.ini --search ./
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
@@ -44,4 +42,4 @@ jobs:
           commit-message: "CI(ansible): Automatic Ansible Inventory Update"
           branch: "${{ steps.generate-inventory.outputs.pr_branch || 'inventory-updates' }}"
           title: "${{ steps.generate-inventory.outputs.pr_title || 'CI(ansible): Auto-update Ansible inventory' }}"
-          body: ${{ steps.generate-inventory.outputs.pr_body }}
+          body: "${{ steps.generate-inventory.outputs.pr_body }}"
