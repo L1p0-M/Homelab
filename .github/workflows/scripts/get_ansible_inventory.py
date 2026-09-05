@@ -40,7 +40,6 @@ def find_tfvars_file(search_path="/"):
 
 def get_ssh_config_from_env():
     ssh_config = {
-        "ssh_user": os.getenv("SSH_USER", "deploy"),
         "ssh_port": os.getenv("SSH_PORT", "22"),
     }
     return ssh_config
@@ -60,7 +59,7 @@ def process_tfvars_values(all_vars):
             default_groups = [f"{target_type.lower()}"]
             groups = tfvars.get("ansible_groups", default_groups)
             ssh_config = get_ssh_config_from_env()
-            ssh_user = ssh_config.get("ssh_user", "deploy")
+            ssh_user = "${ANSIBLE_USER}"
 
             original_name = name
             counter = 1
@@ -144,7 +143,14 @@ def write_inventory_to_file(inventory_content):
         print(f"Error writing Ansible inventory to file: {e}")
         return False
 
-def write_to_github_output(has_changes, pr_title, pr_branch, pr_body):
+def write_to_github_output(has_changes, pr_branch):
+    pr_title="CI(ansible): Auto-update Ansible inventory"
+    pr_body = [
+        "### Automated Ansible Inventory Update\n",
+        f"GitOps Pipeline successfully processed and updated the **Ansible inventory** based on the latest configuration changes.\n",
+        "\n---",
+        "> 🤖 *Generated automatically via CI/CD Pipeline. Please review and merge.*"
+    ]
     github_output = os.getenv('GITHUB_OUTPUT')
     if github_output:
         with open(github_output, 'a') as f:
@@ -182,7 +188,7 @@ if __name__ == "__main__":
                 else:
                     print("No changes detected in the Ansible inventory. No update performed.")
                     has_changes = False
-                write_to_github_output(has_changes=has_changes, pr_title="Update Ansible Inventory", pr_branch="update-ansible-inventory", pr_body="Ansible inventory has been updated based on the latest Terraform tfvars files.")
+                write_to_github_output(has_changes=has_changes, pr_branch="update-ansible-inventory")
                 exit(0)
         print("No Terraform tfvars files found or no valid variables extracted. Ansible inventory not generated.")
         exit(1)
