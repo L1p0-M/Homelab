@@ -23,9 +23,7 @@ def get_data_from_tfvars(directory):
     tfvars_path = pathlibpath(directory).joinpath("terraform.tfvars")
     if os.path.exists(tfvars_path):
         with open(tfvars_path, "r") as f:
-            tfvars_data = hcl2.load(f)
-        if tfvars_data:
-            return clean_vals(tfvars_data)
+            return clean_vals(hcl2.load(f))
     return False
 
 def get_readme_template():
@@ -51,6 +49,8 @@ def clean_vals(val):
         return [clean_vals(item) for item in val]
     elif isinstance(val, dict):
         return {k: clean_vals(v) for k, v in val.items()}
+    else:
+        return val
 
 
 def generate_data_for_readme(metadata, tfvars, node, dir):
@@ -72,8 +72,8 @@ def generate_data_for_readme(metadata, tfvars, node, dir):
         "ip_address": clean_ip,
         "ip_cidr": raw_ip,
         "network_bridge": tfvars_config.get("network_bridge", "Unknown"),
-        "vmid": tfvars_config.get("vm_id", "Unkonwn"),
-        "hostname": tfvars_config.get("vm_name", "Unknown"),
+        "vmid": tfvars_config.get("vm_id", "Unkonwn") if tfvars.get("target_type", "").upper() == "VM" else tfvars_config.get("id", "Unknown"),
+        "hostname": tfvars_config.get("vm_name", "Unknown") if tfvars.get("target_type", "").upper() == "VM" else tfvars_config.get("name", "Unknown"),
         "cores": tfvars_config.get("cpu_cores", "Unknown"),
         "memory_mb": tfvars_config.get("memory_mb", "Unknown"),
         "disk_size_gb": tfvars_config.get("disk_size_gb", "Unknown"),
@@ -173,7 +173,13 @@ if __name__ == "__main__":
                         move_readme(dir=dir)
             if readme_datas:
                 generate_pr_summary(readme_datas=readme_datas)
+                exit(0)
+        exit(1)
+
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        exit(1)
 
     except KeyboardInterrupt:
         print("Script interrupted by user. Exiting.")
-        exit(0)
+        exit(1)
