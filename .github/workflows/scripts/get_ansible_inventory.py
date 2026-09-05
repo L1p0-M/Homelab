@@ -157,8 +157,8 @@ def write_to_github_output(has_changes, pr_title, pr_branch, pr_body):
 
 if __name__ == "__main__":
     arg_parser = ArgumentParser(description="Generate Ansible inventory from Terraform tfvars files.")
-    arg_parser.add_argument("--output", type=str, default="/ansible/inventory.ini", help="Output path for the generated Ansible inventory file.")
-    arg_parser.add_argument("--search", type=str, default="/", help="Search path for Terraform tfvars files.")
+    arg_parser.add_argument("--output", type=str, default="ansible/inventory.ini", help="Output path for the generated Ansible inventory file.")
+    arg_parser.add_argument("--search", type=str, default="./", help="Search path for Terraform tfvars files.")
     args = arg_parser.parse_args()
     arg_output_path = args.output
     arg_search_path = args.search
@@ -183,6 +183,10 @@ if __name__ == "__main__":
                     print("No changes detected in the Ansible inventory. No update performed.")
                     has_changes = False
                 write_to_github_output(has_changes=has_changes, pr_title="Update Ansible Inventory", pr_branch="update-ansible-inventory", pr_body="Ansible inventory has been updated based on the latest Terraform tfvars files.")
+                exit(0)
+        print("No Terraform tfvars files found or no valid variables extracted. Ansible inventory not generated.")
+        exit(1)
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        exit(1)
