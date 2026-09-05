@@ -36,9 +36,8 @@ def get_data_from_node(directory):
     node_path = pathlibpath(directory).parent.joinpath("node.tfvars")
     if os.path.exists(node_path):
         with open(node_path, "r") as f:
-            node_data = hcl2.load(f)
-    if node_data:
-        return node_data
+            return clean_vals(hcl2.load(f))
+    return False
 
 def clean_vals(val):
     if isinstance(val, int):
