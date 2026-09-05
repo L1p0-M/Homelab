@@ -88,6 +88,7 @@ jobs:
   check-yaml-response:
     name: "YAML Linter Response"
     runs-on: self-hosted
+    if: ${{ always() }}
     needs: [detect-changes, check-yaml]
     steps:
       - name: Verify Checks Results

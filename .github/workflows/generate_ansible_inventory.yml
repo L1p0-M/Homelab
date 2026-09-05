@@ -1,0 +1,45 @@
+name: Generate Ansible Inventory for VMs/LXCs
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/terraform.tfvars'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-inventory:
+    runs-on: self-hosted
+    name: Generate Ansible Inventory
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install Python Dependencies
+        run: |
+          pip install python-hcl2
+
+      - name: Generate Ansible Inventory file for VM/LXC
+        id: generate-inventory
+        run: |
+          python3 -u .github/workflows/scripts/get_ansible_inventory.py --output /ansible/inventory.ini --search ./
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        if: steps.generate-inventory.outputs.has_changes == 'true'
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          committer: "Cortana [bot] <cortana@l1p0-industries.hu>"
+          author: "Cortana [bot] <cortana@l1p0-industries.hu>"
+          assignees: "L1p0-M"
+          commit-message: "CI(ansible): Automatic Ansible Inventory Update"
+          branch: "${{ steps.generate-inventory.outputs.pr_branch || 'inventory-updates' }}"
+          title: "${{ steps.generate-inventory.outputs.pr_title || 'CI(ansible): Auto-update Ansible inventory' }}"
+          body: "${{ steps.generate-inventory.outputs.pr_body }}"
