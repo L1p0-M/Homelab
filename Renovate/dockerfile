@@ -1,5 +1,5 @@
 # renovate: datasource=docker depName=renovate/renovate
-FROM renovate/renovate:44.61
+FROM renovate/renovate:44.65
 
 USER root
 RUN sed -i 's|http://archive.ubuntu.com/ubuntu/|http://hu.archive.ubuntu.com/ubuntu/|g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || \
