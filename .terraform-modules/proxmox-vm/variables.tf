@@ -5,6 +5,7 @@ variable "target_type" {
 
 variable "ansible_groups" {
   type        = list(string)
+  default     = []
   description = "Required for CI/CD Pipeline to know which Ansible groups to use"
 }
 
