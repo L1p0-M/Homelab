@@ -155,7 +155,6 @@ def write_to_github_output(has_changes, pr_title, pr_branch, pr_body):
             f.write(f"{pr_body}\n")
             f.write("EOF\n")
 
-
 if __name__ == "__main__":
     arg_parser = ArgumentParser(description="Generate Ansible inventory from Terraform tfvars files.")
     arg_parser.add_argument("--output", type=str, default="/ansible/inventory.ini", help="Output path for the generated Ansible inventory file.")
@@ -168,13 +167,18 @@ if __name__ == "__main__":
         all_vars = find_tfvars_file(search_path=arg_search_path)
         if all_vars:
             clean_vars = process_tfvars_values(all_vars)
+
             if clean_vars:
                 inventory_content = generate_ansible_inventory(clean_vars)
                 write_inventory_to_file(inventory_content)
+
                 if check_if_file_changed(pathlibpath(arg_output_path), pathlibpath("inventory.ini.new")):
+                    if not os.path.exists(pathlibpath(arg_output_path).parent):
+                        os.makedirs(pathlibpath(arg_output_path).parent, exist_ok=True)
                     movefile(src="inventory.ini.new", dst=arg_output_path)
                     print(f"Ansible inventory updated at: {arg_output_path}")
                     has_changes = True
+
                 else:
                     print("No changes detected in the Ansible inventory. No update performed.")
                     has_changes = False
