@@ -151,6 +151,7 @@ def write_to_github_output(has_changes, pr_branch):
         "\n---",
         "> 🤖 *Generated automatically via CI/CD Pipeline. Please review and merge.*"
     ]
+    content = "\n".join(pr_body)
     github_output = os.getenv('GITHUB_OUTPUT')
     if github_output:
         with open(github_output, 'a') as f:
@@ -158,7 +159,7 @@ def write_to_github_output(has_changes, pr_branch):
             f.write(f"pr_title={pr_title}\n")
             f.write(f"pr_branch={pr_branch}\n")
             f.write("pr_body<<EOF\n")
-            f.write(f"{pr_body}\n")
+            f.write(f"{content}\n")
             f.write("EOF\n")
 
 if __name__ == "__main__":
