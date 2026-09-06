@@ -1,0 +1,41 @@
+---
+- name: Remove legacy Docker APT list file
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/docker.list.distUpgrade
+    state: absent
+
+- name: Remove legacy Docker APT list file
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/docker.list
+    state: absent
+
+- name: Ensure keyring directory exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Docker official GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+    force: false
+
+- name: Add Docker APT repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: 
+      - https://download.docker.com/linux/{{ ansible_distribution | lower }}
+    suites: "{{ ansible_distribution_release }}"
+    components: stable
+    architectures: "{{ 'amd64' if ansible_architecture == 'x86_64' else ansible_architecture }}"
+    signed_by: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+    state: present
+
+- name: Update APT package index
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600

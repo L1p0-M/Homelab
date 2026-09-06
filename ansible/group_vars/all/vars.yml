@@ -1,0 +1,6 @@
+deploy_user: "{{ vault_deploy_user }}"
+my_user: "{{ vault_my_user }}"
+deploy_user_key: "{{ vault_deploy_key }}"
+ansible_become_password: "{{ vault_ansible_become_password }}"
+deploy_user_pass: "{{ vault_deploy_user_pass }}"
+deploy_ssh_key: "{{ vault_deploy_ssh_key }}"

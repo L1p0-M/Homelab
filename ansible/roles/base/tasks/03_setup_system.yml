@@ -1,0 +1,29 @@
+---
+- name: Set system timezone
+  community.general.timezone:
+    name: Europe/Budapest
+  when: ansible_os_family == 'Debian'
+
+- name: Set system timezone on Alpine
+  block:
+    - name: Link timezone file on Alpine
+      ansible.builtin.file:
+        src: /usr/share/zoneinfo/Europe/Budapest
+        dest: /etc/localtime
+        state: link
+        force: true
+
+    - name: Save timezone string to /etc/timezone
+      ansible.builtin.copy:
+        content: "Europe/Budapest\n"
+        dest: /etc/timezone
+  when: ansible_os_family == 'Alpine'
+
+- name: Ensure QEMU Guest Agent is running
+  ansible.builtin.service:
+    name: qemu-guest-agent
+    enabled: yes
+    state: started
+  ignore_errors: yes
+  when: ansible_virtualization_tech_guest is not defined or 'lxc' not in ansible_virtualization_tech_guest
+

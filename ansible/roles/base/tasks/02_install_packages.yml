@@ -1,0 +1,28 @@
+---
+- name: Install needed packages
+  ansible.builtin.apt:
+    cache_valid_time: 3600
+    update_cache: yes
+    name:
+      - curl
+      - wget
+      - git
+      - sudo
+      - python3-debian
+      - qemu-guest-agent
+      - ca-certificates
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: Update APK cache and install packages
+  community.general.apk:
+    name:
+      - curl
+      - wget
+      - git
+      - sudo
+      - qemu-guest-agent
+      - tzdata
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'Alpine'
