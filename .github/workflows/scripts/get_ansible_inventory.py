@@ -115,8 +115,8 @@ def generate_ansible_inventory(vars):
                 lines.append(f"\n[{group_name}]")
                 lines.extend(sorted(group_entries))
 
-        lines.append("\n[all:vars]")
-        lines.append('\nansible_ssh_private_key_file="./id_rsa"')
+        # lines.append("\n[all:vars]")
+        # lines.append('\nansible_ssh_private_key_file="./id_rsa"')
 
 
         lines.append("")
