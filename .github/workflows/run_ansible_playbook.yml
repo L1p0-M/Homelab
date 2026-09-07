@@ -52,9 +52,9 @@ jobs:
         run: |
           ARGS="${{ inputs.args }}"
           if [ -n "$ARGS" ]; then
-            ansible-playbook ansible/site.yml $ARGS
+            ansible-playbook ansible/site.yml -i ansible/inventory.ini $ARGS
           else
-            ansible-playbook ansible/site.yml --check
+            ansible-playbook ansible/site.yml -i ansible/inventory.ini --check
           fi
 
       - name: Clean Up
