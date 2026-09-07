@@ -1,0 +1,60 @@
+name: Run ansible playbook
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ansible/**'
+
+  workflow_dispatch:
+    inputs:
+      args:
+        description: 'Args for ansible playbook(e.g.: --limit docker-hosts --check )'
+        required: false
+        default: ''
+
+jobs:
+  setup-ansible:
+    name: Setup Ansible
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Install Ansible & Dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install ansible -y
+          echo "$(ansible --version)"
+          ansible-galaxy collection install ansible.posix
+          ansible-galaxy collection install community.general
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Setup Vault password
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+
+  run-ansible-playbook:
+    name: Run Ansible Playbook
+    runs-on: self-hosted
+    needs: setup-ansible
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Run site.yml playbook
+        run: |
+          ARGS="${{ inputs.args }}"
+          if [ -n "$ARGS" ]; then
+            ansible-playbook ansible/site.yml $ARGS
+          else:
+            ansible-playbook ansible/site.yml --check
+          fi
+
+      - name: Clean Up
+        run: |
+          rm -f .vault_pass

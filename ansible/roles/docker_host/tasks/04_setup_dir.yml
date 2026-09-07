@@ -1,0 +1,6 @@
+---
+- name: Ensure Dockerconfig directory exists
+  ansible.builtin.file:
+    path: /dockerconfig
+    state: directory
+    mode: '2755'

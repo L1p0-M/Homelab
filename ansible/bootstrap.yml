@@ -1,0 +1,15 @@
+---
+- name: Bootstrap new node (Create deploy user and configure SSH)
+  hosts: all
+  gather_facts: false
+  remote_user: root
+  vars:
+    ansible_user: root
+
+  tasks:
+    - name: Gather basic system facts
+      ansible.builtin.setup:
+
+    - name: Apply base server bootstrap task
+      ansible.builtin.include_tasks:
+        file: roles/base/tasks/01_users_groups.yml

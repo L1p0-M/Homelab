@@ -1,0 +1,33 @@
+---
+- name: Ensure /etc/docker directory exists
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+
+- name: Configure Docker daemon settings
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        },
+        "live-restore": true
+      }
+  notify: restart docker
+
+- name: Ensure my user is in docker group
+  ansible.builtin.user:
+    name: "{{ my_user }}"
+    groups: docker
+    append: yes
+
+- name: Ensure deploy user is in docker group
+  ansible.builtin.user:
+    name: "{{ deploy_user }}"
+    groups: docker
+    append: yes

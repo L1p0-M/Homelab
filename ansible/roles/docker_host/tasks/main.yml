@@ -1,0 +1,17 @@
+---
+
+- name: Setup Docker official repository
+  ansible.builtin.include_tasks: 01_repo.yml
+  tags: [docker, docker-repo]
+
+- name: Install Docker packages
+  ansible.builtin.include_tasks: 02_install_packages.yml
+  tags: [docker, docker-install, packages]
+
+- name: Configure Docker daemon and user permissions
+  ansible.builtin.include_tasks: 03_config.yml
+  tags: [docker, docker-config]
+
+- name: Setup Dockerconfig directory
+  ansible.builtin.include_tasks: 04_setup_dir.yml
+  tags: [docker, docker-config]

@@ -1,0 +1,22 @@
+---
+- name: Ensure homelab-devs group exists
+  ansible.builtin.group:
+    name: homelab-devs
+    state: present
+
+- name: Ensure deploy user exists
+  ansible.builtin.user:
+    name: "{{ deploy_user }}"
+    group: homelab-devs
+    groups: [sudo, homelab-devs]
+    append: yes
+    state: present
+    create_home: true
+    password: "{{ deploy_user_pass }}"
+
+- name: Ensure ssh key exists
+  ansible.posix.authorized_key:
+    key: "{{ deploy_ssh_key }}"
+    manage_dir: true
+    user: "{{ deploy_user }}"
+    state: present

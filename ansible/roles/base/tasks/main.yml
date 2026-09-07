@@ -1,0 +1,12 @@
+---
+- name: Create Users and Groups
+  ansible.builtin.include_tasks: 01_users_groups.yml
+  tags: [base, users, groups, bootstrap]
+
+- name: Install needed packages
+  ansible.builtin.include_tasks: 02_install_packages.yml
+  tags: [base, packages]
+
+- name: Setup Base System Settings
+  ansible.builtin.include_tasks: 03_setup_system.yml
+  tags: [base, system]
