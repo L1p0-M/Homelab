@@ -1,4 +1,4 @@
-name: Run ansible playbook
+name: "Run ansible playbook"
 on:
   push:
     branches:
@@ -48,7 +48,7 @@ jobs:
 
       - name: Run site.yml playbook
         env:
-          - ANSIBLE_FORCE_COLOR: '1'
+          ANSIBLE_FORCE_COLOR: '1'
         run: |
           ARGS="${{ inputs.args }}"
           if [ -n "$ARGS" ]; then
