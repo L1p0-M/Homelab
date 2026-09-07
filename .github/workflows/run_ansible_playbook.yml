@@ -17,24 +17,24 @@ jobs:
   setup-ansible:
     name: Setup Ansible
     runs-on: self-hosted
-  steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v7
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
 
-    - name: Install Ansible
-      run: |
-        sudo apt update -y
-        sudo apt install ansible -y
-        echo "$(ansible --version)"
+      - name: Install Ansible
+        run: |
+          sudo apt update -y
+          sudo apt install ansible -y
+          echo "$(ansible --version)"
 
-    - name: Setup SSH key
-      uses: webfactory/ssh-agent@v0.10.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Setup Vault password
-      run: |
-        echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+      - name: Setup Vault password
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
 
   run-ansible-playbook:
     name: Run Ansible Playbook
