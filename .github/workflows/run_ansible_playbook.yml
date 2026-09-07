@@ -23,8 +23,8 @@ jobs:
 
       - name: Install Ansible & Dependencies
         run: |
-          sudo apt update -y
-          sudo apt install ansible -y
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --user ansible
           echo "$(ansible --version)"
           ansible-galaxy collection install ansible.posix
           ansible-galaxy collection install community.general
