@@ -6,7 +6,7 @@ on:
     paths:
       - 'ansible/**'
   
-  workflow_dispath:
+  workflow_dispatch:
     inputs:
       args:
         description: 'Args for ansible playbook(e.g.: --limit docker-hosts --check )'
