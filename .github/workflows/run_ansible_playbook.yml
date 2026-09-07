@@ -5,7 +5,7 @@ on:
       - main
     paths:
       - 'ansible/**'
-  
+
   workflow_dispatch:
     inputs:
       args:
