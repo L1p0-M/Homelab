@@ -26,4 +26,3 @@
     state: started
   ignore_errors: yes
   when: ansible_virtualization_tech_guest is not defined or 'lxc' not in ansible_virtualization_tech_guest
-

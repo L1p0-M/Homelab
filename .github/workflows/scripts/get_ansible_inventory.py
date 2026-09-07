@@ -59,7 +59,7 @@ def process_tfvars_values(all_vars):
             default_groups = [f"{target_type.lower()}"]
             groups = tfvars.get("ansible_groups", default_groups)
             ssh_config = get_ssh_config_from_env()
-            ssh_user = "${ANSIBLE_USER}"
+            ssh_user = '"{{ deploy_user }}"'
 
             original_name = name
             counter = 1
@@ -114,6 +114,10 @@ def generate_ansible_inventory(vars):
             for group_name, group_entries in custom_groups.items():
                 lines.append(f"\n[{group_name}]")
                 lines.extend(sorted(group_entries))
+
+        lines.append("\n[all:vars]")
+        lines.append('\nansible_ssh_private_key_file="./id_rsa"')
+
 
         lines.append("")
         content = "\n".join(lines)

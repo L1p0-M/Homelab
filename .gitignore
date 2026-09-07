@@ -10,3 +10,6 @@ crash.log
 crash.*.log
 
 *.tfvars.secret
+.vault_pass
+id_rsa
+
