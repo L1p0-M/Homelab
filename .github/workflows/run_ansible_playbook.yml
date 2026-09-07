@@ -1,7 +1,7 @@
 name: Run ansible playbook
 on:
   push:
-    branches: 
+    branches:
       - main
     paths:
       - 'ansible/**'
@@ -21,11 +21,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
-      - name: Install Ansible
+      - name: Install Ansible & Dependencies
         run: |
           sudo apt update -y
           sudo apt install ansible -y
           echo "$(ansible --version)"
+          ansible-galaxy collection install ansible.posix
+          ansible-galaxy collection install community.general
 
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.10.0
@@ -47,7 +49,7 @@ jobs:
       - name: Run site.yml playbook
         run: |
           ARGS="${{ inputs.args }}"
-          if [ -n "$ARGS" ]; then 
+          if [ -n "$ARGS" ]; then
             ansible-playbook ansible/site.yml $ARGS
           else:
             ansible-playbook ansible/site.yml --check
