@@ -37,6 +37,11 @@ jobs:
       - name: Setup Vault password
         run: |
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
+          echo "=== DEBUG INFO ==="
+          echo "Current directory: $(pwd)"
+          ls -la .vault_pass
+          echo "File size: $(wc -c < .vault_pass) bytes"
+          echo "=================="
 
   run-ansible-playbook:
     name: Run Ansible Playbook
