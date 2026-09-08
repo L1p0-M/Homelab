@@ -14,8 +14,8 @@ on:
         default: ''
 
 jobs:
-  setup-ansible:
-    name: Setup Ansible
+  run-ansible-playbook:
+    name: Run Ansible Playbook
     runs-on: self-hosted
     steps:
       - name: Checkout Repository
@@ -33,14 +33,6 @@ jobs:
         uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-  run-ansible-playbook:
-    name: Run Ansible Playbook
-    runs-on: self-hosted
-    needs: setup-ansible
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v7
 
       - name: Setup Vault password
         run: |
