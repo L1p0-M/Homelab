@@ -55,7 +55,6 @@ def process_tfvars_values(all_vars):
             ip_address = ip_address_raw.split("/")[0] if "/" in str(ip_address_raw) else ip_address_raw
             target_type = tfvars.get("target_type", "N/A").upper()
             name = tfvars_config.get("name", "N/A") if target_type == "LXC" else tfvars_config.get("vm_name", "N/A")
-            print(f"Name: {name}, IP Address: {ip_address}, Target Type: {target_type}")
             default_groups = [f"{target_type.lower()}"]
             groups = tfvars.get("ansible_groups", default_groups)
             ssh_config = get_ssh_config_from_env()
@@ -90,15 +89,15 @@ def generate_ansible_inventory(vars):
         custom_groups = {}
         for name, details in vars.items():
             entry = f"{name} ansible_host={details['ip_address']} ansible_user={details['ssh_user']}" 
-            print(f"Adding {name} to inventory with IP {details['ip_address']} and type {details['target_type']}")
-            if details.get("target_type") == "LXC":
+            if details.get("target_type") == "LXC" and "excluded" not in details.get("groups").lower():
                 lxcs.append(entry)
 
-            if details.get("target_type") == "VM":
+            if details.get("target_type") == "VM" and "excluded" not in details.get("groups").lower():
                 vms.append(entry)
 
             if details.get("groups"):
                 for group in details["groups"]:
+                    group = group.replace("-", "_")
                     if group not in ["proxmox_vms", "proxmox_lxcs", "all", "vm", "lxc", "lxcs", "vms"]:
                         if group not in custom_groups:
                             custom_groups[group] = []

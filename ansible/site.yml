@@ -1,14 +1,12 @@
 ---
 - name: Apply base configuration to all nodes
   hosts: all
-  ignore_unreachable: true
   gather_facts: true
   roles:
     - base
 
 - name: Setup Docker on Docker hosts
-  hosts: docker-hosts
-  ignore_unreachable: true
+  hosts: docker_hosts
   gather_facts: true
   roles:
     - docker_host

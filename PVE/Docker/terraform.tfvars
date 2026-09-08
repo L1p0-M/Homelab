@@ -1,5 +1,5 @@
 target_type = "VM"
-ansible_groups = ["docker-hosts"]
+ansible_groups = ["docker_hosts"]
 
 config = {
     vm_id          = 100
