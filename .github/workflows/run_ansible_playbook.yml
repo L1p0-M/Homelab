@@ -36,7 +36,7 @@ jobs:
 
       - name: Setup Vault password
         run: |
-          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
 
   run-ansible-playbook:
     name: Run Ansible Playbook
@@ -61,4 +61,4 @@ jobs:
       - name: Clean Up
         if: always()
         run: |
-          rm -f .vault_pass
+          rm -f ansible/.vault_pass
