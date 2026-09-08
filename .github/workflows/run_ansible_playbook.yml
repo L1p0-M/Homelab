@@ -42,6 +42,7 @@ jobs:
           ls -la .vault_pass
           echo "File size: $(wc -c < .vault_pass) bytes"
           echo "=================="
+          mv .vault_pass ansible/.vault_pass
 
   run-ansible-playbook:
     name: Run Ansible Playbook
