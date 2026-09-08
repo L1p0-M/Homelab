@@ -1,6 +1,6 @@
 ---
 - name: Apply base configuration to all nodes
-  hosts: all!excluded
+  hosts: all:!excluded
   gather_facts: true
   roles:
     - base
