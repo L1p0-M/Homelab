@@ -48,7 +48,7 @@ jobs:
           if [ -n "$ARGS" ]; then
             ansible-playbook site.yml $ARGS
           else
-            ansible-playbook site.yml --check
+            ansible-playbook site.yml
           fi
 
       - name: Clean Up

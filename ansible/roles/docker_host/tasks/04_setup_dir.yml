@@ -4,3 +4,6 @@
     path: /dockerconfig
     state: directory
     mode: '2755'
+    group: 'homelab-devs'
+    owner: 'l1p0'
+
