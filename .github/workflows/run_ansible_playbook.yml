@@ -36,7 +36,7 @@ jobs:
 
       - name: Setup Vault password
         run: |
-          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
           echo "=== DEBUG INFO ==="
           echo "Current directory: $(pwd)"
           ls -la .vault_pass
