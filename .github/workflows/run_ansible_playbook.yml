@@ -47,15 +47,16 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Run site.yml playbook
+        working-directory: ansible
         env:
           ANSIBLE_FORCE_COLOR: '1'
-          ANSIBLE_CONFIG: 'ansible/ansible.cfg'
+          ANSIBLE_CONFIG: 'ansible.cfg'
         run: |
           ARGS="${{ inputs.args }}"
           if [ -n "$ARGS" ]; then
-            ansible-playbook ansible/site.yml $ARGS
+            ansible-playbook site.yml $ARGS
           else
-            ansible-playbook ansible/site.yml --check
+            ansible-playbook site.yml --check
           fi
 
       - name: Clean Up
