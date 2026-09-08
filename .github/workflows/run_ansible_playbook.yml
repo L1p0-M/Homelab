@@ -49,12 +49,13 @@ jobs:
       - name: Run site.yml playbook
         env:
           ANSIBLE_FORCE_COLOR: '1'
+          ANSIBLE_CONFIG: 'ansible/ansible.cfg'
         run: |
           ARGS="${{ inputs.args }}"
           if [ -n "$ARGS" ]; then
-            ansible-playbook ansible/site.yml -i ansible/inventory.ini $ARGS
+            ansible-playbook ansible/site.yml $ARGS
           else
-            ansible-playbook ansible/site.yml -i ansible/inventory.ini --check
+            ansible-playbook ansible/site.yml --check
           fi
 
       - name: Clean Up
