@@ -34,16 +34,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Setup Vault password
-        run: |
-          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
-          echo "=== DEBUG INFO ==="
-          echo "Current directory: $(pwd)"
-          ls -la .vault_pass
-          echo "File size: $(wc -c < .vault_pass) bytes"
-          echo "=================="
-          mv .vault_pass ansible/.vault_pass
-
   run-ansible-playbook:
     name: Run Ansible Playbook
     runs-on: self-hosted
@@ -51,6 +41,10 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
+
+      - name: Setup Vault password
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
 
       - name: Run site.yml playbook
         working-directory: ansible
