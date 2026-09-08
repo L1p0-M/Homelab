@@ -89,10 +89,10 @@ def generate_ansible_inventory(vars):
         custom_groups = {}
         for name, details in vars.items():
             entry = f"{name} ansible_host={details['ip_address']} ansible_user={details['ssh_user']}" 
-            if details.get("target_type") == "LXC" and "excluded" not in details.get("groups").lower():
+            if details.get("target_type") == "LXC" and "excluded" not in details.get("groups"):
                 lxcs.append(entry)
 
-            if details.get("target_type") == "VM" and "excluded" not in details.get("groups").lower():
+            if details.get("target_type") == "VM" and "excluded" not in details.get("groups"):
                 vms.append(entry)
 
             if details.get("groups"):
