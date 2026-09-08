@@ -3,6 +3,6 @@
   ansible.builtin.file:
     path: /dockerconfig
     state: directory
-    mode: '2755'
+    mode: '2775'
     group: 'homelab-devs'
     owner: 'l1p0'
