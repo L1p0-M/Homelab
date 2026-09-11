@@ -9,58 +9,10 @@ on:
       - 'PVE/Docs_Monitoring/Configs/**'
       - 'PVE/CI_Worker/Configs/**'
 jobs:
-  detect-changes:
-    runs-on: self-hosted
-    outputs:
-      services: ${{ steps.changed-services.outputs.services }}
-      has_changes: ${{ steps.changed-services.outputs.has_changes }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 2
-
-      - name: Get changed services
-        id: changed-files
-        uses: tj-actions/changed-files@v47
-        with:
-          dir_names: true
-          dir_names_max_depth: 5
-          files_yaml: |
-            configs:
-              - 'PVE/Docker/Configs/*/**'
-              - 'PVE/Media/Configs/*/**'
-              - 'PVE/Docs_Monitoring/Configs/*/**'
-              - 'PVE/CI_Worker/Configs/*/**'
-
-      - name: Build array of changed services
-        id: changed-services
-        run: |
-          CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
-          if [ -n "$CHANGED_DIRS" ]; then
-            python3 -u .github/workflows/scripts/get_changed_services.py $CHANGED_DIRS
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "services=[]" >> $GITHUB_OUTPUT
-          fi
-
   deploy-services:
+    name: "Deploy Docker Compose Services"
     runs-on: self-hosted
-    needs: detect-changes
-    if: needs.detect-changes.outputs.has_changes == 'true'
-    strategy:
-      matrix:
-        include: ${{ fromJson(needs.detect-changes.outputs.services) }}
-      fail-fast: false
-      max-parallel: 2
     steps:
-      - name: Check parameters
-        run: |
-          echo "Service: ${{ matrix.Service }}"
-          echo "Node: ${{ matrix.NODE }}"
-          echo "VM: ${{ matrix.VM }}"
-          echo "Subdirs: ${{ matrix.Subdirs }}"
-
       - name: Checkout repository
         uses: actions/checkout@v7
 
@@ -69,107 +21,54 @@ jobs:
         with:
           version: "3.13.3"
 
-      - name: Create environment variables
-        id: set-env
+      - name: Install Ansible & Dependencies
         run: |
-          SSH_HOST="${{ secrets[format('SSH_HOST_{0}', matrix.VM)] }}"
-          if [ -z "${{ matrix.Subdirs }}" ]; then
-            TARGET_DIR="${{ matrix.Service }}"
-          else
-            TARGET_DIR="${{ matrix.Subdirs }}/${{ matrix.Service }}"
-          fi
-          echo "TARGET_DIR=$TARGET_DIR" >> $GITHUB_OUTPUT
-          echo "SSH_HOST=$SSH_HOST" >> $GITHUB_OUTPUT
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --user ansible
+          echo "$(ansible --version)"
+          ansible-galaxy collection install ansible.posix
+          ansible-galaxy collection install community.general
 
-      - name: Decrypt .env file for "${{ matrix.Service }}"
-        id: decrypt-env
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Setup Vault password
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
+
+      - name: Create config files from templates
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
         run: |
-          echo "Target directory: ${{ steps.set-env.outputs.TARGET_DIR }}"
-          DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
-          echo "Working directory: $DIR"
-          find "$DIR" -type f -name ".env.enc" 2> /dev/null | while read -r encrypted_file; do
-            echo "Decrypting: $encrypted_file"
-            sops --input-type dotenv --output-type dotenv --decrypt "$encrypted_file" > "${encrypted_file%.enc}"
-            chmod 600 "${encrypted_file%.enc}"
-          done
-          echo "WORKDIR=$DIR" >> $GITHUB_OUTPUT
-
-      - name: Create config files from templates for "${{ matrix.Service }}"
-        run: |
-          SEARCH_DIR="${{ matrix.NODE }}/${{ matrix.VM }}/Configs/${{ steps.set-env.outputs.TARGET_DIR }}"
-          find "$SEARCH_DIR" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
+          find "./" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
             basedir=$(dirname "$template")
+            if [ -f "$basedir/.env.enc" ]; then
+              sops --input-type dotenv --output-type dotenv --decrypt "$basedir/.env.enc" > "$basedir/.env"
+            fi
+
             if [ -f "$basedir/.env" ]; then
               echo "Loading environment variables from .env..."
               set -a
               source "$basedir/.env"
               set +a
             fi
+
             output_file="${template%.template}"
             echo "Processing: $template -> $output_file"
             envsubst < "$template" > "$output_file"
+
+            if [ -f "$basedir/.env" ]; then
+              rm "$basedir/.env"
+            fi
           done
 
-
-      - name: Creating Directory for "${{ matrix.Service }}" via SSH
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ steps.set-env.outputs.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "Creating directory: ${{ steps.set-env.outputs.TARGET_DIR }}"
-            mkdir -p /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}
-
-      - name: Sync files to server via rsync
+      - name: Deploy stacks
+        working-directory: ansible
         env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ steps.set-env.outputs.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          WORKDIR: ${{ steps.decrypt-env.outputs.WORKDIR }}
-          TARGET_DIR: ${{ steps.set-env.outputs.TARGET_DIR }}
+          ANSIBLE_SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+          ANSIBLE_FORCE_COLOR: '1'
+          ANSIBLE_CONFIG: 'ansible.cfg'
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-
-          rsync -rlvz \
-            --no-times \
-            --no-perms \
-            --no-owner \
-            --no-group \
-            "$WORKDIR/" "$SSH_USER@$SSH_HOST:/dockerconfig/$TARGET_DIR/"
-
-      - name: Fix permissions
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ steps.set-env.outputs.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chown ${{ secrets.SSH_USER }}:homelab-devs {} +
-            find /dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/docker-compose.* -type f -exec chmod g+rwX {} +
-            if [[ -f "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env" ]]; then
-              chown ${{ secrets.SSH_USER }}:homelab-devs "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
-              chmod g+rwX "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}/.env"
-            fi
-
-      - name: Execute Docker Compose Up
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ steps.set-env.outputs.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd "/dockerconfig/${{ steps.set-env.outputs.TARGET_DIR }}"
-            docker compose pull
-            docker compose up -d --remove-orphans
-
-      - name: Cleanup unused Docker Images
-        run: |
-          echo "Cleaning up unused Docker images..."
-          docker image prune -af --filter "until=24h"
+            ansible-playbook site.yml --limit docker_hosts --tags docker_host

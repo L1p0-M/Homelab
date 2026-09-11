@@ -1,0 +1,7 @@
+app_stacks:
+  - "../PVE/Docs_Monitoring/Configs/grafana"
+  - "../PVE/Docs_Monitoring/Configs/gitea"
+  - "../PVE/Docs_Monitoring/Configs/portainer_agent"
+  - "../PVE/Docs_Monitoring/Configs/speedtest"
+  - "../PVE/Docs_Monitoring/Configs/watcher_agent"
+  - "../PVE/Docs_Monitoring/Configs/docker_socket_proxy"

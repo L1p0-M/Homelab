@@ -1,0 +1,3 @@
+app_stacks:
+  - "../PVE/Media/Configs/jellyfin"
+  - "../PVE/Media/Configs/watcher_agent"
