@@ -12,7 +12,7 @@
   ansible.builtin.file:
     path: "/dockerconfig/{{ item | basename }}/docker-compose.yml"
     state: absent
-  loop: "{{ app_stacks | default([]) }}" 
+  loop: "{{ app_stacks | default([]) }}"
 
 - name: Copy files to remote host
   ansible.builtin.copy:
@@ -89,9 +89,8 @@
     images_filters:
       until: 24h
       dangling: false
-  register: pruned_images 
+  register: pruned_images
 
 - name: Show reclaimed Space
   ansible.builtin.debug:
     msg: "Reclaimed Space: {{ (pruned_images.images_space_reclaimed | default(0)) | human_readable }}"
-    
