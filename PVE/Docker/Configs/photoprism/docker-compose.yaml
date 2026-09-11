@@ -55,7 +55,7 @@ services:
       - /dockerconfig/photoprism/data:/photoprism/storage
 
   mariadb:
-    image: mariadb:11
+    image: mariadb:12
     restart: unless-stopped
     stop_grace_period: 5s
     security_opt:
