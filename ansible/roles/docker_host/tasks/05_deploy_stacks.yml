@@ -1,0 +1,96 @@
+---
+- name: Ensure target directories exist
+  ansible.builtin.file:
+    path: "/dockerconfig/{{ item | basename }}"
+    state: directory
+    mode: "2775"
+    group: "homelab-devs"
+    owner: "{{ my_user }}"
+  loop: "{{ app_stacks | default([]) }}"
+
+- name: Remove legacy docker-compose.yml from remote host
+  ansible.builtin.file:
+    path: "/dockerconfig/{{ item | basename }}/docker-compose.yml"
+    state: absent
+  loop: "{{ app_stacks | default([]) }}"
+
+- name: Copy files to remote host
+  ansible.builtin.copy:
+    src: "{{ lookup('ansible.builtin.first_found', find_spec) }}"
+    dest: "/dockerconfig/{{ item | basename }}/docker-compose.yaml"
+    mode: "0664"
+    owner: "{{ deploy_user }}"
+    group: "homelab-devs"
+  loop: "{{ app_stacks | default([]) }}"
+  vars:
+    find_spec:
+      files:
+        - "docker-compose.yaml"
+        - "docker-compose.yml"
+      paths:
+        - "{{ item }}"
+
+- name: Write decrypted .env file to remote host
+  ansible.builtin.copy:
+    content: "{{ lookup('community.sops.sops', item + '/.env.enc', input_type='dotenv', output_type='dotenv', age_key=sops_key) }}"
+    dest: "/dockerconfig/{{ item | basename }}/.env"
+    mode: "0660"
+    owner: "{{ deploy_user }}"
+    group: "homelab-devs"
+  ignore_errors: true
+  when: query("ansible.builtin.fileglob", item + "/.env.enc") | length > 0
+  loop: "{{ app_stacks | default([]) }}"
+
+- name: Find template files in local repository stack directories
+  ansible.builtin.find:
+    paths: "{{ item }}"
+    patterns: "*.template"
+    recurse: true
+  loop: "{{ app_stacks | default([]) }}"
+  register: found_templates
+  delegate_to: localhost
+  become: false
+
+- name: Ensure subdirectories for templates exist on remote host
+  ansible.builtin.file:
+    path: "/dockerconfig/{{ item.0.item | basename }}/{{ item.1.path | relpath(item.0.item) | dirname }}"
+    state: directory
+    mode: "2775"
+    owner: "{{ my_user }}"
+    group: "homelab-devs"
+  loop: "{{ found_templates.results | default([]) | subelements('files') }}"
+  when: item.1.path is defined
+
+- name: Copy pre-rendered template files to remote host
+  ansible.builtin.copy:
+    src: "{{ template_item.1.path | regex_replace('\\.template$', '') }}"
+    dest: "/dockerconfig/{{ template_item.0.item | basename }}/{{ template_item.1.path | relpath(template_item.0.item) | regex_replace('\\.template$', '') }}"
+    mode: "0664"
+    owner: "{{ deploy_user }}"
+    group: "homelab-devs"
+  loop: "{{ found_templates.results | default([]) | subelements('files') }}"
+  loop_control:
+    loop_var: template_item
+
+- name: Deploy Docker Compose stack
+  community.docker.docker_compose_v2:
+    project_src: "/dockerconfig/{{ item | basename }}"
+    state: present
+    remove_orphans: true
+    recreate: auto
+  loop: "{{ app_stacks | default([]) }}"
+
+- name: Prune old Images
+  community.docker.docker_prune:
+    images: true
+    containers: false
+    volumes: false
+    networks: false
+    images_filters:
+      until: 24h
+      dangling: false
+  register: pruned_images
+
+- name: Show reclaimed Space
+  ansible.builtin.debug:
+    msg: "Reclaimed Space: {{ (pruned_images.images_space_reclaimed | default(0)) | human_readable }}"

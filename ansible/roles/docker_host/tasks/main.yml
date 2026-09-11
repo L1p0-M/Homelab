@@ -15,3 +15,7 @@
 - name: Setup Dockerconfig directory
   ansible.builtin.include_tasks: 04_setup_dir.yml
   tags: [docker, docker-config]
+
+- name: Deploy Docker Stacks
+  ansible.builtin.include_tasks: 05_deploy_stacks.yml
+  tags: [docker, docker-compose, deploy]

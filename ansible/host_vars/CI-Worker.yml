@@ -1,0 +1,5 @@
+app_stacks:
+  - "../PVE/CI_Worker/Configs/renovate_bot"
+  - "../PVE/CI_Worker/Configs/github_runner"
+  - "../PVE/CI_Worker/Configs/watcher_agent"
+  - "../PVE/CI_Worker/Configs/gitea_runner"
