@@ -42,7 +42,7 @@ jobs:
         id: set-args
         run: |
           MANUAL_ARGS="${{ inputs.args }}"
-          if [ ! -n "$MANUAL_ARGS" ]; then
+          if [ -n "$MANUAL_ARGS" ]; then
             ARGS="$MANUAL_ARGS"
           else
             ANY_CHANGE="${{ steps.changed-files.outputs.any_changed }}"
