@@ -7,7 +7,7 @@ x-env: &env
 x-runner-template: &runner-base
     image: ghcr.io/l1p0-m/github-runner-docker:latest
     privileged: true
-    restart: unless-stopped
+    restart: always
 services:
     github-runner-1:
         <<: *runner-base
