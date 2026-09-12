@@ -81,16 +81,11 @@
   loop: "{{ app_stacks | default([]) }}"
   when: (item | basename) != "github_runner"
 
-- name: Deploy CI Runner
-  community.docker.docker_compose_v2:
-    project_src: "/dockerconfig/{{ item | basename }}"
-    state: present
-    remove_orphans: true
-    recreate: auto
-  async: 30
-  poll: 0
+- name: Schedule CI Runner restart in background
+  ansible.builtin.shell: |
+    nohup bash -c "sleep 60 && docker compose -f /dockerconfig/{{ item | basename }}/docker-compose.yaml up -d --remove-orphans" > /dev/null 2>&1 &
+  when: (item | basename) == 'github_runner'
   loop: "{{ app_stacks | default([]) }}"
-  when: (item | basename) == "github_runner"
 
 - name: Prune old Images
   community.docker.docker_prune:
