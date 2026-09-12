@@ -55,7 +55,7 @@ jobs:
               ARGS=""
             fi
           fi
-          echo "args=$ARGS" >> $GITHUB_OUTPUT 
+          echo "args=$ARGS" >> $GITHUB_OUTPUT
 
   deploy-services:
     name: "Run Ansible Playbook / Deploy Compose Services"
