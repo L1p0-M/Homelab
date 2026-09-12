@@ -21,7 +21,7 @@ jobs:
     name: "Detect Changed Files"
     runs-on: self-hosted
     outputs:
-      args: ${{ steps.set-args.args }}
+      args: ${{ steps.set-args.outputs.args }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
