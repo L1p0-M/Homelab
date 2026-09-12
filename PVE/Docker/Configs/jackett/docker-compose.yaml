@@ -1,7 +1,7 @@
 ---
 services:
   jackett:
-    image: ghcr.io/linuxserver/jackett:latest@sha256:fe3facd48302190c2e4144f0c0ea752e775ba0147813629255608a6a899c3a43
+    image: ghcr.io/linuxserver/jackett:latest@sha256:f78e9aa09610e778590ae81074fbcab69188900c0c860f917b31ae86b78fc047
     container_name: jackett
     environment:
       - PUID=1000
