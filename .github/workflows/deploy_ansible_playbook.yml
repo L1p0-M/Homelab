@@ -30,32 +30,17 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v47
         with:
-          dir_names: false
+          dir_names: true
           dir_names_max_depth: 5
-          files_yaml: |
-            compose:
-              - '**/docker-compose.*'
-            ansible:
-              - 'ansible/**'
 
       - name: Set ansible args
         id: set-args
         run: |
-          MANUAL_ARGS="${{ inputs.args }}"
-          if [ -n "$MANUAL_ARGS" ]; then
-            ARGS="$MANUAL_ARGS"
+          if [ -n "${{ inputs.args }}" ]; then
+            echo "args=${{ inputs.args }}" >> $GITHUB_OUTPUT
           else
-            ANY_CHANGE="${{ steps.changed-files.outputs.any_changed }}"
-            COMPOSE_CHANGED="${{ steps.changed-files.outputs.compose_any_changed }}"
-            ANSIBLE_CHANGED="${{ steps.changed-files.outputs.ansible_any_changed }}"
-
-            if [ "$COMPOSE_CHANGED" == "true" ] && [ "$ANSIBLE_CHANGED" != "true" ]; then
-              ARGS="--limit docker_hosts --tags docker_host"
-            else
-              ARGS=""
-            fi
+            python3 -u .github/workflows/scripts/get_ansible_limits.py ${{ steps.changed-files.outputs.all_changed_files }}
           fi
-          echo "args=$ARGS" >> $GITHUB_OUTPUT
 
   deploy-services:
     name: "Run Ansible Playbook / Deploy Compose Services"
