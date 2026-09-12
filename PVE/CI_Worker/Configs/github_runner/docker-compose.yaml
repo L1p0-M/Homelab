@@ -1,13 +1,29 @@
+---
+x-env: &env
+    PUID: 1000
+    PGID: 1000
+    REPO: L1p0-M/Homelab
+    TOKEN: ${TOKEN}
+x-runner-template: &runner-base
+    image: ghcr.io/l1p0-m/github-runner-docker:latest
+    privileged: true
+    restart: unless-stopped
 services:
-    github-runner:
-        image: ghcr.io/l1p0-m/github-runner-docker:latest
-        privileged: true
-        container_name: github-runner
+    github-runner-1:
+        <<: *runner-base
+        container_name: github-runner-1
         environment:
-            - REMOVE_RUNNER=false
-            - PUID=1000
-            - PGID=1000
-            - RUNNER_NAME=ci-worker
-            - REPO=L1p0-M/Homelab
-            - TOKEN=${TOKEN}
-        restart: unless-stopped
+            <<: *env
+            RUNNER_NAME: ci-worker-1
+    github-runner-2:
+        <<: *runner-base
+        container_name: github-runner-2
+        environment:
+            <<: *env
+            RUNNER_NAME: ci-worker-2
+    github-runner-3:
+        <<: *runner-base
+        container_name: github-runner-3
+        environment:
+            <<: *env
+            RUNNER_NAME: ci-worker-3
