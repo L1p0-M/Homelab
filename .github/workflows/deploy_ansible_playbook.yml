@@ -1,4 +1,4 @@
-name: Update Docker Containers
+name: "Run Ansible Playbook / Deploy Services"
 on:
   push:
     branches:
@@ -8,10 +8,59 @@ on:
       - 'PVE/Media/Configs/**'
       - 'PVE/Docs_Monitoring/Configs/**'
       - 'PVE/CI_Worker/Configs/**'
+      - 'ansible/**'
+
+  workflow_dispatch:
+    inputs:
+      args:
+        description: 'Args for ansible playbook(e.g.: --limit docker-hosts --check )'
+        required: false
+        default: ''
 jobs:
-  deploy-services:
-    name: "Deploy Docker Compose Services"
+  detect-changes:
+    name: "Detect Changed Files"
     runs-on: self-hosted
+    outputs:
+      args: ${{ steps.set-args.args }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Get changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          dir_names: false
+          dir_names_max_depth: 5
+          files_yaml: |
+            compose:
+              - '**/docker-compose.*'
+            ansible:
+              - 'ansible/**'
+
+      - name: Set ansible args
+        id: set-args
+        run: |
+          MANUAL_ARGS="${{ inputs.args }}"
+          if [ ! -n "$MANUAL_ARGS" ]; then
+            ARGS="$MANUAL_ARGS"
+          else
+            ANY_CHANGE="${{ steps.changed-files.outputs.any_changed }}"
+            COMPOSE_CHANGED="${{ steps.changed-files.outputs.compose_any_changed }}"
+            ANSIBLE_CHANGED="${{ steps.changed-files.outputs.ansible_any_changed }}"
+
+            if [ "$COMPOSE_CHANGED" == "true" ] && [ "$ANSIBLE_CHANGED" != "true" ]; then
+              ARGS="--limit docker_hosts --tags docker_host"
+            else
+              ARGS=""
+            fi
+          fi
+          echo "args=$ARGS" >> $GITHUB_OUTPUT
+
+  deploy-services:
+    name: "Run Ansible Playbook / Deploy Compose Services"
+    runs-on: self-hosted
+    needs: detect-changes
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -71,4 +120,16 @@ jobs:
           ANSIBLE_FORCE_COLOR: '1'
           ANSIBLE_CONFIG: 'ansible.cfg'
         run: |
-            ansible-playbook site.yml --limit docker_hosts --tags docker_host
+          ARGS="${{ needs.detect-changes.outputs.args }}"
+          if [ -n "$ARGS" ]; then
+            echo "Executing ansible playbook with args: $ARGS"
+            ansible-playbook site.yml $ARGS
+          else
+            echo "Executing full ansible playbook"
+            ansible-playbook site.yml
+          fi
+
+      - name: Clean Up
+        if: always()
+        run: |
+          rm -f ansible/.vault_pass
