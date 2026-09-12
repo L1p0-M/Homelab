@@ -79,6 +79,18 @@
     remove_orphans: true
     recreate: auto
   loop: "{{ app_stacks | default([]) }}"
+  when: (item | basename) != "github_runner"
+
+- name: Deploy CI Runner
+  community.docker.docker_compose_v2:
+    project_src: "/dockerconfig/{{ item | basename }}"
+    state: present
+    remove_orphans: true
+    recreate: auto
+  async: 30
+  poll: 0
+  loop: "{{ app_stacks | default([]) }}"
+  when: (item | basename) == "github_runner"
 
 - name: Prune old Images
   community.docker.docker_prune:
