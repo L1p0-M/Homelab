@@ -24,22 +24,31 @@ def process_input(changed_dirs):
         return f"--limit docker_hosts --tags docker_host"
 
 def set_github_output(args):
-    print(f"Setting github output to: {args}")
-    if os.environ.get("GITHUB_OUTPUT"):
-        with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-            f.write(f"args={args}\n")
-            print("Github output is set!")
+    try:
+        print(f"Setting github output to: {args}")
+        if os.environ.get("GITHUB_OUTPUT"):
+            with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                f.write(f"args={args}\n")
+                print("Github output is set!")
+
+    except Exception as e:
+        print(f"Error while writing to github output: {e}")
+        exit(1)
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Get changed ansible limits from changed directories.")
     parser.add_argument("changed_dirs", nargs="+", help="List of changed directories.")
     args = parser.parse_args()
     print(f"Changed directories: {args.changed_dirs}")
-    if args.changed_dirs != []:
-        output_args = process_input(args.changed_dirs)
-        set_github_output(output_args)
-        exit(0)
-    else:
-        print("No changed directories provided or no changes detected.")
-        set_github_output("")
+    try:
+        if args.changed_dirs != []:
+            output_args = process_input(args.changed_dirs)
+            set_github_output(output_args)
+            exit(0)
+        else:
+            print("No changed directories provided or no changes detected.")
+            set_github_output("")
+            exit(0)
+    except Exception as e:
+        print(f"Error while processing input: {e}")
         exit(1)
