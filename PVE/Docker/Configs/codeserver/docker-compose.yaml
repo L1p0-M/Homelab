@@ -1,7 +1,7 @@
 ---
 services:
   code-server:
-    image: lscr.io/linuxserver/code-server:latest@sha256:5d7aa5dbcf0ba770ee1a25151d110beefe37f400fa7a9108508f11f49627a548
+    image: lscr.io/linuxserver/code-server:latest@sha256:35c66180741213ad9d8a4a31271fa7e84f290b681ece3fb84359c1ca7013da89
     container_name: code-server
     environment:
       - PUID=1000
