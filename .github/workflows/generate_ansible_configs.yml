@@ -1,0 +1,95 @@
+name: Generate Ansible Inventory && App-Stacks for VMs/LXCs
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/terraform.tfvars'
+      - 'PVE/**/Configs/*'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-ansible-files:
+    runs-on: self-hosted
+    name: Generate Ansible Inventory & App-Stacks
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install Python Dependencies
+        run: |
+          pip install python-hcl2
+
+      - name: Generate Ansible Inventory file for VM/LXC
+        id: generate-inventory
+        run: |
+          python3 -u .github/workflows/scripts/get_ansible_inventory.py --output ansible/inventory.ini --search ./
+
+      - name: Generate Ansible App-Stacks for VM/LXC
+        id: generate-stacks
+        run: |
+          python3 -u .github/workflows/scripts/get_ansible_stacks.py --output ansible/host_vars/ --search ./
+
+      - name: Set PR Vars
+        if: steps.generate-inventory.outputs.has_changes == 'true' || steps.generate-stacks.outputs.has_changes == 'true'
+        id: pr-vars
+        run: |
+          INVENTORY_CHANGE="${{ steps.generate-inventory.outputs.has_changes }}"
+          STACKS_CHANGE="${{ steps.generate-stacks.outputs.has_changes }}"
+
+          if [[ "$INVENTORY_CHANGE" == 'true' && "$STACKS_CHANGE" == 'true' ]]; then
+            BRANCH="ansible-auto-updates"
+            TITLE="CI(ansible): Auto-update Ansible configuration files"
+            BODY=$(cat <<'EOF'
+              ### Automated Ansible Configuration Update
+
+              GitOps Pipeline successfully processed and generated/updated the following configuration files:
+
+              - **Inventory:** `${{ steps.generate-inventory.outputs.has_changes || 'false' }}`
+              - **App-Stacks:** `${{ steps.generate-stacks.outputs.has_changes || 'false' }}`
+
+              ---
+              >🤖 *Generated automatically via GitOps CI/CD Pipeline. Please review and merge.*
+              EOF
+              )
+            COMMIT="CI(ansible): Auto-update Ansible inventory & app-stacks"
+
+          elif [[ "$INVENTORY_CHANGE" == 'true' ]]; then
+            BRANCH="${{ steps.generate-inventory.outputs.pr_branch || 'inventory-updates' }}"
+            TITLE="${{ steps.generate-inventory.outputs.pr_title || 'CI(ansible): Auto-update Ansible inventory' }}"
+            BODY="${{ steps.generate-inventory.outputs.pr_body }}"
+            COMMIT="${{ steps.generate-inventory.outputs.pr_title || 'CI(ansible): Auto-update Ansible inventory' }}"
+
+          elif [[ "$STACKS_CHANGE" == 'true' ]]; then
+            BRANCH="${{ steps.generate-stacks.outputs.pr_branch || 'app-stacks' }}"
+            TITLE="${{ steps.generate-stacks.outputs.pr_title || 'CI(ansible): Auto-update Ansible app-stacks' }}"
+            BODY="${{ steps.generate-stacks.outputs.pr_body }}"
+            COMMIT="${{ steps.generate-stacks.outputs.pr_title || 'CI(ansible): Auto-update Ansible app-stacks' }}"
+          fi
+
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+          echo "body<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        if: steps.generate-inventory.outputs.has_changes == 'true' || steps.generate-stacks.outputs.has_changes == 'true'
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          committer: "Cortana [bot] <cortana@l1p0-industries.hu>"
+          author: "Cortana [bot] <cortana@l1p0-industries.hu>"
+          assignees: "L1p0-M"
+          commit-message: "${{ steps.pr-vars.outputs.commit }}"
+          branch: "${{ steps.pr-vars.outputs.branch }}"
+          title: "${{ steps.pr-vars.outputs.title }}"
+          body: "${{ steps.pr-vars.outputs.body }}"
