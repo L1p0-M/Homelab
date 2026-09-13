@@ -47,19 +47,18 @@ jobs:
           if [[ "$INVENTORY_CHANGE" == 'true' && "$STACKS_CHANGE" == 'true' ]]; then
             BRANCH="ansible-auto-updates"
             TITLE="CI(ansible): Auto-update Ansible configuration files"
-            BODY=$(cat <<'EOF'
-              ### Automated Ansible Configuration Update
-
-              GitOps Pipeline successfully processed and generated/updated the following configuration files:
-
-              - **Inventory:** `${{ steps.generate-inventory.outputs.has_changes || 'false' }}`
-              - **App-Stacks:** `${{ steps.generate-stacks.outputs.has_changes || 'false' }}`
-
-              ---
-              >🤖 *Generated automatically via GitOps CI/CD Pipeline. Please review and merge.*
-              EOF
-              )
             COMMIT="CI(ansible): Auto-update Ansible inventory & app-stacks"
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "### Automated Ansible Configuration Update" >> $GITHUB_OUTPUT
+            echo " " >> $GITHUB_OUTPUT
+            echo "GitOps Pipeline successfully processed and generated/updated the following configuration files:" >> $GITHUB_OUTPUT"
+            echo " " >> $GITHUB_OUTPUT
+            echo "- **Inventory:** `${{ steps.generate-inventory.outputs.has_changes || 'false' }}`" >> $GITHUB_OUTPUT
+            echo "- **App-Stacks:** `${{ steps.generate-stacks.outputs.has_changes || 'false' }}`" >> $GITHUB_OUTPUT
+            echo " " >> $GITHUB_OUTPUT
+            echo "---" >> $GITHUB_OUTPUT
+            echo ">🤖 *Generated automatically via GitOps CI/CD Pipeline. Please review and merge.*" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
 
           elif [[ "$INVENTORY_CHANGE" == 'true' ]]; then
             BRANCH="${{ steps.generate-inventory.outputs.pr_branch || 'inventory-updates' }}"
@@ -67,19 +66,24 @@ jobs:
             BODY="${{ steps.generate-inventory.outputs.pr_body }}"
             COMMIT="${{ steps.generate-inventory.outputs.pr_title || 'CI(ansible): Auto-update Ansible inventory' }}"
 
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "$BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
           elif [[ "$STACKS_CHANGE" == 'true' ]]; then
             BRANCH="${{ steps.generate-stacks.outputs.pr_branch || 'app-stacks' }}"
             TITLE="${{ steps.generate-stacks.outputs.pr_title || 'CI(ansible): Auto-update Ansible app-stacks' }}"
             BODY="${{ steps.generate-stacks.outputs.pr_body }}"
             COMMIT="${{ steps.generate-stacks.outputs.pr_title || 'CI(ansible): Auto-update Ansible app-stacks' }}"
+
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            echo "$BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           fi
 
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           echo "title=$TITLE" >> $GITHUB_OUTPUT
           echo "commit=$COMMIT" >> $GITHUB_OUTPUT
-          echo "body<<EOF" >> $GITHUB_OUTPUT
-          echo "$BODY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v8
