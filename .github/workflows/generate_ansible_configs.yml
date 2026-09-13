@@ -30,12 +30,12 @@ jobs:
       - name: Generate Ansible Inventory file for VM/LXC
         id: generate-inventory
         run: |
-          python3 -u .github/workflows/scripts/get_ansible_inventory.py --output ansible/inventory.ini --search ./
+          python3 -u .github/workflows/scripts/generate_ansible_inventory.py --output ansible/inventory.ini --search ./
 
       - name: Generate Ansible App-Stacks for VM/LXC
         id: generate-stacks
         run: |
-          python3 -u .github/workflows/scripts/get_ansible_stacks.py --output ansible/host_vars/ --search ./
+          python3 -u .github/workflows/scripts/generate_ansible_stacks.py --output ansible/host_vars/ --search ./
 
       - name: Set PR Vars
         if: steps.generate-inventory.outputs.has_changes == 'true' || steps.generate-stacks.outputs.has_changes == 'true'
