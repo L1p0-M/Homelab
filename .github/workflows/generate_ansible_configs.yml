@@ -53,10 +53,10 @@ jobs:
             echo "body<<EOF" >> $GITHUB_OUTPUT
             echo "### Automated Ansible Configuration Update" >> $GITHUB_OUTPUT
             echo " " >> $GITHUB_OUTPUT
-            echo "GitOps Pipeline successfully processed and generated/updated the following configuration files:" >> $GITHUB_OUTPUT"
+            echo "GitOps Pipeline successfully processed and generated/updated the following configuration files:" >> $GITHUB_OUTPUT
             echo " " >> $GITHUB_OUTPUT
-            echo "- **Inventory:** `${{ steps.generate-inventory.outputs.has_changes || 'false' }}`" >> $GITHUB_OUTPUT
-            echo "- **App-Stacks:** `${{ steps.generate-stacks.outputs.has_changes || 'false' }}`" >> $GITHUB_OUTPUT
+            echo "- **Inventory:** `Updated`" >> $GITHUB_OUTPUT
+            echo "- **App-Stacks:** `Updated`" >> $GITHUB_OUTPUT
             echo " " >> $GITHUB_OUTPUT
             echo "---" >> $GITHUB_OUTPUT
             echo ">🤖 *Generated automatically via GitOps CI/CD Pipeline. Please review and merge.*" >> $GITHUB_OUTPUT
