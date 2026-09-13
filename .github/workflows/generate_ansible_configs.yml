@@ -43,6 +43,8 @@ jobs:
         run: |
           INVENTORY_CHANGE="${{ steps.generate-inventory.outputs.has_changes }}"
           STACKS_CHANGE="${{ steps.generate-stacks.outputs.has_changes }}"
+          INVENTORY_CHANGE="${INVENTORY_CHANGE,,}"
+          STACKS_CHANGE="${STACKS_CHANGE,,}"
 
           if [[ "$INVENTORY_CHANGE" == 'true' && "$STACKS_CHANGE" == 'true' ]]; then
             BRANCH="ansible-auto-updates"
@@ -57,8 +59,8 @@ jobs:
 
               ---
               >🤖 *Generated automatically via GitOps CI/CD Pipeline. Please review and merge.*
-              EOF
-              )
+            EOF
+            )
             COMMIT="CI(ansible): Auto-update Ansible inventory & app-stacks"
 
           elif [[ "$INVENTORY_CHANGE" == 'true' ]]; then
