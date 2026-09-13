@@ -191,6 +191,7 @@ if __name__ == "__main__":
 
                 else:
                     print("No changes detected in the Ansible inventory. No update performed.")
+                    os.remove("inventory.ini.new")
                     has_changes = False
                 write_to_github_output(has_changes=has_changes, pr_branch="update-ansible-inventory")
                 exit(0)
@@ -199,4 +200,6 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        if os.path.exists("inventory.ini.new"):
+            os.remove("inventory.ini.new")
         exit(1)
