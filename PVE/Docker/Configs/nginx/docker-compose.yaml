@@ -15,7 +15,7 @@ services:
       DB_MYSQL_NAME: ${DATABASE}
     volumes:
       - /dockerconfig/nginx/data/app:/data
-      - /dockerconfig/letsencrypt:/etc/letsencrypt
+      - /dockerconfig/nginx/letsencrypt:/etc/letsencrypt
   db:
     image: 'jc21/mariadb-aria:latest'
     restart: unless-stopped
