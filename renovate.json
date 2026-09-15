@@ -7,7 +7,8 @@
   "enabledManagers": [
     "docker-compose",
     "dockerfile",
-    "custom.regex"
+    "custom.regex",
+    "github-actions",
   ],
   "customManagers": [
     {
