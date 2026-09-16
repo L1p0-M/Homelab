@@ -69,7 +69,7 @@
     file_type: any
     age: "{{ retention_days }}d"
   register: expired_trash
-  
+
 - name: Permanently purge expired trash stacks
   ansible.builtin.file:
     path: "{{ item.path }}"
