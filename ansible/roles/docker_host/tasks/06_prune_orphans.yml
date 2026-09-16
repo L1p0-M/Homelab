@@ -1,0 +1,78 @@
+---
+
+- name: Set vars
+  ansible.builtin.set_fact:
+    trash_dir: "/dockerconfig/.trash"
+    stacks_dir: "/dockerconfig"
+    retention_days: 3
+
+- name: Ensure trash directory exists
+  ansible.builtin.file:
+    path: "{{ trash_dir }}"
+    state: directory
+    mode: "2775"
+    group: "homelab-devs"
+    owner: "{{ my_user }}"
+
+- name: Extract stack names from Git app_stacks
+  ansible.builtin.set_fact:
+    expected_stacks: "{{ app_stacks | default([]) | map('basename') | list }}"
+
+- name: Find all stack directories on remote host
+  ansible.builtin.find:
+    paths: "{{ stacks_dir }}"
+    file_type: any
+    recurse: false
+    hidden: false
+    excludes:
+      - ".trash"
+  register: found_directories
+
+- name: Extract remote stack names from disk
+  ansible.builtin.set_fact:
+    remote_stacks: "{{ found_directories.files | map(attribute='path') | map('basename') | list }}"
+
+- name: Identify orphaned stacks to purge
+  ansible.builtin.set_fact:
+    orphaned_stacks: "{{ remote_stacks | difference(expected_stacks) }}"
+
+- name: Display identified orphaned stacks
+  ansible.builtin.debug:
+    msg: "Found orphaned stacks to purge: {{ orphaned_stacks }}"
+  when: orphaned_stacks | length > 0
+
+- name: Stop and remove orphaned stacks
+  community.docker.docker_compose_v2:
+    project_src: "{{ stacks_dir }}/{{ item }}"
+    state: absent
+    remove_volumes: true
+  loop: "{{ orphaned_stacks }}"
+  when: orphaned_stacks | length > 0
+  ignore_errors: true
+
+- name: Move orphaned stack directories to trash
+  ansible.builtin.shell: |
+    mv "{{ stacks_dir }}/{{ item }}" "{{ trash_dir }}/{{ item }}_{{ now(utc=true,fmt='%Y-%m-%d_%H-%M-%S') }}"
+  loop: "{{ orphaned_stacks }}"
+  when: orphaned_stacks | length > 0
+
+- name: Reset modification time (age) of the trashed stack
+  ansible.builtin.file:
+    path: "{{ trash_dir }}/{{ item }}_{{ now(utc=true,fmt='%Y-%m-%d_%H-%M-%S') }}"
+    state: touch
+  loop: "{{ orphaned_stacks }}"
+  when: orphaned_stacks | length > 0
+
+- name: Find expired stacks in trash
+  ansible.builtin.find:
+    paths: "{{ trash_dir }}"
+    file_type: any
+    age: "{{ retention_days }}d"
+  register: expired_trash
+  
+- name: Permanently purge expired trash stacks
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ expired_trash.files }}"
+  when: expired_trash.matched > 0

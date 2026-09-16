@@ -12,4 +12,3 @@
   roles:
     - role: docker_host
       tags: [docker_host]
-
