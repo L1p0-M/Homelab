@@ -19,3 +19,7 @@
 - name: Deploy Docker Stacks
   ansible.builtin.include_tasks: 05_deploy_stacks.yml
   tags: [docker, docker-compose, deploy]
+
+- name: Prune Orphaned Stacks
+  ansible.builtin.include_tasks: 06_prune_orphans.yml
+  tags: [docker, docker-compose, deploy, prune]
