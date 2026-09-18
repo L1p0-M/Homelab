@@ -1,0 +1,15 @@
+name: "WHPrinter"
+description: "A lightweight Alpine Linux VM that turns a legacy **USB** HP printer/scanner into a **wireless** network service using **CUPS and SANE**"
+environment: "Production"
+type: "VM"
+status: "Active"
+os: "Alpine"
+ports:
+  - name: "CUPS"
+    port: 631
+    protocol: "tcp"
+    access: "Internal"
+  - name: "Saned"
+    port: 6566
+    protocol: "tcp"
+    access: "Internal"
