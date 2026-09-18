@@ -1,4 +1,5 @@
 target_type = "VM"
+ansible_groups = ["printer"]
 
 config = {
   vm_id          = 120

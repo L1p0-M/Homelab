@@ -1,0 +1,16 @@
+---
+
+- name: Install required packages
+  ansible.builtin.package:
+    update_cache: yes
+    state: present
+    name: "{{ print_packages }}"
+
+- name: Install hplip from edge branch
+  ansible.builtin.apk:
+    update_cache: yes
+    state: present
+    name:
+      - hplip
+    repository: http://dl-cdn.alpinelinux.org/alpine/edge/testing
+  when: ansible_os_family == 'Alpine'

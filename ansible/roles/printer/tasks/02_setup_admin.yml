@@ -1,0 +1,14 @@
+---
+
+- name: Ensure printer groups exists
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ print_groups | default(['lp', 'scanner']) }}"
+
+- name: Add my user to the groups
+  ansible.builtin.user:
+    name: "{{ my_user }}"
+    groups: "{{ print_groups }}"
+    append: yes
+    state: present
