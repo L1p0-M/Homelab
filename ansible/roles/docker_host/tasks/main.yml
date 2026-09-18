@@ -10,11 +10,11 @@
 
 - name: Configure Docker daemon and user permissions
   ansible.builtin.include_tasks: 03_config.yml
-  tags: [docker, docker-config]
+  tags: [docker, docker-config, init]
 
 - name: Setup Dockerconfig directory
   ansible.builtin.include_tasks: 04_setup_dir.yml
-  tags: [docker, docker-config]
+  tags: [docker, docker-config, init]
 
 - name: Deploy Docker Stacks
   ansible.builtin.include_tasks: 05_deploy_stacks.yml

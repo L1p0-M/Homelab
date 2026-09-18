@@ -1,0 +1,22 @@
+---
+
+- name: Load OS-specific variables
+  ansible.builtin.include_vars: 
+    file: "{{ ansible_os_family }}.yml"
+  tags: [vars, init]
+
+- name: Install required packages
+  ansible.builtin.include_tasks: 01_install_packages.yml
+  tags: [packages]
+
+- name: Setup Groups/Admin permissions
+  ansible.builtin.include_tasks: 02_setup_admin.yml
+  tags: [init, group]
+
+- name: Deploy Configs
+  ansible.builtin.include_tasks: 03_deploy_configs.yml
+  tags: [deploy, config]
+
+- name: Start services
+  ansible.builtin.include_tasks: 04_start_services.yml
+  tags: [init]

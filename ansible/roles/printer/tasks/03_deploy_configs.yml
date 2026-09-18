@@ -1,0 +1,32 @@
+---
+
+- name: Ensure cups directory exists
+  ansible.builtin.file:
+    state: directory
+    path: "{{ item.path }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop:
+    - path: "/etc/cups"
+      group: "lp"
+    - path: "/etc/sane.d"
+      group: "root"
+
+- name: Copy configs to remote hosts
+  ansible.builtin.copy:
+    src: "{{ item.src_path }}"
+    dest: "{{ item.dest_path }}"
+    mode: "{{ item.mode | default('0644') }}"
+    directory_mode: "{{ item.dir_mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+  notify: "restart {{ item.service }}"
+  loop:
+    - src_path: "cups/"
+      dest_path: "/etc/cups"
+      group: "lp"
+      service: "cups"
+    - src_path: "sane.d/"
+      dest_path: "/etc/sane.d"
+      service: "sane"
