@@ -170,6 +170,8 @@ if __name__ == "__main__":
                     template = get_readme_template()
                     if generate_readme(template=template, data=data):
                         move_readme(dir=dir)
+                else:
+                    print("Unable to get data from the files")
             if readme_datas:
                 generate_pr_summary(readme_datas=readme_datas)
                 exit(0)

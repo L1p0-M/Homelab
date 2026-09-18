@@ -4,7 +4,7 @@ from pathlib import Path as pathlibpath
 
 
 def process_input(changed_dirs):
-    if any(dirs.startswith("ansible/") for dirs in changed_dirs) or not changed_dirs:
+    if any(dirs.startswith("ansible") for dirs in changed_dirs) or not changed_dirs:
         return ""
     
     hosts = set()
