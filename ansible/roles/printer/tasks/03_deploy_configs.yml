@@ -17,7 +17,7 @@
   ansible.builtin.copy:
     src: "{{ item.src_path }}"
     dest: "{{ item.dest_path }}"
-    mode: "{{ item.mode | default('0644') }}"
+    mode: "{{ item.mode | default(omit) }}"
     directory_mode: "{{ item.dir_mode | default('0755') }}"
     owner: "{{ item.owner | default('root') }}"
     group: "{{ item.group | default('root') }}"
