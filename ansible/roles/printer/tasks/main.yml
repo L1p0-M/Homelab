@@ -1,7 +1,7 @@
 ---
 
 - name: Load OS-specific variables
-  ansible.builtin.include_vars: 
+  ansible.builtin.include_vars:
     file: "{{ ansible_os_family }}.yml"
   tags: [vars, init]
 
