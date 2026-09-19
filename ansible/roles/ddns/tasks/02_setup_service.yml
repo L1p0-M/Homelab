@@ -1,0 +1,13 @@
+---
+
+- name: Copy service file to remote host
+  ansible.builtin.template:
+    src: "cloudflare-ddns.service.j2"
+    dest: "/etc/systemd/system/cloudflare-ddns.service"
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  notify: reload daemon
+
+- name: Flush handlers immediately to apply systemd unit changes
+  ansible.builtin.meta: flush_handlers
