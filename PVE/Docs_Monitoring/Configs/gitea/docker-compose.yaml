@@ -24,7 +24,7 @@ services:
       - database
 
   database:
-    image: mysql:8
+    image: mysql:26
     restart: always
     container_name: gitea-db
     environment:
