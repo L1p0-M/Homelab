@@ -19,3 +19,10 @@
   roles:
     - role: printer
       tags: [printer]
+
+- name: Setup DDNS hosts
+  hosts: ddns
+  gather_facts: true
+  roles:
+    - role: ddns
+      tags: [ddns]

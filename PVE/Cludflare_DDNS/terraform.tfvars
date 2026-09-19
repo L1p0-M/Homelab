@@ -1,4 +1,5 @@
 target_type = "LXC"
+ansible_groups = ["ddns"]
 
 config = {
     id             = 111
@@ -6,7 +7,7 @@ config = {
     cpu_cores      = 2
     memory_mb      = 1024
     memory_swap    = 512
-    disk_size_gb   = 3
+    disk_size_gb   = 4
     ip_address     = "192.168.1.124/24"
     network_bridge = "vmbr0"
     network_name   = "eth0"

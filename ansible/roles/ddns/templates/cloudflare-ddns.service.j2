@@ -1,0 +1,17 @@
+[Unit]
+Description=Cloudflare DDNS Service (Go run)
+After=network.target
+
+[Service]
+Environment="CLOUDFLARE_API_TOKEN={{ cloudflare_token }}"
+Environment="DOMAINS={{ cloudflare_domain }}"
+Environment="PROXIED=true"
+Environment="IP6_PROVIDER=cloudflare.trace"
+Environment="GOPATH=/root/go"
+Environment="GOCACHE=/tmp/go-build"
+ExecStart=/usr/local/go/bin/go run github.com/favonia/cloudflare-ddns/cmd/ddns@latest
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target
