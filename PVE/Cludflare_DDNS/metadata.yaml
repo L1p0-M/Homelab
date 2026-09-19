@@ -1,0 +1,6 @@
+name: "Cloudflare-DDNS"
+description: "An LXC container service that monitors **public IP changes** and automatically **updates Cloudflare DNS A/AAAA records**."
+environment: "Production"
+type: "LXC"
+status: "Active"
+os: "Debian"
