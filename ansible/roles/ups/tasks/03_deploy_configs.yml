@@ -49,6 +49,6 @@
     group: "root"
     mode: "0755"
   when: notify_script | default(false) | bool
-    
+
 - name: Flush handlers to apply NUT configuration changes
   ansible.builtin.meta: flush_handlers
