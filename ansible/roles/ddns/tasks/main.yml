@@ -1,0 +1,14 @@
+---
+
+- name: Load variables
+  ansible.builtin.include_vars:
+    file: "Version.yml"
+
+- name: Install GO package
+  ansible.builtin.include_tasks: 01_install_packages.yml
+
+- name: Copy service file
+  ansible.builtin.include_tasks: 02_setup_service.yml
+
+- name: Start/Enable service
+  ansible.builtin.include_tasks: 03_start_service.yml

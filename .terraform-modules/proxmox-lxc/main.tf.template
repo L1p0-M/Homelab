@@ -3,4 +3,5 @@ module "proxmox_lxc" {
   node_config = var.node_config
   config      = var.config
   sensitive   = var.sensitive
+  target_type = var.target_type
 }
