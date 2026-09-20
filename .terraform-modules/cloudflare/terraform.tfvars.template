@@ -1,0 +1,112 @@
+domain_name = "${DOMAIN_NAME}"
+
+records = {
+  "bitwarden" = {
+    name     = "bitwarden"
+    type     = "CNAME"
+    content  = "@"
+    proxied  = true
+    comment  = ""
+  },
+  "bookshelf" = {
+    name    = "bookshelf"
+    type    = "CNAME"
+    content = "@"
+    proxied = true
+    comment = ""
+  },
+  "contact" = {
+    name    = "contact"
+    type    = "CNAME"
+    content = "@"
+    proxied = true
+    comment = ""
+  },
+  "docs" = {
+    name    = "docs"
+    type    = "CNAME"
+    content = "@"
+    proxied = true
+    comment = ""
+  },
+  "hassio" = {
+    name    = "hassio"
+    type    = "CNAME"
+    content = "@"
+    proxied = true
+    comment = ""
+  },
+  "ombi" = {
+    name    = "ombi"
+    type    = "CNAME"
+    content = "@"
+    proxied = true
+    comment = ""
+  },
+  "recept" = {
+    name    = "recept"
+    type    = "CNAME"
+    content = "@"
+    proxied = true
+    comment = ""
+  },
+  "themes" = {
+    name    = "themes"
+    type    = "CNAME"
+    content = "@"
+    proxied = true
+    comment = ""
+  },
+  "vpn" = {
+    name    = "vpn"
+    type    = "CNAME"
+    content = "@"
+    proxied = false
+    comment = ""
+  },
+  "movies" = {
+    name    = "movies"
+    type    = "CNAME"
+    content = "@"
+    proxied = false
+    comment = ""
+  },
+  "minecraft" = {
+    name    = "minecraft"
+    type    = "CNAME"
+    content = "@"
+    proxied = false
+    comment = ""
+  },
+  "local" = {
+    name    = "*.local"
+    type    = "A"
+    content = "192.168.1.24"
+    proxied = false
+    comment = ""
+  },
+  "mx1" = {
+    name    = "@"
+    type    = "MX"
+    content = "route1.mx.cloudflare.net"
+    proxied = false
+    priority = 90
+    comment = ""
+  },
+  "mx2" = {
+    name    = "@"
+    type    = "MX"
+    content = "route2.mx.cloudflare.net"
+    proxied = false
+    priority = 53
+    comment = ""
+  },
+  "mx3" = {
+    name    = "@"
+    type    = "MX"
+    content = "route3.mx.cloudflare.net"
+    proxied = false
+    priority = 62
+    comment = ""
+  }
+}
