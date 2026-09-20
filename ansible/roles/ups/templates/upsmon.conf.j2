@@ -1,0 +1,42 @@
+# Managed by Ansible
+
+RUN_AS_USER root
+MINSUPPLIES 1
+SHUTDOWNCMD "/sbin/shutdown -h +0"
+POLLFREQ 5
+POLLFREQALERT 5
+HOSTSYNC 15
+DEADTIME 15
+POWERDOWNFLAG /etc/killpower
+RBWARNTIME 43200
+NOCOMMWARNTIME 600
+FINALDELAY 5
+{% if nut_mon_user is defined and nut_mode == 'netclient' %}
+MONITOR {{ nut_ups_name | default('mainups') }}@{{ nut_listen_ip | default('localhost')}} 1 {{ nut_mon_user }} {{ nut_mon_password }} slave
+{% else %}
+MONITOR {{ nut_ups_name | default('mainups') }}@localhost 1 {{ nut_admin_user }} {{ nut_admin_password }} master
+{% endif %}
+
+{% if notify_script is defined and notify_script == 'true' %}
+NOTIFYMSG ONLINE    "UPS %s on line power"
+NOTIFYMSG ONBATT    "UPS %s on battery"
+NOTIFYMSG LOWBATT   "UPS %s battery is low"
+NOTIFYMSG FSD       "UPS %s: forced shutdown in progress"
+NOTIFYMSG COMMOK    "Communications with UPS %s established"
+NOTIFYMSG COMMBAD   "Communications with UPS %s lost"
+NOTIFYMSG SHUTDOWN  "Auto logout and shutdown proceeding"
+NOTIFYMSG REPLBATT  "UPS %s battery needs to be replaced"
+NOTIFYMSG NOCOMM    "UPS %s is unavailable"
+NOTIFYMSG NOPARENT  "upsmon parent process died - shutdown impossible"
+NOTIFYFLAG ONLINE   SYSLOG+WALL+EXEC
+NOTIFYFLAG ONBATT   SYSLOG+WALL+EXEC
+NOTIFYFLAG LOWBATT  SYSLOG+WALL+EXEC
+NOTIFYFLAG FSD      SYSLOG+WALL+EXEC
+NOTIFYFLAG COMMOK   SYSLOG+WALL+EXEC
+NOTIFYFLAG COMMBAD  SYSLOG+WALL
+NOTIFYFLAG SHUTDOWN SYSLOG+WALL+EXEC
+NOTIFYFLAG REPLBATT SYSLOG+WALL+EXEC
+NOTIFYFLAG NOCOMM   SYSLOG+WALL+EXEC
+NOTIFYFLAG NOPARENT SYSLOG+WALL
+NOTIFYCMD /usr/local/bin/upsmon
+{% endif %}

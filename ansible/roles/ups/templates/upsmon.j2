@@ -1,0 +1,2 @@
+#! /bin/bash
+echo -e "Subject: UPS Monitor \n\n$*" | sendmail -t "{{ email_to }}"

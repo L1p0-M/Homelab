@@ -1,0 +1,17 @@
+---
+
+nut_mode: netserver
+nut_ups_name: "zinto800"
+nut_ups_desc: "UPS for the whole Rack"
+nut_ups_driver: "blazer_usb"
+nut_ups_port: "auto"
+nut_ups_vendorid: "0665"
+nut_ups_productid: "5161"
+nut_ups_bus: "005"
+nut_ups_battery_voltage_high: 27.30
+nut_ups_battery_voltage_low: 22.00
+nut_ups_runtimecal: 360,100,840,50
+nut_listen_ip: "0.0.0.0"
+nut_listen_port: "3493"
+nut_admin_user: "{{ nut_server_admin_user }}"
+nut_admin_password: "{{ nut_server_admin_pass }}"

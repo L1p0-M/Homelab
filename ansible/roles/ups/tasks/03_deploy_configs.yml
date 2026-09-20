@@ -1,0 +1,54 @@
+---
+
+- name: Ensure NUT config dir exists
+  ansible.builtin.file:
+    state: directory
+    path: "/etc/nut"
+    mode: "0755"
+    owner: "root"
+    group: "nut"
+
+- name: Deploy configuration files needed for both mode
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: nut
+    mode: "0640"
+  loop:
+    - src: "nut.conf.j2"
+      dest: "/etc/nut/nut.conf"
+    - src: "upsmon.conf.j2"
+      dest: "/etc/nut/upsmon.conf"
+  notify: restart nut-client
+
+- name: Deploy NUT server configuration files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: nut
+    mode: "0640"
+  loop:
+    - src: "ups.conf.j2"
+      dest: "/etc/nut/ups.conf"
+    - src: "upsd.conf.j2"
+      dest: "/etc/nut/upsd.conf"
+    - src: "upsd.users.j2"
+      dest: "/etc/nut/upsd.users"
+    - src: "upsset.conf.j2"
+      dest: "/etc/nut/upsset.conf"
+  when: nut_mode == 'netserver'
+  notify: restart nut-server
+
+- name: Copy notify script to remote hosts
+  ansible.builtin.template:
+    src: "upsmon.j2"
+    dest: "/usr/local/bin/upsmon"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+  when: notify_script | default(false) | bool
+
+- name: Flush handlers to apply NUT configuration changes
+  ansible.builtin.meta: flush_handlers

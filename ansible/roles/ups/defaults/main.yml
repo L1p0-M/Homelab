@@ -1,0 +1,10 @@
+---
+
+nut_mode: "netserver"
+nut_ups_name: "mainups"
+nut_ups_desc: "UPS for the whole Rack"
+nut_ups_driver: "blazer_usb"
+nut_ups_port: "auto"
+nut_listen_ip: "0.0.0.0"
+nut_listen_port: "3493"
+notify_script: false

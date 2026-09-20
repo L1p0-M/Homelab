@@ -19,4 +19,4 @@
 
 - name: Start services
   ansible.builtin.include_tasks: 04_start_services.yml
-  tags: [init]
+  tags: [init, service]

@@ -1,4 +1,5 @@
 target_type = "LXC"
+ansible_groups = ["ups"]
 
 config = {
     id             = 102

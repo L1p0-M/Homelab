@@ -1,0 +1,13 @@
+---
+- name: Start NUT server service
+  ansible.builtin.service:
+    name: nut-server
+    state: started
+    enabled: true
+  when: nut_mode == 'netserver'
+
+- name: Start NUT client service
+  ansible.builtin.service:
+    name: nut-client
+    state: started
+    enabled: true
