@@ -69,7 +69,7 @@ jobs:
 
       - name: Create environment variables
         id: set-env
-        if: matrix.NODE == "PVE"
+        if: matrix.NODE == 'PVE'
         run: |
           PROXMOX_VE_ENDPOINT="${{ secrets.PROXMOX_VE_ENDPOINT_PVE }}"
           PROXMOX_VE_API_TOKEN="${{ secrets.PROXMOX_VE_API_TOKEN_PVE }}"
