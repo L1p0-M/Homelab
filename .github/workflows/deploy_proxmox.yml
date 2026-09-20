@@ -95,7 +95,7 @@ jobs:
       - name: Create needed terraform files from template for "${{ matrix.VM }}"
         run: |
           TARGET_TYPE="${{ steps.set-env.outputs.TARGET_TYPE }}"
-          if [ "${TARGET_TYPE^^}" == "LXC" ]; then   
+          if [ "${TARGET_TYPE^^}" == "LXC" ]; then
             BASEDIR="proxmox-lxc"
           elif [ "${TARGET_TYPE^^}" == "VM" ]; then
             BASEDIR="proxmox-vm"

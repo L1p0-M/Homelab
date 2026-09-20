@@ -98,7 +98,7 @@ jobs:
       - name: Create needed terraform files from template for "${{ matrix.VM }}"
         run: |
           TARGET_TYPE="${{ steps.set-env.outputs.TARGET_TYPE }}"
-          if [ "${TARGET_TYPE^^}" == "LXC" ]; then   
+          if [ "${TARGET_TYPE^^}" == "LXC" ]; then
             BASEDIR="proxmox-lxc"
           elif [ "${TARGET_TYPE^^}" == "VM" ]; then
             BASEDIR="proxmox-vm"
@@ -132,7 +132,7 @@ jobs:
           script: |
             const fs = require('fs');
             const planFile = `${process.env.NODE_NAME}/${process.env.TARGET_NAME}/plan_output.txt`;
-            
+
             let planText = "";
             if (fs.existsSync(planFile)) {
               planText = fs.readFileSync(planFile, 'utf8');
@@ -147,7 +147,7 @@ jobs:
             }
 
             const output = `### 📋 Terraform Plan: \`${process.env.NODE_NAME}/${process.env.TARGET_NAME}\`
-            
+
             <details><summary>Show Plan Output</summary>
 
             \`\`\`hcl
@@ -155,7 +155,7 @@ jobs:
             \`\`\`
 
             </details>
-            
+
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
             github.rest.issues.createComment({
@@ -164,5 +164,3 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
-        
-
