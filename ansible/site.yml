@@ -19,3 +19,17 @@
   roles:
     - role: printer
       tags: [printer]
+
+- name: Setup DDNS hosts
+  hosts: ddns
+  gather_facts: true
+  roles:
+    - role: ddns
+      tags: [ddns]
+
+- name: Setup NUT clients/server
+  hosts: ups
+  gather_facts: true
+  roles:
+    - role: ups
+      tags: [ups, nut]

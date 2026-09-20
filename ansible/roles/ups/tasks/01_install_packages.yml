@@ -1,0 +1,16 @@
+---
+
+- name: Install NUT packages for Client mode
+  ansible.builtin.package:
+    name:
+      - nut-client
+    state: present
+    update_cache: true
+
+- name: Install NUT packages for Server mode
+  ansible.builtin.package:
+    name:
+      - nut
+      - nut-server
+    state: present
+  when: nut_mode == 'netserver'

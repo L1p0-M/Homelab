@@ -1,0 +1,15 @@
+# Managed by Ansible
+
+{% if nut_admin_user is defined and nut_admin_password is defined and nut_admin_user and nut_admin_password %}
+[{{ nut_admin_user }} ]
+    password={{ nut_admin_password }}
+    upsmon master
+    actions= SET
+    instcmds= all
+{% endif %}
+
+{% if nut_mon_user is defined and nut_mon_password is defined and nut_mon_user and nut_mon_password%}
+[{{ nut_mon_user }}]
+    password = {{ nut_mon_password }}
+    upsmon slave
+{% endif %}

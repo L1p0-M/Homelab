@@ -1,0 +1,17 @@
+---
+
+- name: Install required packages
+  ansible.builtin.include_tasks: 01_install_packages.yml
+  tags: [packages]
+
+- name: Ensure Nut user exists
+  ansible.builtin.include_tasks: 02_setup_user.yml
+  tags: [init, group, user]
+
+- name: Deploy configuration files from templates
+  ansible.builtin.include_tasks: 03_deploy_configs.yml
+  tags: [deploy, config]
+
+- name: Enable and Start services
+  ansible.builtin.include_tasks: 04_start_service.yml
+  tags: [init, service]

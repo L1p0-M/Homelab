@@ -1,0 +1,15 @@
+---
+
+- name: Ensure NUT group exists(Package installer should create it)
+  ansible.builtin.group:
+    name: "nut"
+    state: present
+
+- name: Ensure NUT user exists(Package installer should create it)
+  ansible.builtin.user:
+    name: "nut"
+    group: "nut"
+    home: "/var/lib/nut"
+    create_home: false
+    shell: "/usr/sbin/nologin"
+    state: present
