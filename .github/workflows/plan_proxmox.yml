@@ -19,6 +19,9 @@ jobs:
     outputs:
       vms: ${{ steps.changed-services.outputs.vms }}
       has_changes: ${{ steps.changed-services.outputs.has_changes }}
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -52,6 +55,7 @@ jobs:
     if: needs.detect-changes.outputs.has_changes == 'true'
     permissions:
       pull-requests: write
+      contents: read
     strategy:
       matrix:
         include: ${{ fromJson(needs.detect-changes.outputs.vms) }}
@@ -68,9 +72,10 @@ jobs:
 
       - name: Create environment variables
         id: set-env
+        if: matrix.NODE == "PVE"
         run: |
-          PROXMOX_VE_ENDPOINT="${{ secrets[format('PROXMOX_VE_ENDPOINT_{0}', matrix.NODE)] }}"
-          PROXMOX_VE_API_TOKEN="${{ secrets[format('PROXMOX_VE_API_TOKEN_{0}', matrix.NODE)] }}"
+          PROXMOX_VE_ENDPOINT="${{ secrets.PROXMOX_VE_ENDPOINT_PVE }}"
+          PROXMOX_VE_API_TOKEN="${{ secrets.PROXMOX_VE_API_TOKEN_PVE }}"
           PROXMOX_VE_INSECURE="true"
           AWS_ACCESS_KEY_ID="${{ secrets.CF_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY="${{ secrets.CF_SECRET_ACCESS_KEY }}"
@@ -93,7 +98,7 @@ jobs:
       - name: Create needed terraform files from template for "${{ matrix.VM }}"
         run: |
           TARGET_TYPE="${{ steps.set-env.outputs.TARGET_TYPE }}"
-          if [ "${TARGET_TYPE^^}" == "LXC" ]; then   
+          if [ "${TARGET_TYPE^^}" == "LXC" ]; then
             BASEDIR="proxmox-lxc"
           elif [ "${TARGET_TYPE^^}" == "VM" ]; then
             BASEDIR="proxmox-vm"
@@ -127,7 +132,7 @@ jobs:
           script: |
             const fs = require('fs');
             const planFile = `${process.env.NODE_NAME}/${process.env.TARGET_NAME}/plan_output.txt`;
-            
+
             let planText = "";
             if (fs.existsSync(planFile)) {
               planText = fs.readFileSync(planFile, 'utf8');
@@ -142,7 +147,7 @@ jobs:
             }
 
             const output = `### 📋 Terraform Plan: \`${process.env.NODE_NAME}/${process.env.TARGET_NAME}\`
-            
+
             <details><summary>Show Plan Output</summary>
 
             \`\`\`hcl
@@ -150,7 +155,7 @@ jobs:
             \`\`\`
 
             </details>
-            
+
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
 
             github.rest.issues.createComment({
@@ -159,5 +164,3 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
-        
-

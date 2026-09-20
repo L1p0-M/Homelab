@@ -16,6 +16,10 @@ on:
         description: 'Args for ansible playbook(e.g.: --limit docker-hosts --check )'
         required: false
         default: ''
+
+permissions:
+  contents: read
+
 jobs:
   detect-changes:
     name: "Detect Changed Files"
@@ -76,7 +80,7 @@ jobs:
         env:
           SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
         run: |
-          find "./" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" 2> /dev/null | while read -r template; do
+          find "./" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" -not -path "*/.terraform-modules/*" -not -path "*/.github/*" 2> /dev/null | while read -r template; do
             basedir=$(dirname "$template")
             if [ -f "$basedir/.env.enc" ]; then
               sops --input-type dotenv --output-type dotenv --decrypt "$basedir/.env.enc" > "$basedir/.env"

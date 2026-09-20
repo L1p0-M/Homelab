@@ -7,6 +7,10 @@ on:
       - '**/*.yml'
       - '**/*.yaml'
 
+permissions:
+  pull-requests: read
+  contents: read
+
 jobs:
   detect-changes:
     runs-on: self-hosted
@@ -42,9 +46,6 @@ jobs:
     name: "YAML Syntax Check"
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
-    permissions:
-      pull-requests: read
-      contents: read
     strategy:
       matrix:
         files: ${{ fromJson(needs.detect-changes.outputs.files) }}
