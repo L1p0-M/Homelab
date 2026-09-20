@@ -16,6 +16,10 @@ on:
         description: 'Args for ansible playbook(e.g.: --limit docker-hosts --check )'
         required: false
         default: ''
+
+permissions:
+  contents: read
+
 jobs:
   detect-changes:
     name: "Detect Changed Files"
