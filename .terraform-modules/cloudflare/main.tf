@@ -13,16 +13,8 @@ data "cloudflare_zone" "current" {
     }
 }
 
-locals {
-  processed_records = {
-    for key, val in var.records : key => merge(val, {
-      content = val.content == "@" ? var.domain_name : val.content
-    })
-  }
-}
-
 resource "cloudflare_dns_record" "dns_record" {
-  for_each = local.processed_records
+  for_each = var.records
 
   zone_id = data.cloudflare_zone.current.id
   name = each.value.name

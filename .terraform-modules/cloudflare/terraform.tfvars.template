@@ -4,77 +4,77 @@ records = {
   "bitwarden" = {
     name     = "bitwarden"
     type     = "CNAME"
-    content  = "@"
+    content  = "${DOMAIN_NAME}"
     proxied  = true
     comment  = ""
   },
   "bookshelf" = {
     name    = "bookshelf"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = true
     comment = ""
   },
   "contact" = {
     name    = "contact"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = true
     comment = ""
   },
   "docs" = {
     name    = "docs"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = true
     comment = ""
   },
   "hassio" = {
     name    = "hassio"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = true
     comment = ""
   },
   "ombi" = {
     name    = "ombi"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = true
     comment = ""
   },
   "recept" = {
     name    = "recept"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = true
     comment = ""
   },
   "themes" = {
     name    = "themes"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = true
     comment = ""
   },
   "vpn" = {
     name    = "vpn"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = false
     comment = ""
   },
   "movies" = {
     name    = "movies"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = false
     comment = ""
   },
   "minecraft" = {
     name    = "minecraft"
     type    = "CNAME"
-    content = "@"
+    content = "${DOMAIN_NAME}"
     proxied = false
     comment = ""
   },
@@ -86,7 +86,7 @@ records = {
     comment = ""
   },
   "mx1" = {
-    name    = "@"
+    name    = "${DOMAIN_NAME}"
     type    = "MX"
     content = "route1.mx.cloudflare.net"
     proxied = false
@@ -94,7 +94,7 @@ records = {
     comment = ""
   },
   "mx2" = {
-    name    = "@"
+    name    = "${DOMAIN_NAME}"
     type    = "MX"
     content = "route2.mx.cloudflare.net"
     proxied = false
@@ -102,7 +102,7 @@ records = {
     comment = ""
   },
   "mx3" = {
-    name    = "@"
+    name    = "${DOMAIN_NAME}"
     type    = "MX"
     content = "route3.mx.cloudflare.net"
     proxied = false
