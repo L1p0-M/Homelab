@@ -4,13 +4,15 @@ Welcome to the documentation and configuration repository for my self-hosted 4-n
 
 <div align="center">
  
-[![Run Ansible Playbook / Deploy Services](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_ansible_playbook.yml/badge.svg)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_ansible_playbook.yml)
-[![Deploy/Update Proxmox VM/LXC](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_proxmox.yml/badge.svg)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_proxmox.yml)
 
-[![Terraform](https://img.shields.io/badge/Terraform-IaC-378144?style=flat-square&logo=terraform&logoColor=white&labelColor=0f1410)](https://www.terraform.io)
-[![Ansible](https://img.shields.io/badge/Ansible-IaC-378144?style=flat-square&logo=ansible&logoColor=white&labelColor=0f1410)](https://www.terraform.io)
-[![Last Commit](https://img.shields.io/github/last-commit/L1p0-M/Homelab?style=flat-square&labelColor=0f1410&color=378144)](https://github.com/L1p0-M/Homelab/commits/main)
-[![License: MIT](https://img.shields.io/github/license/L1p0-M/Homelab?style=flat-square&labelColor=0f1410&color=378144)](LICENSE)
+[![Run Ansible Playbook / Deploy Services](https://img.shields.io/github/actions/workflow/status/L1p0-M/Homelab/deploy_ansible_playbook.yml?style=flat-square&logo=ansible&logoColor=white&labelColor=0f1410&color=%23005082&label=Run%20Ansible%20Playbook%20%2F%20Deploy%20Services)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_ansible_playbook.yml)
+[![Deploy/Update Proxmox VM/LXC](https://img.shields.io/github/actions/workflow/status/L1p0-M/Homelab/deploy_proxmox.yml?style=flat-square&logo=proxmox&logoColor=white&labelColor=0f1410&color=%23005082&label=Deploy%20%2F%20Update%20Proxmox%20VM%2F%20LXC)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_proxmox.yml)
+
+
+[![Terraform](https://img.shields.io/badge/Terraform-IaC-378144?style=flat-square&logo=terraform&logoColor=white&labelColor=0f1410&color=%23005082)](https://www.terraform.io)
+[![Ansible](https://img.shields.io/badge/Ansible-IaC-378144?style=flat-square&logo=ansible&logoColor=white&labelColor=0f1410&color=%23005082)](https://docs.ansible.com)
+[![Last Commit](https://img.shields.io/github/last-commit/L1p0-M/Homelab?style=flat-square&labelColor=0f1410&color=%23005082)](https://github.com/L1p0-M/Homelab/commits/main)
+[![License: MIT](https://img.shields.io/github/license/L1p0-M/Homelab?style=flat-square&labelColor=0f1410&color=%23005082)](LICENSE)
 
 </div>
 
