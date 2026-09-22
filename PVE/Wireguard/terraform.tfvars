@@ -11,6 +11,7 @@ config = {
     ip_address     = "192.168.1.55/24"
     network_bridge = "vmbr0"
     network_name   = "eth0"
+    firewall       = false
     nesting        = true
     unprivileged   = true
     keyctl         = true

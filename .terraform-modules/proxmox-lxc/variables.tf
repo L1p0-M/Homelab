@@ -41,6 +41,7 @@ variable "config" {
     nesting      = optional(bool, true)
     unprivileged = optional(bool, true)
     tags         = optional(list(string), null)
+    firewall     = optional(bool, true)
     image_storage  = optional(string, "local")
     network_bridge = optional(string, "vmbr0")
     startup_down_delay = optional(number, -1)
