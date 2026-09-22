@@ -4,6 +4,7 @@
     "config:recommended"
   ],
   "automergeType": "pr",
+  "timezone": "Europe/Budapest"
   "recreateWhen": "never",
   "enabledManagers": [
     "docker-compose",
@@ -42,6 +43,7 @@
       "groupName": "Renovate",
       "commitMessageTopic": "Renovate: {{{depName}}}",
       "matchUpdateTypes": ["minor", "patch"],
+      "schedule": ["* 8-12 * * 1"],
       "automerge": true
     },
     {
