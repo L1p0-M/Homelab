@@ -3,12 +3,13 @@
   "extends": [
     "config:recommended"
   ],
+  "automergeType": "pr",
   "recreateWhen": "never",
   "enabledManagers": [
     "docker-compose",
     "dockerfile",
     "custom.regex",
-    "github-actions",
+    "github-actions"
   ],
   "customManagers": [
     {
@@ -39,7 +40,9 @@
     {
       "matchPackageNames": ["renovate/renovate"],
       "groupName": "Renovate",
-      "commitMessageTopic": "Renovate: {{{depName}}}"
+      "commitMessageTopic": "Renovate: {{{depName}}}",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
     },
     {
       "description": "Dockerfiles to one pr/file",
