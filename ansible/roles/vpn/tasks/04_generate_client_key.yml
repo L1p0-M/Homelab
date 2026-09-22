@@ -1,0 +1,22 @@
+---
+
+- name: Generate client private keys
+  ansible.builtin.shell: "wg genkey | tee /etc/wireguard/keys/{{ item.name }}_priv | wg pubkey > /etc/wireguard/keys/{{ item.name }}_pub"
+  args:
+    creates: "/etc/wireguard/keys/{{ item.name }}_priv"
+  loop: "{{ wg_clients }}"
+  no_log: true
+
+- name: Read client public keys
+  ansible.builtin.slurp:
+    src: "/etc/wireguard/keys/{{ item.name }}_pub"
+  register: wg_client_public_keys_raw
+  changed_when: false
+  loop: "{{ wg_clients }}"
+  no_log: true
+
+- name: Map client public keys to dictionary
+  ansible.builtin.set_fact:
+    wg_client_public_keys: "{{ wg_client_public_keys | default({}) | combine({item.item.name: item.content | b64decode }) }}"
+  loop: "{{ wg_client_public_keys_raw.results }}"
+  no_log: true

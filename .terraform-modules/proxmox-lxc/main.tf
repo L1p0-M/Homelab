@@ -54,7 +54,7 @@ resource "proxmox_virtual_environment_container" "lxc" {
   network_interface {
     name   = var.config.network_name
     bridge = var.config.network_bridge
-    firewall = true
+    firewall = var.config.firewall
   }
 
   operating_system {

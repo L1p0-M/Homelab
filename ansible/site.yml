@@ -33,3 +33,10 @@
   roles:
     - role: ups
       tags: [ups, nut]
+
+- name: Setup Wireguard server
+  hosts: vpn
+  gather_facts: true
+  roles:
+    - role: vpn
+      tags: [vpn, wireguard]

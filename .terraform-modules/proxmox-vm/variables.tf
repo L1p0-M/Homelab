@@ -27,8 +27,8 @@ variable "node_config" {
 
 variable "config" {
   type = object({
-    vm_id           = number
-    vm_name         = string
+    vm_id        = number
+    vm_name      = string
     cpu_cores    = optional(number, 2)
     cpu_type     = optional(string, "host")
     memory_mb    = optional(number, 2048)
@@ -41,6 +41,7 @@ variable "config" {
     bios_type    = optional(string, "seabios")
     efi_disk     = optional(string, "local-lvm")
     iothread     = optional(bool, true)
+    firewall     = optional(bool, true)
     tablet_device  = optional(bool, false)
     image_storage  = optional(string, "local")
     network_bridge = optional(string, "vmbr0")

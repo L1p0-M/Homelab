@@ -1,0 +1,11 @@
+---
+- name: Install WireGuard and dependencies
+  ansible.builtin.package:
+    name:
+      - wireguard
+      - wireguard-tools
+      - net-tools
+      - iptables
+      - qrencode
+    state: present
+    update_cache: true

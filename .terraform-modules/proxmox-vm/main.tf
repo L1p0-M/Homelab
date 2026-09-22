@@ -46,7 +46,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   network_device {
     bridge = var.config.network_bridge
-    firewall = true
+    firewall = var.config.firewall
   }
 
   operating_system {

@@ -1,0 +1,14 @@
+[Interface]
+PrivateKey = {{ wg_client_private_keys[client.name] | trim }}
+Address = {{ client.ip }}
+{% if wg_dns_local is defined and wg_dns_local %}
+DNS = {{ wg_dns_local }}, {{ wg_dns | default('8.8.8.8') }}
+{% else %}
+DNS = {{ wg_dns | default('8.8.8.8') }}
+{% endif %}
+
+[Peer]
+PublicKey = {{ wg_server_public_key.stdout | trim }}
+Endpoint = {{ wg_endpoint }}:{{ wg_port | default('51820') }}
+AllowedIPs = {{ wg_allowed_ips }}
+PersistentKeepalive = 25

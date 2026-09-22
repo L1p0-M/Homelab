@@ -1,0 +1,23 @@
+---
+
+- name: Enable IPv4 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: true
+
+- name: Ensure WireGuard directorys exists
+  ansible.builtin.file:
+    path: "{{ item.dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "{{ item.mode }}"
+  loop:
+    - dir: "/etc/wireguard"
+      mode: "0755"
+    - dir: "/etc/wireguard/keys"
+      mode: "0700"
+    - dir: "/etc/wireguard/configs"
+      mode: "0700"
