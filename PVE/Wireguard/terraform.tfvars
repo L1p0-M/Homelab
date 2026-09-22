@@ -1,4 +1,5 @@
 target_type = "LXC"
+ansible_groups = ["vpn"]
 
 config = {
     id             = 104

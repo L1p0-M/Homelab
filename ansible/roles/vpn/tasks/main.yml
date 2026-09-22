@@ -1,0 +1,22 @@
+---
+
+- name: Install required packages
+  ansible.builtin.include_tasks: 01_install_packages.yml
+
+- name: Setup environment for WireGuard
+  ansible.builtin.include_tasks: 02_setup_environment.yml
+
+- name: Generate Keys for the Server
+  ansible.builtin.include_tasks: 03_generate_server_key.yml
+
+- name: Generate Keys for the defined Clients
+  ansible.builtin.include_tasks: 04_generate_client_key.yml
+
+- name: Generate Client configs and QR Codes
+  ansible.builtin.include_tasks: 05_generate_client_config.yml
+
+- name: Deploy WG Server Configs
+  ansible.builtin.include_tasks: 06_deploy_configs.yml
+
+- name: Start WG Service
+  ansible.builtin.include_tasks: 07_start_services.yml
