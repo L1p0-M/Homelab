@@ -1,7 +1,7 @@
 ---
 
 - name: Read client private keys
-  ansible.builtin.slurp: 
+  ansible.builtin.slurp:
     src: "/etc/wireguard/keys/{{ item.name }}_priv"
   register: wg_client_private_keys_raw
   loop: "{{ wg_clients }}"
