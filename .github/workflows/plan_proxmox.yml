@@ -144,8 +144,8 @@ jobs:
             if (rawDomain && rawDomain.trim() !== "") {
               const escapedDomain = rawDomain.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
               const regex = new RegExp(escapedDomain, 'g');
-              
-              planText = planText.replace(regex, 'hidden-domain.internal');
+
+              planText = planText.replace(regex, 'hidden.internal');
             }
 
             // GitHub limit is 65,000 char

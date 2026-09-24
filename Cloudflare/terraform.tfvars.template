@@ -75,7 +75,7 @@ records = {
     name    = "minecraft"
     type    = "CNAME"
     content = "${DOMAIN_NAME}"
-    proxied = true
+    proxied = false
     comment = ""
   },
   "local" = {
