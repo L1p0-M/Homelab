@@ -6,7 +6,7 @@ terraform {
     key    = "Cloudflare/terraform.tfstate"
 
     endpoints = {
-      s3 = "${CF_ENDPOINT_URL}"
+      s3 = ${CF_ENDPOINT_URL}
     }
 
     region = "auto"
