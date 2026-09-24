@@ -6,6 +6,7 @@ on:
       - dev
     paths:
       - '**/terraform.tfvars'
+      - '**/terraform.tfvars.template'
 
 jobs:
   detect-changes:
@@ -43,6 +44,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
       CF_ENDPOINT_URL: ${{ secrets.CF_ENDPOINT_URL }}
+      DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
     permissions:
       pull-requests: write
       contents: read
@@ -89,6 +91,7 @@ jobs:
             elif [ "${TARGET_TYPE^^}" == "VM" ]; then
               BASEDIR="proxmox-vm"
             fi
+
             WORKDIR_PATH="$NODE_NAME/$TARGET_NAME"
             echo "Creating main.tf from template..."
             cp ".terraform-modules/$BASEDIR/main.tf.template" "$WORKDIR_PATH/main.tf"
@@ -99,6 +102,7 @@ jobs:
           else
             WORKDIR_PATH="$NODE_NAME"
             envsubst < "$WORKDIR_PATH/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
+            envsubst < "WORKDIR_PATH/terraform.tfvars.template" > "WORKDIR_PATH/terraform.tfvars"
           fi
 
           echo "WORKDIR_PATH=$WORKDIR_PATH" >> $GITHUB_ENV
