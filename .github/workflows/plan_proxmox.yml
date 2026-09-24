@@ -42,6 +42,7 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
       CF_ENDPOINT_URL: ${{ secrets.CF_ENDPOINT_URL }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
     permissions:
       pull-requests: write
