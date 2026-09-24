@@ -7,18 +7,12 @@ on:
     paths:
       - '**/terraform.tfvars'
 
-  workflow_dispatch:
-    inputs:
-      force_vm:
-        description: 'Directory of the VM/LXC you want to force the run on(e.g.: PVE/WHPrinter)'
-        required: false
-        default: ''
 jobs:
   detect-changes:
     runs-on: self-hosted
     outputs:
-      vms: ${{ steps.changed-services.outputs.vms }}
-      has_changes: ${{ steps.changed-services.outputs.has_changes }}
+      files: ${{ steps.changed-files.outputs.all_changed_files }}
+      has_changes: ${{ steps.changed-files.outputs.has_changes }}
     permissions:
       contents: read
       pull-requests: read
@@ -33,95 +27,98 @@ jobs:
         uses: tj-actions/changed-files@v47
         with:
           dir_names: true
-          dir_names_max_depth: 5
+          matrix: true
+          dir_names_max_depth: 2
           files_yaml: |
             configs:
               - 'PVE/*/**'
-
-      - name: Build array of changed VM/LXC
-        id: changed-services
-        run: |
-          CHANGED_DIRS='${{ steps.changed-files.outputs.configs_all_changed_files }}'
-          if [ -n "$CHANGED_DIRS" ]; then
-            python3 -u .github/workflows/scripts/get_changed_vms.py $CHANGED_DIRS
-          else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-            echo "vms=[]" >> $GITHUB_OUTPUT
-          fi
+            cloudflare:
+              - 'Cloudflare/*/**'
 
   plan-changes:
     runs-on: self-hosted
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
+      CF_ENDPOINT_URL: ${{ secrets.CF_ENDPOINT_URL }}
     permissions:
       pull-requests: write
       contents: read
     strategy:
       matrix:
-        include: ${{ fromJson(needs.detect-changes.outputs.vms) }}
+        files: ${{ fromJson(needs.detect-changes.outputs.files) }}
       fail-fast: false
       max-parallel: 2
     steps:
       - name: Check parameters
+        id: parameters
         run: |
-          echo "Node: ${{ matrix.NODE }}"
-          echo "VM: ${{ matrix.VM }}"
+          TARGET_PATH="${{ matrix.files }}"
+          NODE_NAME="${TARGET_PATH%%/*}"
+          TARGET_NAME="${TARGET_PATH##*/}"
+          echo "Node: $NODE_NAME"
+          echo "VM: $TARGET_NAME"
+          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_ENV
+          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Create environment variables
+      - name: Create environment variables for PVE
         id: set-env
-        if: matrix.NODE == 'PVE'
+        if: env.NODE_NAME == 'PVE'
         run: |
           PROXMOX_VE_ENDPOINT="${{ secrets.PROXMOX_VE_ENDPOINT_PVE }}"
           PROXMOX_VE_API_TOKEN="${{ secrets.PROXMOX_VE_API_TOKEN_PVE }}"
           PROXMOX_VE_INSECURE="true"
-          AWS_ACCESS_KEY_ID="${{ secrets.CF_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY="${{ secrets.CF_SECRET_ACCESS_KEY }}"
-          CF_ENDPOINT_URL="${{ secrets.CF_ENDPOINT_URL }}"
-          NODE_NAME="${{ matrix.NODE }}"
-          TARGET_NAME="${{ matrix.VM }}"
           TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $NODE_NAME/$TARGET_NAME/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' )
 
           echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_ENV
           echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_ENV
           echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_ENV
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
-          echo "CF_ENDPOINT_URL=$CF_ENDPOINT_URL" >> $GITHUB_ENV
-          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_ENV
-          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_ENV
 
-          echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_OUTPUT
+          echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_ENV
 
-      - name: Create needed terraform files from template for "${{ matrix.VM }}"
+      - name: Create needed terraform files from template for "${{ env.TARGET_NAME }}"
         run: |
-          TARGET_TYPE="${{ steps.set-env.outputs.TARGET_TYPE }}"
-          if [ "${TARGET_TYPE^^}" == "LXC" ]; then
-            BASEDIR="proxmox-lxc"
-          elif [ "${TARGET_TYPE^^}" == "VM" ]; then
-            BASEDIR="proxmox-vm"
+          if [ "$NODE_NAME" != "$TARGET_NAME" ]; then
+            if [ "${TARGET_TYPE^^}" == "LXC" ]; then
+              BASEDIR="proxmox-lxc"
+            elif [ "${TARGET_TYPE^^}" == "VM" ]; then
+              BASEDIR="proxmox-vm"
+            fi
+            WORKDIR_PATH="$NODE_NAME/$TARGET_NAME"
+            echo "Creating main.tf from template..."
+            cp ".terraform-modules/$BASEDIR/main.tf.template" "$WORKDIR_PATH/main.tf"
+            echo "Creating variables.tf from template..."
+            cp ".terraform-modules/$BASEDIR/variables.tf" "$WORKDIR_PATH/variables.tf"
+            echo "Creating backend.tf from template..."
+            envsubst < ".terraform-modules/backend/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
+          else
+            WORKDIR_PATH="$NODE_NAME"
+            envsubst < "$WORKDIR_PATH/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
           fi
-          echo "Creating backend.tf from template..."
-          envsubst < ".terraform-modules/backend/backend.tf.template" > "$NODE_NAME/$TARGET_NAME/backend.tf"
-          echo "Creating main.tf from template..."
-          cp ".terraform-modules/$BASEDIR/main.tf.template" "$NODE_NAME/$TARGET_NAME/main.tf"
-          echo "Creating variables.tf from template..."
-          cp ".terraform-modules/$BASEDIR/variables.tf" "$NODE_NAME/$TARGET_NAME/variables.tf"
+
+          echo "WORKDIR_PATH=$WORKDIR_PATH" >> $GITHUB_ENV
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
 
-      - name: Run Terraform init for "${{ matrix.VM }}"
+      - name: Run Terraform init for "${{ env.TARGET_NAME }}"
+        working-directory: ${{ env.WORKDIR_PATH }}
         run: |
-          cd "${NODE_NAME}/${TARGET_NAME}"
           terraform init -input=false
 
-      - name: Run Terraform plan for "${{ matrix.VM }}"
+      - name: Run Terraform plan for "${{ env.TARGET_NAME }}"
+        working-directory: ${{ env.WORKDIR_PATH }}
         run: |
-          cd "${NODE_NAME}/${TARGET_NAME}"
-          terraform plan -var-file=../node.tfvars -no-color > plan_output.txt
+          if [ "$NODE_NAME" != "$TARGET_NAME" ]; then
+            terraform plan -var-file=../node.tfvars -no-color > plan_output.txt
+          else
+            terraform plan -no-color > plan_output.txt
+          fi
           cat plan_output.txt
 
       - name: Comment Plan output on PR
@@ -131,7 +128,7 @@ jobs:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const fs = require('fs');
-            const planFile = `${process.env.NODE_NAME}/${process.env.TARGET_NAME}/plan_output.txt`;
+            const planFile = `${process.env.WORKDIR_PATH}/plan_output.txt`;
 
             let planText = "";
             if (fs.existsSync(planFile)) {
@@ -146,7 +143,7 @@ jobs:
               planText = planText.substring(0, maxLen) + "\n... (truncated)";
             }
 
-            const output = `### 📋 Terraform Plan: \`${process.env.NODE_NAME}/${process.env.TARGET_NAME}\`
+            const output = `### 📋 Terraform Plan: \`${process.env.WORKDIR_PATH}\`
 
             <details><summary>Show Plan Output</summary>
 
