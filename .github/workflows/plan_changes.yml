@@ -1,0 +1,176 @@
+name: Plan Infrastructure Changes
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - '**/terraform.tfvars'
+      - '**/terraform.tfvars.template'
+
+jobs:
+  detect-changes:
+    name: Detect changed files
+    runs-on: self-hosted
+    outputs:
+      files: ${{ steps.changed-files.outputs.all_changed_files }}
+      has_changes: ${{ steps.changed-files.outputs.any_changed }}
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Get changed Files
+        id: changed-files
+        uses: tj-actions/changed-files@v47
+        with:
+          dir_names: true
+          matrix: true
+          dir_names_max_depth: 2
+          files: |
+            **/terraform.tfvars
+            **/terraform.tfvars.template
+
+  plan-changes:
+    name: Plan Infrastructure Changes
+    runs-on: self-hosted
+    needs: detect-changes
+    if: needs.detect-changes.outputs.has_changes == 'true'
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
+      CF_ENDPOINT_URL: ${{ secrets.CF_ENDPOINT_URL }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
+    permissions:
+      pull-requests: write
+      contents: read
+    strategy:
+      matrix:
+        files: ${{ fromJson(needs.detect-changes.outputs.files) }}
+      fail-fast: false
+      max-parallel: 2
+    steps:
+      - name: Check parameters
+        id: parameters
+        run: |
+          TARGET_PATH="${{ matrix.files }}"
+          NODE_NAME="${TARGET_PATH%%/*}"
+          TARGET_NAME="${TARGET_PATH##*/}"
+          echo "Node: $NODE_NAME"
+          echo "VM: $TARGET_NAME"
+          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_ENV
+          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_ENV
+
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Create environment variables for PVE
+        id: set-env
+        if: env.NODE_NAME == 'PVE'
+        run: |
+          PROXMOX_VE_ENDPOINT="${{ secrets.PROXMOX_VE_ENDPOINT_PVE }}"
+          PROXMOX_VE_API_TOKEN="${{ secrets.PROXMOX_VE_API_TOKEN_PVE }}"
+          PROXMOX_VE_INSECURE="true"
+          TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $NODE_NAME/$TARGET_NAME/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' )
+
+          echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_ENV
+          echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_ENV
+          echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_ENV
+
+          echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_ENV
+
+      - name: Create needed terraform files from template for "${{ env.TARGET_NAME }}"
+        run: |
+          if [ "$NODE_NAME" != "$TARGET_NAME" ]; then
+            if [ "${TARGET_TYPE^^}" == "LXC" ]; then
+              BASEDIR="proxmox-lxc"
+            elif [ "${TARGET_TYPE^^}" == "VM" ]; then
+              BASEDIR="proxmox-vm"
+            fi
+
+            WORKDIR_PATH="$NODE_NAME/$TARGET_NAME"
+            echo "Creating main.tf from template..."
+            cp ".terraform-modules/$BASEDIR/main.tf.template" "$WORKDIR_PATH/main.tf"
+            echo "Creating variables.tf from template..."
+            cp ".terraform-modules/$BASEDIR/variables.tf" "$WORKDIR_PATH/variables.tf"
+            echo "Creating backend.tf from template..."
+            envsubst < ".terraform-modules/backend/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
+          else
+            WORKDIR_PATH="$NODE_NAME"
+            envsubst < "$WORKDIR_PATH/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
+            envsubst < "$WORKDIR_PATH/terraform.tfvars.template" > "$WORKDIR_PATH/terraform.tfvars"
+          fi
+
+          echo "WORKDIR_PATH=$WORKDIR_PATH" >> $GITHUB_ENV
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Run Terraform init for "${{ env.TARGET_NAME }}"
+        working-directory: ${{ env.WORKDIR_PATH }}
+        run: |
+          terraform init -input=false
+
+      - name: Run Terraform plan for "${{ env.TARGET_NAME }}"
+        working-directory: ${{ env.WORKDIR_PATH }}
+        run: |
+          if [ "$NODE_NAME" != "$TARGET_NAME" ]; then
+            terraform plan -var-file=../node.tfvars -no-color > plan_output.txt
+          else
+            terraform plan -no-color > plan_output.txt
+          fi
+          cat plan_output.txt
+
+      - name: Comment Plan output on PR
+        uses: actions/github-script@v9
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const planFile = `${process.env.WORKDIR_PATH}/plan_output.txt`;
+
+            let planText = "";
+            if (fs.existsSync(planFile)) {
+              planText = fs.readFileSync(planFile, 'utf8');
+            } else {
+              planText = "Plan output file not found.";
+            }
+
+            const rawDomain = process.env.DOMAIN_NAME;
+            if (rawDomain && rawDomain.trim() !== "") {
+              const escapedDomain = rawDomain.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+              const regex = new RegExp(escapedDomain, 'g');
+
+              planText = planText.replace(regex, 'hidden.internal');
+            }
+
+            // GitHub limit is 65,000 char
+            const maxLen = 60000;
+            if (planText.length > maxLen) {
+              planText = planText.substring(0, maxLen) + "\n... (truncated)";
+            }
+
+            const output = `### 📋 Terraform Plan: \`${process.env.WORKDIR_PATH}\`
+
+            <details><summary>Show Plan Output</summary>
+
+            \`\`\`hcl
+            ${planText}
+            \`\`\`
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
