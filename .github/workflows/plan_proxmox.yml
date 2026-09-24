@@ -13,7 +13,7 @@ jobs:
     runs-on: self-hosted
     outputs:
       files: ${{ steps.changed-files.outputs.all_changed_files }}
-      has_changes: ${{ steps.changed-files.outputs.has_changes }}
+      has_changes: ${{ steps.changed-files.outputs.any_changed }}
     permissions:
       contents: read
       pull-requests: read
@@ -31,10 +31,8 @@ jobs:
           matrix: true
           dir_names_max_depth: 2
           files: |
-            configs:
-              - 'PVE/*/**'
-            cloudflare:
-              - 'Cloudflare/*/**'
+            */terraform.tfvars
+            */terraform.tfvars.template
 
   plan-changes:
     runs-on: self-hosted
