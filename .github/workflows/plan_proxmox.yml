@@ -31,8 +31,8 @@ jobs:
           matrix: true
           dir_names_max_depth: 2
           files: |
-            */terraform.tfvars
-            */terraform.tfvars.template
+            **/terraform.tfvars
+            **/terraform.tfvars.template
 
   plan-changes:
     runs-on: self-hosted
