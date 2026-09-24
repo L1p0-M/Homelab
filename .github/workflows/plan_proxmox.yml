@@ -100,7 +100,7 @@ jobs:
           else
             WORKDIR_PATH="$NODE_NAME"
             envsubst < "$WORKDIR_PATH/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
-            envsubst < "WORKDIR_PATH/terraform.tfvars.template" > "WORKDIR_PATH/terraform.tfvars"
+            envsubst < "$WORKDIR_PATH/terraform.tfvars.template" > "$WORKDIR_PATH/terraform.tfvars"
           fi
 
           echo "WORKDIR_PATH=$WORKDIR_PATH" >> $GITHUB_ENV
