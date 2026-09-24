@@ -140,6 +140,14 @@ jobs:
               planText = "Plan output file not found.";
             }
 
+            const rawDomain = process.env.DOMAIN_NAME;
+            if (rawDomain && rawDomain.trim() !== "") {
+              const escapedDomain = rawDomain.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+              const regex = new RegExp(escapedDomain, 'g');
+              
+              planText = planText.replace(regex, 'hidden-domain.internal');
+            }
+
             // GitHub limit is 65,000 char
             const maxLen = 60000;
             if (planText.length > maxLen) {
