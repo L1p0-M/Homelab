@@ -1,4 +1,4 @@
-name: Plan Proxmox VM/LXC Updates
+name: Plan Infrastructure Changes
 on:
   pull_request:
     branches:
@@ -10,6 +10,7 @@ on:
 
 jobs:
   detect-changes:
+    name: Detect changed files
     runs-on: self-hosted
     outputs:
       files: ${{ steps.changed-files.outputs.all_changed_files }}
@@ -35,6 +36,7 @@ jobs:
             **/terraform.tfvars.template
 
   plan-changes:
+    name: Plan Infrastructure Changes
     runs-on: self-hosted
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
