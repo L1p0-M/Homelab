@@ -1,4 +1,4 @@
-name: Check YAML files for validity
+name: Check files on PR
 on:
   pull_request:
     branches:
@@ -11,7 +11,7 @@ permissions:
 jobs:
   detect-changes:
     runs-on: self-hosted
-    name: "Detect Changed YAML Files"
+    name: "Detect Changed Files"
     outputs:
       files: ${{ steps.changed-files.outputs.all_changed_files }}
       yaml: ${{ steps.changed-files.outputs.yaml_all_changed_files}}
@@ -34,13 +34,6 @@ jobs:
               - '**.yaml'
               - '**.yml'
 
-      - name: List to output
-        id: changed-files-output
-        if: steps.changed-files.outputs.any_changed == 'true'
-        run: |
-          echo '${{ steps.changed-files.outputs.all_changed_files }}'
-
-
   check-yaml:
     runs-on: self-hosted
     name: "YAML Syntax Check"
@@ -52,10 +45,6 @@ jobs:
       fail-fast: false
       max-parallel: 2
     steps:
-      - name: Check parameters
-        run: |
-          echo "File: ${{ matrix.files }}"
-
       - name: Checkout repository
         uses: actions/checkout@v7
 
