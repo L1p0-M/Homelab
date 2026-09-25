@@ -1,11 +1,8 @@
-name: Check YAML files for validity
+name: Check files on PR
 on:
   pull_request:
     branches:
       - main
-    paths:
-      - '**/*.yml'
-      - '**/*.yaml'
 
 permissions:
   pull-requests: read
@@ -14,10 +11,12 @@ permissions:
 jobs:
   detect-changes:
     runs-on: self-hosted
-    name: "Detect Changed YAML Files"
+    name: "Detect Changed Files"
     outputs:
       files: ${{ steps.changed-files.outputs.all_changed_files }}
+      yaml: ${{ steps.changed-files.outputs.yaml_all_changed_files}}
       has_changes: ${{ steps.changed-files.outputs.any_changed }}
+      yaml_has_changes: ${{ steps.changed-files.outputs.yaml_any_changed }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -30,32 +29,22 @@ jobs:
         with:
           matrix: true
           dir_names_max_depth: 5
-          files: |
-            **/*.yaml
-            **/*.yml
-
-      - name: List to output
-        id: changed-files-output
-        if: steps.changed-files.outputs.any_changed == 'true'
-        run: |
-          echo '${{ steps.changed-files.outputs.all_changed_files }}'
-
+          files_yaml: |
+            yaml:
+              - '**.yaml'
+              - '**.yml'
 
   check-yaml:
     runs-on: self-hosted
     name: "YAML Syntax Check"
     needs: detect-changes
-    if: needs.detect-changes.outputs.has_changes == 'true'
+    if: needs.detect-changes.outputs.yaml_has_changes == 'true'
     strategy:
       matrix:
-        files: ${{ fromJson(needs.detect-changes.outputs.files) }}
+        files: ${{ fromJson(needs.detect-changes.outputs.yaml) }}
       fail-fast: false
       max-parallel: 2
     steps:
-      - name: Check parameters
-        run: |
-          echo "File: ${{ matrix.files }}"
-
       - name: Checkout repository
         uses: actions/checkout@v7
 
@@ -86,8 +75,8 @@ jobs:
           rm -f "$dir/.env.ci"
           exit $response
 
-  check-yaml-response:
-    name: "YAML Linter Response"
+  check-response:
+    name: "Check Response"
     runs-on: self-hosted
     if: ${{ always() }}
     needs: [detect-changes, check-yaml]
@@ -98,4 +87,4 @@ jobs:
             echo "YAML or Compose check failed!"
             exit 1
           fi
-          echo "Everything looks good! All YAML files and Compose files are valid."
+          echo "Everything looks good!"
