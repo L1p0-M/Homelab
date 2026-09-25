@@ -68,7 +68,7 @@ records = {
     name    = "movies"
     type    = "CNAME"
     content = "${DOMAIN_NAME}"
-    proxied = false
+    proxied = true
     comment = ""
   },
   "minecraft" = {

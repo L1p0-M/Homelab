@@ -13,6 +13,7 @@ config = {
       "alpine",
       "linux",
       "production",
+      "teszttag",
   ]
   storage_name    = "local-lvm"
   scsi_hardware   = "virtio-scsi-single"
