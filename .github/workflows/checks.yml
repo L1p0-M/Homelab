@@ -94,6 +94,7 @@ jobs:
         with:
           setup_python: "true"
           working_directory: "ansible"
+          requirements_file: requirements.yml
 
   gitleaks-scan:
     name: "Gitleaks Secret Scan"

@@ -64,8 +64,7 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install --user ansible
           echo "$(ansible --version)"
-          ansible-galaxy collection install ansible.posix
-          ansible-galaxy collection install community.general
+          ansible-galaxy collection install -r ansible/requirements.yml
 
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.10.0
