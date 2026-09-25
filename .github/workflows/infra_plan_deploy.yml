@@ -1,4 +1,4 @@
-name: Plan Infrastructure Changes
+name: Plan/Deploy Infrastructure Changes
 on:
   pull_request:
     branches:
@@ -7,6 +7,15 @@ on:
     paths:
       - '**/terraform.tfvars'
       - '**/terraform.tfvars.template'
+  push:
+    branches:
+      - main
+    paths:
+      - '**/terraform.tfvars'
+      - '**/terraform.tfvars.template'
+
+permissions:
+  contents: read
 
 jobs:
   detect-changes:
@@ -35,8 +44,8 @@ jobs:
             **/terraform.tfvars
             **/terraform.tfvars.template
 
-  plan-changes:
-    name: Plan Infrastructure Changes
+  plan-deploy-changes:
+    name: Plan/Deploy Infrastructure Changes
     runs-on: self-hosted
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
@@ -69,19 +78,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Create environment variables for PVE
+      - name: Create environment variables for ${{ env.NODE_NAME}}
         id: set-env
-        if: env.NODE_NAME == 'PVE'
+        if: env.NODE_NAME != env.TARGET_NAME
+        env:
+          PROXMOX_VE_ENDPOINT_PVE: ${{ secrets.PROXMOX_VE_ENDPOINT_PVE }}
+          PROXMOX_VE_API_TOKEN_PVE: ${{ secrets.PROXMOX_VE_API_TOKEN_PVE }}
         run: |
-          PROXMOX_VE_ENDPOINT="${{ secrets.PROXMOX_VE_ENDPOINT_PVE }}"
-          PROXMOX_VE_API_TOKEN="${{ secrets.PROXMOX_VE_API_TOKEN_PVE }}"
+          PROXMOX_ENDPOINT_NAME="PROXMOX_VE_ENDPOINT_${NODE_NAME^^}"
+          PROXMOX_API_TOKEN="PROXMOX_VE_API_TOKEN_${NODE_NAME^^}"
           PROXMOX_VE_INSECURE="true"
-          TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $NODE_NAME/$TARGET_NAME/terraform.tfvars | cut -d'=' -f2 | tr -d ' "' )
 
-          echo "PROXMOX_VE_ENDPOINT=$PROXMOX_VE_ENDPOINT" >> $GITHUB_ENV
-          echo "PROXMOX_VE_API_TOKEN=$PROXMOX_VE_API_TOKEN" >> $GITHUB_ENV
+          TFVARS_FILE="$NODE_NAME/$TARGET_NAME/terraform.tfvars"
+          if [ -f "$TFVARS_FILE" ]; then
+            TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $TFVARS_FILE | cut -d'=' -f2 | tr -d ' "' )
+          else
+            exit 1
+          fi
+
+          echo "PROXMOX_VE_ENDPOINT=${!PROXMOX_ENDPOINT_NAME}" >> $GITHUB_ENV
+          echo "PROXMOX_VE_API_TOKEN=${!PROXMOX_API_TOKEN}" >> $GITHUB_ENV
           echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_ENV
-
           echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_ENV
 
       - name: Create needed terraform files from template for "${{ env.TARGET_NAME }}"
@@ -120,11 +137,17 @@ jobs:
         working-directory: ${{ env.WORKDIR_PATH }}
         run: |
           if [ "$NODE_NAME" != "$TARGET_NAME" ]; then
-            terraform plan -var-file=../node.tfvars -no-color > plan_output.txt
+            terraform plan -var-file=../node.tfvars -no-color -out=tfplan > plan_output.txt
           else
-            terraform plan -no-color > plan_output.txt
+            terraform plan -no-color -out=tfplan > plan_output.txt
           fi
           cat plan_output.txt
+
+      - name: Deploy Changes to "${{ env.TARGET_NAME }}"
+        if: github.event_name == 'push'
+        working-directory: ${{ env.WORKDIR_PATH }}
+        run: |
+            terraform apply -auto-approve tfplan
 
       - name: Comment Plan output on PR
         uses: actions/github-script@v9
