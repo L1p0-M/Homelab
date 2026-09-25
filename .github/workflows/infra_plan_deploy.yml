@@ -89,6 +89,19 @@ jobs:
           PROXMOX_API_TOKEN="PROXMOX_VE_API_TOKEN_${NODE_NAME^^}"
           PROXMOX_VE_INSECURE="true"
 
+          VAR_ENDPOINT="${!PROXMOX_ENDPOINT_NAME}"
+          VAR_TOKEN="${!PROXMOX_API_TOKEN}"
+
+          if [ -z "$VAR_ENDPOINT" ]; then
+            echo "error: Endpoint environment variable is not set or empty!"
+            exit 1
+          fi
+
+           if [ -z "$VAR_TOKEN" ]; then
+            echo "error: Token environment variable is not set or empty!"
+            exit 1
+          fi
+
           TFVARS_FILE="$NODE_NAME/$TARGET_NAME/terraform.tfvars"
           if [ -f "$TFVARS_FILE" ]; then
             TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $TFVARS_FILE | cut -d'=' -f2 | tr -d ' "' )
@@ -96,8 +109,8 @@ jobs:
             exit 1
           fi
 
-          echo "PROXMOX_VE_ENDPOINT=${!PROXMOX_ENDPOINT_NAME}" >> $GITHUB_ENV
-          echo "PROXMOX_VE_API_TOKEN=${!PROXMOX_API_TOKEN}" >> $GITHUB_ENV
+          echo "PROXMOX_VE_ENDPOINT=$VAR_ENDPOINT" >> $GITHUB_ENV
+          echo "PROXMOX_VE_API_TOKEN=$VAR_TOKEN" >> $GITHUB_ENV
           echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_ENV
           echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_ENV
 
