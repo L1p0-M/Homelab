@@ -17,6 +17,7 @@ jobs:
       yaml: ${{ steps.changed-files.outputs.yaml_all_changed_files}}
       has_changes: ${{ steps.changed-files.outputs.any_changed }}
       yaml_has_changes: ${{ steps.changed-files.outputs.yaml_any_changed }}
+      ansible_has_changes: ${{ steps.changed-files.outputs.ansible_any_changed }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -27,23 +28,19 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@v47
         with:
-          matrix: true
           dir_names_max_depth: 5
           files_yaml: |
             yaml:
               - '**.yaml'
               - '**.yml'
+            ansible:
+              - 'ansible/**'
 
   check-yaml:
     runs-on: self-hosted
     name: "YAML Syntax Check"
     needs: detect-changes
     if: needs.detect-changes.outputs.yaml_has_changes == 'true'
-    strategy:
-      matrix:
-        files: ${{ fromJson(needs.detect-changes.outputs.yaml) }}
-      fail-fast: false
-      max-parallel: 2
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -53,38 +50,86 @@ jobs:
           python -m pip install --upgrade pip
           pip install yamllint
 
-      - name: Lint YAML files
+      - name: Lint YAML files & Validate Compose File
+        env:
+          CHANGED_FILES: ${{ needs.detect-changes.outputs.yaml }}
         run: |
-          echo "Linting file: ${{ matrix.files }}"
-          python3 -m yamllint -d "{extends: relaxed, rules: {line-length: disable, document-start: disable, new-lines: disable}}" "${{ matrix.files }}"
+          for file in ${CHANGED_FILES}; do
+            echo "Linting file: $file"
+            python3 -m yamllint -d "{extends: relaxed, rules: {line-length: disable, document-start: disable, new-lines: disable}}" "$file"
 
-      - name: Validate Compose File
-        if: endsWith(matrix.files, 'docker-compose.yml') || endsWith(matrix.files, 'docker-compose.yaml')
-        run: |
-          echo "Checking Compose file: ${{ matrix.files }}"
-          dir=$(dirname "${{ matrix.files }}")
-          touch "$dir/.env.ci"
+            filename=$(basename "$file")
+            if [[ '$filename' == 'docker-compose.yml') || '$filename' == 'docker-compose.yaml' ]]; then
+              echo "Checking Compose file: $file"
+              dir=$(dirname "$file")
+              touch "$dir/.env.ci"
 
-          grep -oE '\$\{?[A-Za-z0-9_]+' "${{ matrix.files }}" | tr -d '${' | sort -u | while read -r var; do
-            echo "${var}=REDACTED" >> "$dir/.env.ci"
+              grep -oE '\$\{?[A-Za-z0-9_]+' "$file" | tr -d '${' | sort -u | while read -r var; do
+                echo "${var}=REDACTED" >> "$dir/.env.ci"
+              done
+
+              docker compose --env-file "$dir/.env.ci" -f "$file" config -q
+              response=$?
+
+              rm -f "$dir/.env.ci"
+
+              if [ '$response' -ne 0 ]; then
+                echo "$file is not a valid compose file"
+                exit $response
+              fi
+            fi
           done
 
-          docker compose --env-file "$dir/.env.ci" -f "${{ matrix.files }}" config -q
-          response=$?
+  check-ansible:
+    runs-on: self-hosted
+    name: "Ansible playbook lint"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.ansible_has_changes == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-          rm -f "$dir/.env.ci"
-          exit $response
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@main
+        with:
+          setup_python: "true"
+          working_directory: "ansible"
+
+  gitleaks-scan:
+    name: "Gitleaks Secret Scan"
+    runs-on: self-hosted
+    if: ${{ always() }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   check-response:
     name: "Check Response"
     runs-on: self-hosted
     if: ${{ always() }}
-    needs: [detect-changes, check-yaml]
+    needs: [detect-changes, check-yaml, check-ansible, gitleaks-scan]
     steps:
       - name: Verify Checks Results
         run: |
-          if [[ "${{ needs.check-yaml.result }}" == "failure" || "${{ needs.check-yaml.result }}" == "cancelled" ]]; then
-            echo "YAML or Compose check failed!"
+          YAML_RES="${{ needs.check-yaml.result }}"
+          ANSIBLE_RES="${{ needs.check-ansible.result }}"
+          GITLEAKS_RES="${{ needs.gitleaks-scan.result }}"
+
+          echo "YAML Check result: $YAML_RES"
+          echo "Ansible Check result: $ANSIBLE_RES"
+          echo "Gitleaks result: $GITLEAKS_RES"
+
+          if [[ "$YAML_RES" == "failure" || "$YAML_RES" == "cancelled" || \
+                "$ANSIBLE_RES" == "failure" || "$ANSIBLE_RES" == "cancelled" || \
+                "$GITLEAKS_RES" == "failure" || "$GITLEAKS_RES" == "cancelled" ]]; then
+            echo "Check failed!"
             exit 1
           fi
           echo "Everything looks good!"
