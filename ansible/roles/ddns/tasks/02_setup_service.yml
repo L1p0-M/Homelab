@@ -1,5 +1,4 @@
 ---
-
 - name: Copy service file to remote host
   ansible.builtin.template:
     src: "cloudflare-ddns.service.j2"

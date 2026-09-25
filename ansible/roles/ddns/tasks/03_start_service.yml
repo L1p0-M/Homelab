@@ -1,5 +1,4 @@
 ---
-
 - name: Start/enable DDNS updater
   ansible.builtin.service:
     name: "cloudflare-ddns.service"

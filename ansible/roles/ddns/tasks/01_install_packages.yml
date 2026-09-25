@@ -1,5 +1,4 @@
 ---
-
 - name: Check installed Go version
   ansible.builtin.command:
     cmd: "/usr/local/go/bin/go version"

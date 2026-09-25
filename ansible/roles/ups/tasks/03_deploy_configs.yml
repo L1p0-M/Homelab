@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure NUT config dir exists
   ansible.builtin.file:
     state: directory

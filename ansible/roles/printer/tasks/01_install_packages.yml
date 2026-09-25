@@ -1,14 +1,13 @@
 ---
-
 - name: Install required packages
   ansible.builtin.package:
-    update_cache: yes
+    update_cache: true
     state: present
     name: "{{ print_packages }}"
 
 - name: Install hplip from edge branch
   ansible.builtin.apk:
-    update_cache: yes
+    update_cache: true
     state: present
     name:
       - hplip

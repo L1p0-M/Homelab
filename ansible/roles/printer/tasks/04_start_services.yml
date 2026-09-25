@@ -1,5 +1,4 @@
 ---
-
 - name: Enable & Start cups/sane service
   ansible.builtin.service:
     name: "{{ item }}"

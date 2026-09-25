@@ -1,5 +1,4 @@
 ---
-
 - name: Check if WireGuard server private key exists
   ansible.builtin.stat:
     path: /etc/wireguard/keys/server_priv
@@ -18,7 +17,7 @@
     dest: /etc/wireguard/keys/server_priv
     owner: root
     group: root
-    mode: '0600'
+    mode: "0600"
   when: not wg_server_key_stat.stat.exists
   no_log: true
 

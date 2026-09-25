@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure NUT group exists(Package installer should create it)
   ansible.builtin.group:
     name: "nut"

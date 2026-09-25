@@ -1,5 +1,4 @@
 ---
-
 - name: Read client private keys
   ansible.builtin.slurp:
     src: "/etc/wireguard/keys/{{ item.name }}_priv"
@@ -19,13 +18,13 @@
     dest: "/etc/wireguard/configs/{{ client.name }}.conf"
     owner: root
     group: root
-    mode: '0600'
+    mode: "0600"
   loop: "{{ wg_clients }}"
   loop_control:
     loop_var: client
   no_log: true
 
 - name: Generate QR codes for mobile clients
-  ansible.builtin.shell: "qrencode -t png -o /etc/wireguard/configs/{{ item.name }}.png -r /etc/wireguard/configs/{{ item.name }}.conf"
+  ansible.builtin.command: "qrencode -t png -o /etc/wireguard/configs/{{ item.name }}.png -r /etc/wireguard/configs/{{ item.name }}.conf"
   loop: "{{ wg_clients }}"
   changed_when: false

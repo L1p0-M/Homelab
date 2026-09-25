@@ -1,5 +1,4 @@
 ---
-
 - name: Install NUT packages for Client mode
   ansible.builtin.package:
     name:

@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure printer groups exists
   ansible.builtin.group:
     name: "{{ item }}"
@@ -10,5 +9,5 @@
   ansible.builtin.user:
     name: "{{ my_user }}"
     groups: "{{ print_groups }}"
-    append: yes
+    append: true
     state: present

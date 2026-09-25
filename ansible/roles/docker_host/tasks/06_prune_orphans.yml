@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure trash directory exists
   ansible.builtin.file:
     path: "{{ docker_trash_dir }}"
