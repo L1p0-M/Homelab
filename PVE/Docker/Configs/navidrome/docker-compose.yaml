@@ -1,7 +1,7 @@
 services:
   navidrome:
     container_name: navidrome
-    image: deluan/navidrome:0.64.1
+    image: deluan/navidrome:0.64.2
     user: 1000:1000
     restart: unless-stopped
     environment:
