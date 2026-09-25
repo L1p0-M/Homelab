@@ -6,7 +6,7 @@ Welcome to the documentation and configuration repository for my self-hosted 4-n
  
 
 [![Run Ansible Playbook / Deploy Services](https://img.shields.io/github/actions/workflow/status/L1p0-M/Homelab/deploy_ansible_playbook.yml?style=flat-square&logo=ansible&logoColor=white&labelColor=0f1410&color=%23005082&label=Run%20Ansible%20Playbook%20%2F%20Deploy%20Services)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_ansible_playbook.yml)
-[![Deploy/Update Proxmox VM/LXC](https://img.shields.io/github/actions/workflow/status/L1p0-M/Homelab/deploy_proxmox.yml?style=flat-square&logo=proxmox&logoColor=white&labelColor=0f1410&color=%23005082&label=Deploy%20%2F%20Update%20Proxmox%20VM%2F%20LXC)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_proxmox.yml)
+[![Deploy/Update Infrastructure](https://img.shields.io/github/actions/workflow/status/L1p0-M/Homelab/infra_plan_deploy.yml?style=flat-square&logo=proxmox&logoColor=white&labelColor=0f1410&color=%23005082&label=Deploy%20%2F%20Update%20Infrastructure)](https://github.com/L1p0-M/Homelab/actions/workflows/infra_plan_deploy.yml)
 
 
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-378144?style=flat-square&logo=terraform&logoColor=white&labelColor=0f1410&color=%23005082)](https://www.terraform.io)
