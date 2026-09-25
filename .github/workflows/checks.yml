@@ -59,7 +59,7 @@ jobs:
             python3 -m yamllint -d "{extends: relaxed, rules: {line-length: disable, document-start: disable, new-lines: disable}}" "$file"
 
             filename=$(basename "$file")
-            if [[ '$filename' == 'docker-compose.yml') || '$filename' == 'docker-compose.yaml' ]]; then
+            if [[ '$filename' == 'docker-compose.yml' || '$filename' == 'docker-compose.yaml' ]]; then
               echo "Checking Compose file: $file"
               dir=$(dirname "$file")
               touch "$dir/.env.ci"
@@ -109,6 +109,7 @@ jobs:
         uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HOME: /app/github-runner
 
   check-response:
     name: "Check Response"
