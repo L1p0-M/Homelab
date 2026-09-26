@@ -1,0 +1,5 @@
+---
+
+docker_host_stacks_dir: "/dockerconfig"
+docker_host_trash_dir: "/dockerconfig/.trash"
+docker_host_retention_days: 3

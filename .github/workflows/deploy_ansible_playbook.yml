@@ -75,32 +75,6 @@ jobs:
         run: |
           echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
 
-      - name: Create config files from templates
-        env:
-          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
-        run: |
-          find "./" -type f -name "*.template" -not -path "*/extensions/*" -not -path "*/code-server/*" -not -path "*/.terraform-modules/*" -not -path "*/.github/*" 2> /dev/null | while read -r template; do
-            basedir=$(dirname "$template")
-            if [ -f "$basedir/.env.enc" ]; then
-              sops --input-type dotenv --output-type dotenv --decrypt "$basedir/.env.enc" > "$basedir/.env"
-            fi
-
-            if [ -f "$basedir/.env" ]; then
-              echo "Loading environment variables from .env..."
-              set -a
-              source "$basedir/.env"
-              set +a
-            fi
-
-            output_file="${template%.template}"
-            echo "Processing: $template -> $output_file"
-            envsubst < "$template" > "$output_file"
-
-            if [ -f "$basedir/.env" ]; then
-              rm "$basedir/.env"
-            fi
-          done
-
       - name: Deploy stacks
         working-directory: ansible
         env:

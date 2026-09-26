@@ -1,7 +1,7 @@
 ---
 - name: Ensure Dockerconfig directory exists
   ansible.builtin.file:
-    path: "{{ docker_stacks_dir }}"
+    path: "{{ docker_host_stacks_dir }}"
     state: directory
     mode: "2775"
     group: "homelab-devs"
