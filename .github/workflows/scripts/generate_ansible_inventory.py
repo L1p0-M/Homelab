@@ -147,7 +147,7 @@ def write_inventory_to_file(inventory_content):
         return False
 
 def write_to_github_output(has_changes, pr_branch):
-    pr_title="CI(ansible): Auto-update Ansible inventory"
+    pr_title="ops(ansible): Auto-update Ansible inventory"
     pr_body = [
         "### Automated Ansible Inventory Update\n",
         f"GitOps Pipeline successfully processed and updated the **Ansible inventory** based on the latest configuration changes.\n",
