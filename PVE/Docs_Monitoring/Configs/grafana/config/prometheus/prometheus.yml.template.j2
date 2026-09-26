@@ -8,25 +8,40 @@ scrape_configs:
   - job_name: 'node'
     static_configs:
       - targets:
-        - node-exporter:9100
-        - $NODE_IP
+        - 'node-exporter:9100'
+{% if "node_exporters" in groups %}
+{% for host in groups['node_exporters'] | default([]) %}
+{% if hostvars[host].ansible_host is defined %}
+        - '{{ hostvars[host].ansible_host }}:9100'
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if "home_assistant" in groups %}
   - job_name: "hass"
     scrape_interval: 60s
     metrics_path: /api/prometheus
     authorization:
-      credentials: "$HA_TOKEN"
+      credentials: '{{ ha_token }}'
     scheme: http
     static_configs:
       - targets:
-          - $HA_HOST
+{% for host in groups["home_assistant"] | default([]) %}
+{% if hostvars[host].ansible_host is defined %}
+        - '{{ hostvars[host].ansible_host }}:8123'
+{% endif %}
+{% endfor %}
+{% endif %}
+
   - job_name: "cadvisor"
     static_configs:
       - targets:
-        - $CADVISOR_URL
+        - '{{ cadvisor_endpoint }}'
+
   - job_name: 'pve'
     static_configs:
       - targets:
-        - $PVE_URL
+        - '{{ pve_host_endpoint }}'
     metrics_path: /pve
     params:
       module: [default]
@@ -39,9 +54,16 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: pve-exporter:9221
+
+{% if "ups" in groups %}
   - job_name: "nut"
     static_configs:
-      - targets: ["$NUT_HOST"]
+      - targets: 
+{% for host in groups['ups'] | default([]) %}
+{% if hostvars[host].ansible_host is defined and hostvars[host].ups_nut_mode == "netserver" %}
+        - '{{ hostvars[host].ansible_host }}:3493'
+{% endif %}
+{% endfor %}
     metrics_path: /nut
     relabel_configs:
       - source_labels: [__address__]
@@ -50,3 +72,4 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: nut-exporter:9995
+{% endif %}

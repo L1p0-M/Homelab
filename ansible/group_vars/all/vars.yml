@@ -10,7 +10,9 @@ cloudflare_domain: "{{ vault_cloudflare_domain }}"
 nut_server_admin_pass: "{{ vault_nut_server_admin_pass }}"
 nut_server_admin_user: "{{ vault_nut_server_admin_user }}"
 email_to: "{{ vault_email_to }}"
-
-docker_stacks_dir: "/dockerconfig"
-docker_trash_dir: "/dockerconfig/.trash"
-docker_retention_days: 3
+ha_token: "{{ vault_ha_token }}"
+cadvisor_endpoint: "{{ vault_cadvisor_endpoint }}"
+pve_host_endpoint: "{{ vault_pve_host_endpoint }}"
+pve_exporter_name: "{{ vault_pve_exporter_name }}"
+pve_exporter_token_name: "{{ vault_pve_exporter_token_name }}"
+pve_exporter_token: "{{ vault_pve_exporter_token }}"
