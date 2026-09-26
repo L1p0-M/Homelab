@@ -1,39 +1,39 @@
 ---
-
 - name: Check installed Go version
   ansible.builtin.command:
     cmd: "/usr/local/go/bin/go version"
-  register: version
+  register: ddns_version
   failed_when: false
   changed_when: false
 
 - name: Download GO binary
   ansible.builtin.get_url:
     decompress: false
-    dest: "/tmp/go{{ go_version }}.tar.gz"
-    url: https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz
+    dest: "/tmp/go{{ ddns_go_version }}.tar.gz"
+    url: https://go.dev/dl/go{{ ddns_go_version }}.linux-amd64.tar.gz
     owner: "root"
     group: "root"
-  when: "go_version not in version.stdout"
+    mode: "0664"
+  when: "ddns_go_version not in ddns_version.stdout"
 
 - name: Remove old version
   ansible.builtin.file:
     state: absent
     path: "/usr/local/go"
-  when: "go_version not in version.stdout"
+  when: "ddns_go_version not in ddns_version.stdout"
 
 - name: Install new version
   ansible.builtin.unarchive:
     remote_src: true
     src: "/tmp/go{{ go_version }}.tar.gz"
     dest: "/usr/local"
-  when: "go_version not in version.stdout"
+  when: "ddns_go_version not in ddns_version.stdout"
 
 - name: Clean up downloaded archive
   ansible.builtin.file:
     path: "/tmp/go{{ go_version }}.tar.gz"
     state: absent
-  when: "go_version not in version.stdout"
+  when: "ddns_go_version not in ddns_version.stdout"
 
 - name: Add GO to path
   ansible.builtin.copy:

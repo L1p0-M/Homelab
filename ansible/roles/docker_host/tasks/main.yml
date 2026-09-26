@@ -1,5 +1,4 @@
 ---
-
 - name: Setup Docker official repository
   ansible.builtin.include_tasks: 01_repo.yml
   tags: [docker, docker-repo]

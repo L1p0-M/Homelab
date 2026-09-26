@@ -1,23 +1,23 @@
 # Managed by ansible
 
 maxretry = 3
-[{{ nut_ups_name | default('mainups') }}]
-desc = {{ nut_ups_desc | default('UPS System')}}
-driver = {{ nut_ups_driver }}
-port = {{ nut_ups_port | default('auto') }}
-{% if nut_ups_vendorid is defined and nut_ups_vendorid %}
-vendorid = {{ nut_ups_vendorid}}
+[{{ ups_nut_ups_name | default('mainups') }}]
+desc = {{ ups_nut_ups_desc | default('UPS System')}}
+driver = {{ ups_nut_ups_driver }}
+port = {{ ups_nut_ups_port | default('auto') }}
+{% if ups_nut_ups_vendorid is defined and ups_nut_ups_vendorid %}
+vendorid = {{ ups_nut_ups_vendorid}}
 {% endif %}
-{% if nut_ups_productid is defined and nut_ups_productid %}
-productid = {{ nut_ups_productid }}
+{% if ups_nut_ups_productid is defined and ups_nut_ups_productid %}
+productid = {{ ups_nut_ups_productid }}
 {% endif %}
-{% if nut_ups_bus is defined and nut_ups_bus %}
-bus = {{ nut_ups_bus }}
+{% if ups_nut_ups_bus is defined and ups_nut_ups_bus %}
+bus = {{ ups_nut_ups_bus }}
 {% endif %}
-{% if nut_ups_battery_voltage_high is defined and nut_ups_battery_voltage_low is defined %}
-default.battery.voltage.high = {{ nut_ups_battery_voltage_high | default('27.30') }}
-default.battery.voltage.low = {{ nut_ups_battery_voltage_low | default('22.00') }}
+{% if ups_nut_ups_battery_voltage_high is defined and ups_nut_ups_battery_voltage_low is defined %}
+default.battery.voltage.high = {{ ups_nut_ups_battery_voltage_high | default('27.30') }}
+default.battery.voltage.low = {{ ups_nut_ups_battery_voltage_low | default('22.00') }}
 {% endif %}
-{% if nut_ups_runtimecal is defined and nut_ups_runtimecal %}
-runtimecal = {{ nut_ups_runtimecal }}
+{% if ups_nut_ups_runtimecal is defined and ups_nut_ups_runtimecal %}
+runtimecal = {{ ups_nut_ups_runtimecal }}
 {% endif %}

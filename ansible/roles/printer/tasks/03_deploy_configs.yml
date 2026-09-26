@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure cups directory exists
   ansible.builtin.file:
     state: directory

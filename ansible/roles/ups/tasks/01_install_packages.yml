@@ -1,5 +1,4 @@
 ---
-
 - name: Install NUT packages for Client mode
   ansible.builtin.package:
     name:
@@ -13,4 +12,4 @@
       - nut
       - nut-server
     state: present
-  when: nut_mode == 'netserver'
+  when: ups_nut_mode == 'netserver'

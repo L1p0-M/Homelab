@@ -4,7 +4,7 @@
     name: nut-server
     state: started
     enabled: true
-  when: nut_mode == 'netserver'
+  when: ups_nut_mode == 'netserver'
 
 - name: Start NUT client service
   ansible.builtin.service:

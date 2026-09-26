@@ -1,16 +1,15 @@
 ---
-
 - name: Read client private keys
   ansible.builtin.slurp:
     src: "/etc/wireguard/keys/{{ item.name }}_priv"
-  register: wg_client_private_keys_raw
-  loop: "{{ wg_clients }}"
+  register: vpn_wg_client_private_keys_raw
+  loop: "{{ vpn_wg_clients }}"
   no_log: true
 
 - name: Map client private keys to dictionary
   ansible.builtin.set_fact:
-    wg_client_private_keys: "{{ wg_client_private_keys | default({}) | combine({item.item.name: item.content | b64decode}) }}"
-  loop: "{{ wg_client_private_keys_raw.results }}"
+    vpn_wg_client_private_keys: "{{ vpn_wg_client_private_keys | default({}) | combine({item.item.name: item.content | b64decode}) }}"
+  loop: "{{ vpn_wg_client_private_keys_raw.results }}"
   no_log: true
 
 - name: Generate client .conf files
@@ -19,13 +18,14 @@
     dest: "/etc/wireguard/configs/{{ client.name }}.conf"
     owner: root
     group: root
-    mode: '0600'
-  loop: "{{ wg_clients }}"
+    mode: "0600"
+  loop: "{{ vpn_wg_clients }}"
   loop_control:
     loop_var: client
   no_log: true
 
 - name: Generate QR codes for mobile clients
-  ansible.builtin.shell: "qrencode -t png -o /etc/wireguard/configs/{{ item.name }}.png -r /etc/wireguard/configs/{{ item.name }}.conf"
-  loop: "{{ wg_clients }}"
-  changed_when: false
+  ansible.builtin.command:
+    cmd: "qrencode -t png -o /etc/wireguard/configs/{{ item.name }}.png -r /etc/wireguard/configs/{{ item.name }}.conf"
+    creates: "/etc/wireguard/configs/{{ item.name }}.png"
+  loop: "{{ vpn_wg_clients }}"

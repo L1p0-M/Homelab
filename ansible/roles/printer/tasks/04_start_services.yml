@@ -1,10 +1,9 @@
 ---
-
 - name: Enable & Start cups/sane service
   ansible.builtin.service:
     name: "{{ item }}"
     enabled: true
     state: started
   loop:
-    - "{{ cups_service_name }}"
-    - "{{ sane_service_name }}"
+    - "{{ printer_cups_service_name }}"
+    - "{{ printer_sane_service_name }}"

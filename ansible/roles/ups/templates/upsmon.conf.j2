@@ -11,13 +11,13 @@ POWERDOWNFLAG /etc/killpower
 RBWARNTIME 43200
 NOCOMMWARNTIME 600
 FINALDELAY 5
-{% if nut_mon_user is defined and nut_mode == 'netclient' %}
-MONITOR {{ nut_ups_name | default('mainups') }}@{{ nut_listen_ip | default('localhost')}} 1 {{ nut_mon_user }} {{ nut_mon_password }} slave
+{% if ups_nut_mon_user is defined and ups_nut_mode == 'netclient' %}
+MONITOR {{ ups_nut_ups_name | default('mainups') }}@{{ ups_nut_listen_ip | default('localhost')}} 1 {{ ups_nut_mon_user }} {{ ups_nut_mon_password }} slave
 {% else %}
-MONITOR {{ nut_ups_name | default('mainups') }}@localhost 1 {{ nut_admin_user }} {{ nut_admin_password }} master
+MONITOR {{ ups_nut_ups_name | default('mainups') }}@localhost 1 {{ ups_nut_admin_user }} {{ ups_nut_admin_password }} master
 {% endif %}
 
-{% if notify_script is defined and notify_script == 'true' %}
+{% if ups_notify_script is defined and ups_notify_script == 'true' %}
 NOTIFYMSG ONLINE    "UPS %s on line power"
 NOTIFYMSG ONBATT    "UPS %s on battery"
 NOTIFYMSG LOWBATT   "UPS %s battery is low"

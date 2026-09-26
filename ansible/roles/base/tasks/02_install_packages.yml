@@ -2,7 +2,7 @@
 - name: Install needed packages
   ansible.builtin.apt:
     cache_valid_time: 3600
-    update_cache: yes
+    update_cache: true
     name:
       - curl
       - wget

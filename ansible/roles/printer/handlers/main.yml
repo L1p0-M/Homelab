@@ -1,14 +1,14 @@
 ---
 - name: Restart cups
   ansible.builtin.service:
-    name: "{{ cups_service_name }}"
+    name: "{{ printer_cups_service_name }}"
     state: restarted
   listen: restart cups
   tags: [cups, printer]
 
 - name: Restart sane
   ansible.builtin.service:
-    name: "{{ sane_service_name }}"
+    name: "{{ printer_sane_service_name }}"
     state: restarted
   listen: restart sane
   tags: [sane, printer]

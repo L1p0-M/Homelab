@@ -9,7 +9,7 @@
     name: "{{ deploy_user }}"
     group: homelab-devs
     groups: [sudo, homelab-devs]
-    append: yes
+    append: true
     state: present
     create_home: true
     password: "{{ deploy_user_pass }}"

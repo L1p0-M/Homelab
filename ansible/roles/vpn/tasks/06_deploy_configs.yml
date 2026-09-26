@@ -1,10 +1,9 @@
 ---
-
 - name: Generate WireGuard server configuration
   ansible.builtin.template:
     src: wg0.conf.j2
-    dest: "/etc/wireguard/{{ wg_interface }}.conf"
+    dest: "/etc/wireguard/{{ vpn_wg_interface }}.conf"
     owner: root
     group: root
-    mode: '0600'
+    mode: "0600"
   notify: restart wireguard

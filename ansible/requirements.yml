@@ -1,0 +1,18 @@
+---
+
+collections:
+  - name: community.general
+    version: ">=13.3.0"
+    source: https://galaxy.ansible.com
+
+  - name: community.docker
+    version: ">=5.3.0"
+    source: https://galaxy.ansible.com
+
+  - name: community.sops
+    version: ">=2.4.0"
+    source: https://galaxy.ansible.com
+
+  - name: ansible.posix
+    version: ">=2.2.0"
+    source: https://galaxy.ansible.com

@@ -1,5 +1,4 @@
 ---
-
 - name: Ensure NUT config dir exists
   ansible.builtin.file:
     state: directory
@@ -38,7 +37,7 @@
       dest: "/etc/nut/upsd.users"
     - src: "upsset.conf.j2"
       dest: "/etc/nut/upsset.conf"
-  when: nut_mode == 'netserver'
+  when: ups_nut_mode == 'netserver'
   notify: restart nut-server
 
 - name: Copy notify script to remote hosts
@@ -48,7 +47,7 @@
     owner: "root"
     group: "root"
     mode: "0755"
-  when: notify_script | default(false) | bool
+  when: ups_notify_script | default(false) | bool
 
 - name: Flush handlers to apply NUT configuration changes
   ansible.builtin.meta: flush_handlers
