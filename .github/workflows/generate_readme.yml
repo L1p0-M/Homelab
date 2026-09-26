@@ -17,7 +17,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  
+
 jobs:
   update-readme:
     runs-on: self-hosted
@@ -57,7 +57,8 @@ jobs:
           committer: "Cortana [bot] <cortana@l1p0-industries.hu>"
           author: "Cortana [bot] <cortana@l1p0-industries.hu>"
           assignees: "L1p0-M"
-          commit-message: "CI: Automatic README.md Update"
+          commit-message: "docs(gitops): Automatic README.md Update"
           branch: "${{ steps.generate-readme.outputs.pr_branch || 'readme-updates' }}"
           title: "${{ steps.generate-readme.outputs.pr_title || 'docs(gitops): Auto-update documentation' }}"
           body: ${{ steps.generate-readme.outputs.pr_body }}
+          labels: "documentation"

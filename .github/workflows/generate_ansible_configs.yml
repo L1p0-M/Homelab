@@ -1,4 +1,4 @@
-name: Generate Ansible Inventory && App-Stacks for VMs/LXCs
+name: Generate Ansible Inventory & App-Stacks for VMs/LXCs
 on:
   push:
     branches:
@@ -48,15 +48,15 @@ jobs:
 
           if [[ "$INVENTORY_CHANGE" == 'true' && "$STACKS_CHANGE" == 'true' ]]; then
             BRANCH="ansible-auto-updates"
-            TITLE="CI(ansible): Auto-update Ansible configuration files"
-            COMMIT="CI(ansible): Auto-update Ansible inventory & app-stacks"
+            TITLE="ops(ansible): Auto-update Ansible configuration files"
+            COMMIT="ops(ansible): Auto-update Ansible inventory & app-stacks"
             echo "body<<EOF" >> $GITHUB_OUTPUT
             echo "### Automated Ansible Configuration Update" >> $GITHUB_OUTPUT
             echo " " >> $GITHUB_OUTPUT
             echo "GitOps Pipeline successfully processed and generated/updated the following configuration files:" >> $GITHUB_OUTPUT
             echo " " >> $GITHUB_OUTPUT
-            echo "- **Inventory:** `Updated`" >> $GITHUB_OUTPUT
-            echo "- **App-Stacks:** `Updated`" >> $GITHUB_OUTPUT
+            echo "- **Inventory:** Updated" >> $GITHUB_OUTPUT
+            echo "- **App-Stacks:** Updated" >> $GITHUB_OUTPUT
             echo " " >> $GITHUB_OUTPUT
             echo "---" >> $GITHUB_OUTPUT
             echo ">🤖 *Generated automatically via GitOps CI/CD Pipeline. Please review and merge.*" >> $GITHUB_OUTPUT
@@ -74,9 +74,9 @@ jobs:
 
           elif [[ "$STACKS_CHANGE" == 'true' ]]; then
             BRANCH="${{ steps.generate-stacks.outputs.pr_branch || 'app-stacks' }}"
-            TITLE="${{ steps.generate-stacks.outputs.pr_title || 'CI(ansible): Auto-update Ansible app-stacks' }}"
+            TITLE="${{ steps.generate-stacks.outputs.pr_title || 'ops(ansible): Auto-update Ansible app-stacks' }}"
             BODY="${{ steps.generate-stacks.outputs.pr_body }}"
-            COMMIT="${{ steps.generate-stacks.outputs.pr_title || 'CI(ansible): Auto-update Ansible app-stacks' }}"
+            COMMIT="${{ steps.generate-stacks.outputs.pr_title || 'ops(ansible): Auto-update Ansible app-stacks' }}"
 
             echo "body<<EOF" >> $GITHUB_OUTPUT
             echo "$BODY" >> $GITHUB_OUTPUT
@@ -99,3 +99,4 @@ jobs:
           branch: "${{ steps.pr-vars.outputs.branch }}"
           title: "${{ steps.pr-vars.outputs.title }}"
           body: "${{ steps.pr-vars.outputs.body }}"
+          labels: "enhancement"
