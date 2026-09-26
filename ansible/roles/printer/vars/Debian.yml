@@ -1,6 +1,6 @@
 ---
 
-print_packages:
+printer_print_packages:
   - cups
   - cups-filters
   - cups-client
@@ -8,11 +8,11 @@ print_packages:
   - sane-utils
   - saned
 
-print_groups:
+printer_print_groups:
   - lp
   - lpadmin
   - scanner
   - saned
 
-cups_service_name: "cups"
-sane_service_name: "saned"
+printer_cups_service_name: "cups"
+printer_sane_service_name: "saned"

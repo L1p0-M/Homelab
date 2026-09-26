@@ -3,11 +3,11 @@
   ansible.builtin.group:
     name: "{{ item }}"
     state: present
-  loop: "{{ print_groups | default(['lp', 'scanner']) }}"
+  loop: "{{ printer_print_groups | default(['lp', 'scanner']) }}"
 
 - name: Add my user to the groups
   ansible.builtin.user:
     name: "{{ my_user }}"
-    groups: "{{ print_groups }}"
+    groups: "{{ printer_print_groups }}"
     append: true
     state: present

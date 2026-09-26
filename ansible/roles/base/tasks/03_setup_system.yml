@@ -19,10 +19,13 @@
       ansible.builtin.copy:
         content: "Europe/Budapest\n"
         dest: /etc/timezone
+        mode: "0644"
+        owner: "root"
+        group: "root"
+
 - name: Ensure QEMU Guest Agent is running
   ansible.builtin.service:
     name: qemu-guest-agent
     enabled: true
     state: started
-  ignore_errors: true
   when: ansible_virtualization_tech_guest is not defined or 'lxc' not in ansible_virtualization_tech_guest

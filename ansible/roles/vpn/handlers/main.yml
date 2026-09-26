@@ -1,7 +1,7 @@
 ---
 - name: Restart Wireguard Service
   ansible.builtin.service:
-    name: "wg-quick@{{ wg_interface }}"
+    name: "wg-quick@{{ vpn_wg_interface }}"
     state: restarted
     enabled: true
   listen: restart wireguard

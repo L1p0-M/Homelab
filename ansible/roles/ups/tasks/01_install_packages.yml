@@ -12,4 +12,4 @@
       - nut
       - nut-server
     state: present
-  when: nut_mode == 'netserver'
+  when: ups_nut_mode == 'netserver'

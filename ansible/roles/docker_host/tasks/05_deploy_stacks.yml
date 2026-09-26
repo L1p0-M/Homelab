@@ -37,7 +37,6 @@
     mode: "0660"
     owner: "{{ deploy_user }}"
     group: "homelab-devs"
-  ignore_errors: true
   when: query("ansible.builtin.fileglob", item + "/.env.enc") | length > 0
   loop: "{{ app_stacks | default([]) }}"
 
@@ -47,7 +46,7 @@
     patterns: "*.template"
     recurse: true
   loop: "{{ app_stacks | default([]) }}"
-  register: found_templates
+  register: docker_host_found_templates
   delegate_to: localhost
   become: false
 
@@ -58,18 +57,18 @@
     mode: "2775"
     owner: "{{ my_user }}"
     group: "homelab-devs"
-  loop: "{{ found_templates.results | default([]) | subelements('files') }}"
+  loop: "{{ docker_host_found_templates.results | default([]) | subelements('files') }}"
   when: item.1.path is defined
 
 - name: Copy pre-rendered template files to remote host
   ansible.builtin.copy:
     src: "{{ template_item.1.path | regex_replace('\\.template$', '') }}"
-    dest: "{{ docker_stacks_dir }}/{{ template_item.0.item | basename }}/{{ template_item.1.path | relpath(template_item.0.item) | regex_replace('\\.template$', '')
-      }}"
+    dest: "{{ docker_stacks_dir }}/{{ template_item.0.item | basename }}/ \
+      {{ template_item.1.path | relpath(template_item.0.item) | regex_replace('\\.template$', '')}}"
     mode: "0664"
     owner: "{{ deploy_user }}"
     group: "homelab-devs"
-  loop: "{{ found_templates.results | default([]) | subelements('files') }}"
+  loop: "{{ docker_host_found_templates.results | default([]) | subelements('files') }}"
   loop_control:
     loop_var: template_item
 
@@ -85,6 +84,7 @@
 - name: Schedule CI Runner restart in background
   ansible.builtin.shell: |
     nohup bash -c "sleep 60 && docker compose -f {{ docker_stacks_dir }}/{{ item | basename }}/docker-compose.yaml up -d --remove-orphans" > /dev/null 2>&1 &
+  changed_when: false
   when: (item | basename) == 'github_runner'
   loop: "{{ app_stacks | default([]) }}"
 
@@ -97,8 +97,8 @@
     images_filters:
       until: 24h
       dangling: false
-  register: pruned_images
+  register: docker_host_pruned_images
 
 - name: Show reclaimed Space
   ansible.builtin.debug:
-    msg: "Reclaimed Space: {{ (pruned_images.images_space_reclaimed | default(0)) | human_readable }}"
+    msg: "Reclaimed Space: {{ (docker_host_pruned_images.images_space_reclaimed | default(0)) | human_readable }}"

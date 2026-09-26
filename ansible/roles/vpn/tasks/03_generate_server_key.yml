@@ -2,33 +2,34 @@
 - name: Check if WireGuard server private key exists
   ansible.builtin.stat:
     path: /etc/wireguard/keys/server_priv
-  register: wg_server_key_stat
+  register: vpn_wg_server_key_stat
 
 - name: Generate WireGuard server private key
   ansible.builtin.command: wg genkey
-  register: wg_server_priv_key
-  when: not wg_server_key_stat.stat.exists
+  register: vpn_wg_server_priv_key
+  when: not vpn_wg_server_key_stat.stat.exists
   changed_when: true
   no_log: true
 
 - name: Save WireGuard server private key
   ansible.builtin.copy:
-    content: "{{ wg_server_priv_key.stdout }}"
+    content: "{{ vpn_wg_server_priv_key.stdout }}"
     dest: /etc/wireguard/keys/server_priv
     owner: root
     group: root
     mode: "0600"
-  when: not wg_server_key_stat.stat.exists
+  when: not vpn_wg_server_key_stat.stat.exists
   no_log: true
 
 - name: Read WireGuard server private key
   ansible.builtin.slurp:
     src: "/etc/wireguard/keys/server_priv"
-  register: wg_server_private_key
+  register: vpn_wg_server_private_key
   no_log: true
 
 - name: Generate WireGuard server public key
-  ansible.builtin.shell: "echo '{{ wg_server_private_key['content'] | b64decode }}' | wg pubkey"
-  register: wg_server_public_key
+  ansible.builtin.shell:
+    cmd: "set -o pipefail && echo '{{ vpn_wg_server_private_key['content'] | b64decode }}' | wg pubkey"
+  register: vpn_wg_server_public_key
   changed_when: false
   no_log: true

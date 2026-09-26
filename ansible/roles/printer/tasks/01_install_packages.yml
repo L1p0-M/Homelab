@@ -3,10 +3,10 @@
   ansible.builtin.package:
     update_cache: true
     state: present
-    name: "{{ print_packages }}"
+    name: "{{ printer_print_packages }}"
 
 - name: Install hplip from edge branch
-  ansible.builtin.apk:
+  community.general.apk:
     update_cache: true
     state: present
     name:

@@ -1,19 +1,19 @@
 [Interface]
-Address = {{ wg_address }}
-DNS = {{ wg_dns }}
-{% if wg_dns_local is defined and wg_dns_local %}
-DNS = {{ wg_dns_local }}
+Address = {{ vpn_wg_address }}
+DNS = {{ vpn_wg_dns }}
+{% if vpn_wg_dns_local is defined and vpn_wg_dns_local %}
+DNS = {{ vpn_wg_dns_local }}
 {% endif %}
 MTU = 1420
-PostUp = iptables -A FORWARD -i {{ wg_interface | default('wg0') }} -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ wg_network_iface | default('eth0') }} -j MASQUERADE
-PostDown = iptables -D FORWARD -i {{ wg_interface | default('wg0') }} -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ wg_network_iface | default('eth0') }} -j MASQUERADE
-ListenPort = {{ wg_port | default('51820') }}
-PrivateKey = {{ wg_server_private_key.content | b64decode }}
+PostUp = iptables -A FORWARD -i {{ vpn_wg_interface | default('wg0') }} -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ vpn_wg_network_iface | default('eth0') }} -j MASQUERADE
+PostDown = iptables -D FORWARD -i {{ vpn_wg_interface | default('wg0') }} -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ vpn_wg_network_iface | default('eth0') }} -j MASQUERADE
+ListenPort = {{ vpn_wg_port | default('51820') }}
+PrivateKey = {{ vpn_wg_server_private_key.content | b64decode }}
 
 
-{% for client in wg_clients %}
+{% for client in vpn_wg_clients %}
 # {{ client.name }}
 [Peer]
-PublicKey = {{ wg_client_public_keys[client.name] | trim }}
+PublicKey = {{ vpn_wg_client_public_keys[client.name] | trim }}
 AllowedIPs = {{ client.ip }}
 {% endfor %}
