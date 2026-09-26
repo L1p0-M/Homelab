@@ -40,16 +40,6 @@
   when: query("ansible.builtin.fileglob", item + "/.env.enc") | length > 0
   loop: "{{ app_stacks | default([]) }}"
 
-# - name: Find template files in local repository stack directories
-#   ansible.builtin.find:
-#     paths: "{{ item }}"
-#     patterns: "*.template.j2"
-#     recurse: true
-#   loop: "{{ app_stacks | default([]) }}"
-#   register: docker_host_found_templates
-#   delegate_to: localhost
-#   become: false
-
 - name: Ensure subdirectories for templates exist on remote host
   ansible.builtin.file:
     path: "{{ docker_host_stacks_dir }}/{{ item_stack_name }}/{{ relative_template_path | dirname }}"
@@ -81,18 +71,6 @@
     item_stack_name: "{{ parent_stack | basename }}"
     relative_raw_path: "{{ template_item | relpath(parent_stack) }}"
     relative_template_path: "{{ relative_raw_path | regex_replace('\\.template\\.j2$', '') }}"
-
-# - name: Copy pre-rendered template files to remote host
-#   ansible.builtin.copy:
-#     src: "{{ template_item.1.path }}"
-#     dest: "{{ docker_stacks_dir }}/{{ template_item.0.item | basename }}/\
-#       {{ template_item.1.path | relpath(template_item.0.item) | regex_replace('\\.template.j2$', '')}}"
-#     mode: "0664"
-#     owner: "{{ deploy_user }}"
-#     group: "homelab-devs"
-#   loop: "{{ docker_host_found_templates.results | default([]) | subelements('files') }}"
-#   loop_control:
-#     loop_var: template_item
 
 - name: Deploy Docker Compose stack
   community.docker.docker_compose_v2:
