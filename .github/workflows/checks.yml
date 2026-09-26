@@ -89,12 +89,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Setup Vault password
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > ansible/.vault_pass
+
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
         with:
           setup_python: "true"
           working_directory: "ansible"
           requirements_file: requirements.yml
+
+      - name: Clean Up
+        if: always()
+        run: |
+          rm -f ansible/.vault_pass
 
   gitleaks-scan:
     name: "Gitleaks Secret Scan"
