@@ -29,3 +29,17 @@
     enabled: true
     state: started
   when: ansible_virtualization_tech_guest is not defined or 'lxc' not in ansible_virtualization_tech_guest
+
+- name: Ensure Node-Exporter is running (Debian)
+  ansible.builtin.service:
+    name: prometheus-node-exporter
+    enabled: true
+    state: started
+  when: ansible_os_family == 'Debian'
+
+- name: Ensure Node-Exporter is running (Alpine)
+  ansible.builtin.service:
+    name: node-exporter
+    enabled: true
+    state: started
+  when: ansible_os_family == 'Alpine'

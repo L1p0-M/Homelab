@@ -8,14 +8,11 @@ scrape_configs:
   - job_name: 'node'
     static_configs:
       - targets:
-        - 'node-exporter:9100'
-{% if "node_exporters" in groups %}
-{% for host in groups['node_exporters'] | default([]) %}
+{% for host in groups['all'] | default([]) | difference(groups['excluded'] | default([]))%}
 {% if hostvars[host].ansible_host is defined %}
         - '{{ hostvars[host].ansible_host }}:9100'
 {% endif %}
 {% endfor %}
-{% endif %}
 
 {% if "home_assistant" in groups %}
   - job_name: "hass"
