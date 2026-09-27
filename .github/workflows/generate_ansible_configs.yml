@@ -5,7 +5,7 @@ on:
       - main
     paths:
       - '**/terraform.tfvars'
-      - 'PVE/**/Configs/*'
+      - 'PVE/**/Configs/**'
 
   workflow_dispatch:
 
