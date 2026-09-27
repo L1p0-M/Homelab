@@ -1,8 +1,8 @@
-# Homelab Infrastructure
-
-Welcome to the documentation and configuration repository for my self-hosted 4-node physical server cluster. This infrastructure powers my private cloud, automated disaster recovery pipelines, custom AI workloads, and CI/CD pipelines.
-
 <div align="center">
+
+![img](./assets/logo.png)
+# Homelab Infrastructure
+Welcome to the documentation and configuration repository for my self-hosted 4-node physical server cluster. This infrastructure powers my private cloud, automated disaster recovery pipelines, custom AI workloads, and CI/CD pipelines.
  
 
 [![Run Ansible Playbook / Deploy Services](https://img.shields.io/github/actions/workflow/status/L1p0-M/Homelab/deploy_ansible_playbook.yml?style=flat-square&logo=ansible&logoColor=white&labelColor=0f1410&color=%23005082&label=Run%20Ansible%20Playbook%20%2F%20Deploy%20Services)](https://github.com/L1p0-M/Homelab/actions/workflows/deploy_ansible_playbook.yml)
@@ -11,8 +11,10 @@ Welcome to the documentation and configuration repository for my self-hosted 4-n
 
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-378144?style=flat-square&logo=terraform&logoColor=white&labelColor=0f1410&color=%23005082)](https://www.terraform.io)
 [![Ansible](https://img.shields.io/badge/Ansible-IaC-378144?style=flat-square&logo=ansible&logoColor=white&labelColor=0f1410&color=%23005082)](https://docs.ansible.com)
-[![Last Commit](https://img.shields.io/github/last-commit/L1p0-M/Homelab?style=flat-square&labelColor=0f1410&color=%23005082)](https://github.com/L1p0-M/Homelab/commits/main)
-[![License: MIT](https://img.shields.io/github/license/L1p0-M/Homelab?style=flat-square&labelColor=0f1410&color=%23005082)](LICENSE)
+
+[![Last Commit](https://img.shields.io/github/last-commit/L1p0-M/Homelab?style=flat-square&logo=github&logoColor=white&labelColor=0f1410&color=%23005082)](https://github.com/L1p0-M/Homelab/commits/main)
+[![License: MIT](https://img.shields.io/github/license/L1p0-M/Homelab?style=flat-square&logo=github&logoColor=white&labelColor=0f1410&color=%23005082)](LICENSE)
+![Protected by](https://img.shields.io/badge/Protected%20by-Gitleaks-378144?style=flat-square&logo=github&logoColor=white&labelColor=0f1410&color=%23005082)
 
 </div>
 
