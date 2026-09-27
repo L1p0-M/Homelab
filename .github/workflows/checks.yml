@@ -15,9 +15,11 @@ jobs:
     outputs:
       files: ${{ steps.changed-files.outputs.all_changed_files }}
       yaml: ${{ steps.changed-files.outputs.yaml_all_changed_files}}
+      python: ${{ steps.changed-files.outputs.python_all_changed_files}}
       has_changes: ${{ steps.changed-files.outputs.any_changed }}
       yaml_has_changes: ${{ steps.changed-files.outputs.yaml_any_changed }}
       ansible_has_changes: ${{ steps.changed-files.outputs.ansible_any_changed }}
+      python_has_changes: ${{ steps.changed-files.outputs.python_any_changed }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -35,6 +37,8 @@ jobs:
               - '**.yml'
             ansible:
               - 'ansible/**'
+            python:
+              - '**.py'
 
   check-yaml:
     runs-on: self-hosted
@@ -104,6 +108,29 @@ jobs:
         if: always()
         run: |
           rm -f ansible/.vault_pass
+
+  check-python:
+    runs-on: self-hosted
+    name: "Python Syntax Check"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.python_has_changes == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      - name: Check python scripts
+        env:
+          CHANGED_FILES: ${{ needs.detect-changes.outputs.python }}
+        run: |
+          for file in ${CHANGED_FILES}; do
+            echo "CHecking file: $file"
+            python3 -m flake8 --ignore E501 "$file"
+          done
 
   gitleaks-scan:
     name: "Gitleaks Secret Scan"
