@@ -36,13 +36,13 @@
 
 - name: Check if compose files exist for orphaned stacks
   ansible.builtin.stat:
-    path: "{{ docker_host_stacks_dir }}/{{ item }}/docker-compose.yml"
+    path: "{{ docker_host_stacks_dir }}/{{ item }}/docker-compose.yaml"
   loop: "{{ docker_host_orphaned_stacks }}"
   register: docker_host_compose_files_stat
 
 - name: Stop and remove orphaned stacks
   community.docker.docker_compose_v2:
-    project_src: "{{ item.item }}"
+    project_src: "{{ docker_host_stacks_dir }}/{{ item.item }}"
     state: absent
     remove_volumes: true
   loop: "{{ docker_host_compose_files_stat.results }}"
