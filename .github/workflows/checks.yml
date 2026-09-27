@@ -128,7 +128,7 @@ jobs:
           CHANGED_FILES: ${{ needs.detect-changes.outputs.python }}
         run: |
           for file in ${CHANGED_FILES}; do
-            echo "CHecking file: $file"
+            echo "Checking file: $file"
             python3 -m flake8 --ignore E501 "$file"
           done
 
