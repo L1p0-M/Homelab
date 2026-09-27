@@ -48,14 +48,22 @@
   loop: "{{ docker_host_compose_files_stat.results }}"
   when: item.stat.exists
 
-- name: Move orphaned stack directories to trash
-  ansible.builtin.command:
-    cmd: |
-      mv "{{ docker_host_stacks_dir }}/{{ item }}" "{{ docker_host_trash_dir }}/{{ item }}_{{ now(utc=true, fmt='%Y-%m-%d_%H-%M') }}"
-      touch "{{ docker_host_trash_dir }}/{{ item }}_{{ now(utc=true, fmt='%Y-%m-%d_%H-%M') }}"
+- name: Copy orphaned/drifted files to trash
+  ansible.builtin.copy:
+    src: "{{ docker_host_stacks_dir }}/{{ item }}"
+    dest: "{{ docker_host_trash_dir }}/{{ item }}_{{ now(utc=true, fmt='%Y-%m-%d_%H-%M') }}"
+    mode: preserve
+    remote_src: true
   loop: "{{ docker_host_orphaned_stacks }}"
+  register: docker_host_removed_files
   when: docker_host_orphaned_stacks | length > 0
-  changed_when: true
+
+- name: Remove files from remote host
+  ansible.builtin.file:
+    path: "{{ item.src }}"
+    state: absent
+  loop: "{{ docker_host_removed_files.results }}"
+  when: docker_host_removed_files.results | length > 0
 
 - name: Find expired stacks in trash
   ansible.builtin.find:
