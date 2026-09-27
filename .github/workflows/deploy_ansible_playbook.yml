@@ -39,11 +39,16 @@ jobs:
 
       - name: Set ansible args
         id: set-args
+        env:
+          INPUT_ARGS: ${{ inputs.args }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
-          if [ -n "${{ inputs.args }}" ]; then
-            echo "args=${{ inputs.args }}" >> $GITHUB_OUTPUT
+          if [[ -n "$INPUT_ARGS" ]]; then
+            echo "args=$INPUT_ARGS" >> $GITHUB_OUTPUT
+          elif [[ -n "$CHANGED_FILES" ]]; then
+            python3 -u .github/workflows/scripts/get_ansible_limits.py $CHANGED_FILES
           else
-            python3 -u .github/workflows/scripts/get_ansible_limits.py ${{ steps.changed-files.outputs.all_changed_files }}
+            echo "args=" >> $GITHUB_OUTPUT
           fi
 
   deploy-services:
