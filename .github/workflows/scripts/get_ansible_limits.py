@@ -6,13 +6,12 @@ from pathlib import Path as pathlibpath
 def process_input(changed_dirs):
     if any(dirs.startswith("ansible") for dirs in changed_dirs) or not changed_dirs:
         return ""
-    
+
     hosts = set()
     for dir in changed_dirs:
         print(f"Processing directory: {dir}")
         parts = pathlibpath(dir).parts
-        node = parts[0]
-        if len(parts) >= 2: #NODE/VM/Configs/
+        if len(parts) >= 2:  # NODE/VM/Configs/
             folder_name = parts[1]
             vm_name = folder_name.replace("_", "-")
             if vm_name:
@@ -21,7 +20,8 @@ def process_input(changed_dirs):
         limits = ",".join(sorted(hosts))
         return f"--limit {limits} --tags docker_host"
     else:
-        return f"--limit docker_hosts --tags docker_host"
+        return "--limit docker_hosts --tags docker_host"
+
 
 def set_github_output(args):
     try:
@@ -34,6 +34,7 @@ def set_github_output(args):
     except Exception as e:
         print(f"Error while writing to github output: {e}")
         exit(1)
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Get changed ansible limits from changed directories.")

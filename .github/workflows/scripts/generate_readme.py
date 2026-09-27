@@ -1,5 +1,3 @@
-import re
-import json
 import os
 import argparse
 from jinja2 import Template
@@ -19,6 +17,7 @@ def get_data_from_metadata(directory):
             return yaml_data
     return False
 
+
 def get_data_from_tfvars(directory):
     tfvars_path = pathlibpath(directory).joinpath("terraform.tfvars")
     if os.path.exists(tfvars_path):
@@ -26,11 +25,13 @@ def get_data_from_tfvars(directory):
             return clean_vals(hcl2.load(f))
     return False
 
+
 def get_readme_template():
     with open('.github/workflows/templates/readme.template.j2', 'r') as f:
         template_content = f.read()
         template = Template(template_content)
         return template
+
 
 def get_data_from_node(directory):
     node_path = pathlibpath(directory).parent.joinpath("node.tfvars")
@@ -38,6 +39,7 @@ def get_data_from_node(directory):
         with open(node_path, "r") as f:
             return clean_vals(hcl2.load(f))
     return False
+
 
 def clean_vals(val):
     if isinstance(val, int):
@@ -83,6 +85,7 @@ def generate_data_for_readme(metadata, tfvars, node, dir):
     }
     return data
 
+
 def generate_readme(template, data):
     try:
         output = template.render(
@@ -93,14 +96,15 @@ def generate_readme(template, data):
             f.write(output)
         print("README.md successfully generated!")
         return True
-    
+
     except Exception as e:
         print(f"Error while generating RADME.md: {e}")
         return False
 
+
 def generate_pr_summary(readme_datas):
     readme_count = len(readme_datas)
-    
+
     if readme_count == 1:
         readme = readme_datas[0]
         title = f"docs(gitops): Auto-update documentation for [{readme['name']}]"
@@ -116,10 +120,10 @@ def generate_pr_summary(readme_datas):
         "| Name | ID | IP Address | Directory Path |",
         "| :--- | :--- | :--- | :--- |"
     ]
-    
+
     for vms in readme_datas:
         pr_body_lines.append(f"| **{vms['name']}** | `{vms['vmid']}` | `{vms['ip_address']}` | `{vms['path']}` |")
-        
+
     pr_body_lines.extend([
         "\n---",
         "#### Updated Components per Node",
@@ -127,7 +131,7 @@ def generate_pr_summary(readme_datas):
         "\n---",
         "> 🤖 *Generated automatically via CI/CD Pipeline. Please review and merge.*"
     ])
-    
+
     pr_body = "\n".join(pr_body_lines)
 
     github_output = os.getenv('GITHUB_OUTPUT')
@@ -139,6 +143,7 @@ def generate_pr_summary(readme_datas):
             f.write(f"{pr_body}\n")
             f.write("EOF\n")
 
+
 def move_readme(dir):
     dir_path = pathlibpath(dir)
     if os.path.exists(dir_path) and os.path.exists("generated-README.md"):
@@ -147,7 +152,6 @@ def move_readme(dir):
         print(f"README file saved as: {name}")
         return True
     return False
-
 
 
 if __name__ == "__main__":

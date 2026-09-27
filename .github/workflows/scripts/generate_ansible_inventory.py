@@ -11,11 +11,12 @@ def read_tfvars_file(tfvars_path):
         try:
             with open(tfvars_path, "r") as tfvars_file:
                 return clean_values(hcl2.load(tfvars_file))
-            
+
         except Exception as e:
             print(f"Error reading tfvars file: {e}")
             return False
     return False
+
 
 def clean_values(val):
     if isinstance(val, int):
@@ -26,6 +27,7 @@ def clean_values(val):
         return [clean_values(item) for item in val]
     elif isinstance(val, dict):
         return {k: clean_values(v) for k, v in val.items()}
+
 
 def find_tfvars_file(search_path="/"):
     all_tfvars_values = {}
@@ -38,11 +40,6 @@ def find_tfvars_file(search_path="/"):
         return all_tfvars_values
     return False
 
-def get_ssh_config_from_env():
-    ssh_config = {
-        "ssh_port": os.getenv("SSH_PORT", "22"),
-    }
-    return ssh_config
 
 def process_tfvars_values(all_vars):
     clean_vars = {}
@@ -57,7 +54,6 @@ def process_tfvars_values(all_vars):
             name = tfvars_config.get("name", "N/A") if target_type == "LXC" else tfvars_config.get("vm_name", "N/A")
             default_groups = [f"{target_type.lower()}"]
             groups = tfvars.get("ansible_groups", default_groups)
-            ssh_config = get_ssh_config_from_env()
             ssh_user = '"{{ deploy_user }}"'
 
             original_name = name
@@ -72,6 +68,7 @@ def process_tfvars_values(all_vars):
     if clean_vars:
         return clean_vars
     return False
+
 
 def generate_ansible_inventory(vars):
     lines = [
@@ -88,7 +85,7 @@ def generate_ansible_inventory(vars):
         vms = []
         custom_groups = {}
         for name, details in vars.items():
-            entry = f"{name} ansible_host={details['ip_address']} ansible_user={details['ssh_user']}" 
+            entry = f"{name} ansible_host={details['ip_address']} ansible_user={details['ssh_user']}"
             if details.get("target_type") == "LXC" and "excluded" not in details.get("groups"):
                 lxcs.append(entry)
 
@@ -117,13 +114,13 @@ def generate_ansible_inventory(vars):
         # lines.append("\n[all:vars]")
         # lines.append('\nansible_ssh_private_key_file="./id_rsa"')
 
-
         lines.append("")
         content = "\n".join(lines)
 
         print("Generating Ansible inventory file...")
         print(content)
         return content
+
 
 def check_if_file_changed(file_path, new_file):
     if os.path.exists(file_path):
@@ -133,6 +130,7 @@ def check_if_file_changed(file_path, new_file):
             new_digest = hashlib.file_digest(new_file, "sha256")
         return exiting_digest.hexdigest() != new_digest.hexdigest()
     return True
+
 
 def write_inventory_to_file(inventory_content):
     try:
@@ -146,11 +144,12 @@ def write_inventory_to_file(inventory_content):
         print(f"Error writing Ansible inventory to file: {e}")
         return False
 
+
 def write_to_github_output(has_changes, pr_branch):
-    pr_title="ops(ansible): Auto-update Ansible inventory"
+    pr_title = "ops(ansible): Auto-update Ansible inventory"
     pr_body = [
         "### Automated Ansible Inventory Update\n",
-        f"GitOps Pipeline successfully processed and updated the **Ansible inventory** based on the latest configuration changes.\n",
+        "GitOps Pipeline successfully processed and updated the **Ansible inventory** based on the latest configuration changes.\n",
         "\n---",
         "> 🤖 *Generated automatically via CI/CD Pipeline. Please review and merge.*"
     ]
@@ -164,6 +163,7 @@ def write_to_github_output(has_changes, pr_branch):
             f.write("pr_body<<EOF\n")
             f.write(f"{content}\n")
             f.write("EOF\n")
+
 
 if __name__ == "__main__":
     arg_parser = ArgumentParser(description="Generate Ansible inventory from Terraform tfvars files.")
