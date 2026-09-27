@@ -29,3 +29,10 @@ services:
         environment:
             <<: *env
             RUNNER_NAME: ci-worker-3
+    github-runner-4:
+        <<: *runner-base
+        container_name: github-runner-4
+        environment:
+            <<: *env
+            RUNNER_NAME: ci-worker-4
+            REPO: L1p0-M/L1p0-M
