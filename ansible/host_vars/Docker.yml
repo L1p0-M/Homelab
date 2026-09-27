@@ -29,6 +29,4 @@ app_stacks:
   - "../PVE/Docker/Configs/searxng"
   - "../PVE/Docker/Configs/sonarr"
   - "../PVE/Docker/Configs/thememusicdownloader"
-  - "../PVE/Docker/Configs/watcher_agent"
-  - "../PVE/Docker/Configs/watchtower"
   - "../PVE/Docker/Configs/youtube-dl"
