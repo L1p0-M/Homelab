@@ -1,7 +1,7 @@
 ---
 services:
   gitea:
-    image: gitea/gitea:1.27
+    image: gitea/gitea:28.0
     container_name: gitea
     environment:
       - USER_UID=1000
@@ -24,7 +24,7 @@ services:
       - database
 
   database:
-    image: mysql:8
+    image: mysql:26
     restart: always
     container_name: gitea-db
     environment:
