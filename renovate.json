@@ -31,7 +31,8 @@
       "matchPackageNames": [
         "lscr.io/linuxserver/**",
         "ghcr.io/linuxserver/**",
-        "linuxserver/**"
+        "linuxserver/**",
+        "ghcr.io/l1p0-m/github-runner**"
       ],
       "pinDigests": true,
       "digest": {
