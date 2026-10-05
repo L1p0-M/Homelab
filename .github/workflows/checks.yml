@@ -152,21 +152,24 @@ jobs:
     name: "Check Response"
     runs-on: self-hosted
     if: ${{ always() }}
-    needs: [detect-changes, check-yaml, check-ansible, gitleaks-scan]
+    needs: [detect-changes, check-yaml, check-ansible, gitleaks-scan, check-python]
     steps:
       - name: Verify Checks Results
         run: |
           YAML_RES="${{ needs.check-yaml.result }}"
           ANSIBLE_RES="${{ needs.check-ansible.result }}"
           GITLEAKS_RES="${{ needs.gitleaks-scan.result }}"
+          PYTHON_RES="${{ needs.check-python.result }}"
 
           echo "YAML Check result: $YAML_RES"
           echo "Ansible Check result: $ANSIBLE_RES"
           echo "Gitleaks result: $GITLEAKS_RES"
+          echo "Python result: $PYTHON_RES"
 
           if [[ "$YAML_RES" == "failure" || "$YAML_RES" == "cancelled" || \
                 "$ANSIBLE_RES" == "failure" || "$ANSIBLE_RES" == "cancelled" || \
-                "$GITLEAKS_RES" == "failure" || "$GITLEAKS_RES" == "cancelled" ]]; then
+                "$GITLEAKS_RES" == "failure" || "$GITLEAKS_RES" == "cancelled" || \
+                "$PYTHON_RES" == "failure" || "$PYTHON_RES" == "cancelled" ]]; then
             echo "Check failed!"
             exit 1
           fi
