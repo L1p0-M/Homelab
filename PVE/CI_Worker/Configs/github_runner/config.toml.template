@@ -1,0 +1,23 @@
+[defaults]
+check_interval_seconds = 15
+tmpfs_enabled = true
+tmpfs_size = 16
+image = "ubuntu-latest"
+
+[[runners]]
+name = "ci-worker"
+repo = "L1p0-M/Homelab"
+min_idle = 3
+max_total = 6
+
+[[runners]]
+name = "profile_readme_runner"
+repo = "L1p0-M/L1p0-M"
+min_idle = 1
+max_total = 1
+
+[[runners]]
+name = "runner-builder"
+repo = "L1p0-M/github-runner-docker"
+min_idle = 1
+max_total = 3

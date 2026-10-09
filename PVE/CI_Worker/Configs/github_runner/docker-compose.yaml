@@ -1,38 +1,16 @@
 ---
-x-env: &env
-    PUID: 1000
-    PGID: 1000
-    REPO: L1p0-M/Homelab
-    TOKEN: ${TOKEN}
-x-runner-template: &runner-base
-    image: ghcr.io/l1p0-m/github-runner-docker:latest@sha256:fc8608aceb24a24ffb6168f664a4927ade6545c3e4baa09c3e79ae9dfb49ecc6
-    privileged: true
-    restart: always
-    tmpfs:
-      - /var/lib/docker:exec,mode=777,size=16G
 services:
-    github-runner-1:
-        <<: *runner-base
-        container_name: github-runner-1
-        environment:
-            <<: *env
-            RUNNER_NAME: ci-worker-1
-    github-runner-2:
-        <<: *runner-base
-        container_name: github-runner-2
-        environment:
-            <<: *env
-            RUNNER_NAME: ci-worker-2
-    github-runner-3:
-        <<: *runner-base
-        container_name: github-runner-3
-        environment:
-            <<: *env
-            RUNNER_NAME: ci-worker-3
-    github-runner-4:
-        <<: *runner-base
-        container_name: github-runner-4
-        environment:
-            <<: *env
-            RUNNER_NAME: ci-worker-4
-            REPO: L1p0-M/L1p0-M
+  runner-controller:
+    image: ghcr.io/l1p0-m/github-runner-controller:v2.337.0
+    container_name: runner-controller
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - DEBUG=info
+      - PGID=1000
+      - TZ=Europe/Budapest
+      - TOKEN=${TOKEN}
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dockerconfig/github_runner/config.toml:/app/config.toml
