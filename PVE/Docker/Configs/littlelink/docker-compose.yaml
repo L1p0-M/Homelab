@@ -4,7 +4,7 @@ services:
     container_name: littlelink-server
     environment:
       - META_TITLE=Lipovics Martin
-      - META_DESCRIPTION=Elektrotechnikus | PLC Programozó
+      - META_DESCRIPTION=The contact infos of Lipovics Martin
       - META_AUTHOR=Lipovics Martin
       - LANG=hu
       - META_INDEX_STATUS=all
@@ -19,9 +19,9 @@ services:
       - FAVICON_URL=https://i.imgur.com/PQNoVs8.png
       - AVATAR_URL=https://i.imgur.com/PQNoVs8.png
       - AVATAR_2X_URL=https://i.imgur.com/XyjB91X.png
-      - AVATAR_ALT=Lipovics Martin Profilképe
+      - AVATAR_ALT=Profile Picture of Lipovics Martin
       - NAME=Lipovics Martin
-      - BIO=Elektrotechnikus | PLC Programozó | Hobbi Autószerelő  Linux Rajongó | Homelab
+      - BIO="I am an Electrical Technician and PLC Programmer specializing in industrial automation. Alongside my industrial background, I am a self-taught Systems & DevOps Engineer passionate about Linux and running my own homelab. In my free time, you'll find me in the garage as a dedicated car enthusiast and DIY mechanic."
       - BUTTON_ORDER=FACEBOOK,FACEBOOK_MESSENGER,WHATSAPP,TELEGRAM,GITHUB,REDDIT,STEAM,GOLFMK4,EMAIL
       - CUSTOM_BUTTON_TEXT=Golf MK4 Project
       - CUSTOM_BUTTON_URL=https://www.carstyling.com/kozosseg/auto/l1p0/volkswagen-golf-29736
