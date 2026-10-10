@@ -9,4 +9,4 @@ app_stacks:
   - "../PVE/CI_Worker/Configs/renovate_bot"
 
 app_templates:
-  - "../PVE/CI_Worker/Configs/github_runner/config.toml.template"
+  - "../PVE/CI_Worker/Configs/github_runner/config.toml.template.j2"
