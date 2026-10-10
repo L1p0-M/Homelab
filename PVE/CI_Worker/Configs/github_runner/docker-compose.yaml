@@ -1,7 +1,7 @@
 ---
 services:
   runner-controller:
-    image: ghcr.io/l1p0-m/github-runner-controller:v2.337.0
+    image: ghcr.io/l1p0-m/github-runner-controller:v2.337.0@sha256:560e68cc30077a3daaea0e553a745756d1dbf1e5f740850c0eaf48cf77a3450f
     container_name: runner-controller
     restart: unless-stopped
     environment:
