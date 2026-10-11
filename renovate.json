@@ -9,22 +9,7 @@
   "enabledManagers": [
     "docker-compose",
     "dockerfile",
-    "custom.regex",
     "github-actions"
-  ],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "/^Renovate/VERSION$/"
-      ],
-      "matchStrings": [
-        "^(?<currentValue>\\d+\\.\\d+(\\.\\d+)?)\\s*$"
-      ],
-      "depNameTemplate": "ghcr.io/l1p0-m/renovate-cron",
-      "packageNameTemplate": "renovate/renovate",
-      "datasourceTemplate": "docker"
-    }
   ],
   "packageRules": [
     {
@@ -40,21 +25,12 @@
       }
     },
     {
-      "matchPackageNames": ["renovate/renovate"],
+      "matchPackageNames": ["renovate/renovate", "ghcr.io/l1p0-m/renovate-cron"],
       "groupName": "Renovate",
       "commitMessageTopic": "Renovate: {{{depName}}}",
       "matchUpdateTypes": ["minor", "patch"],
       "schedule": ["* 8-12 * * 1"],
       "automerge": true
-    },
-    {
-      "description": "Dockerfiles to one pr/file",
-      "matchManagers": ["dockerfile"],
-      "separateMajorMinor": true,
-      "commitMessageTopic": "Dockerfile: {{{depName}}}",
-      "matchPackageNames": [
-        "!renovate/renovate"
-      ]
     },
     {
       "description": "Docker Compose fles to one groupped pr",
