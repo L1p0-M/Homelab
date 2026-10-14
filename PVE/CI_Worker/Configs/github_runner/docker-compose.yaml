@@ -10,7 +10,8 @@ services:
       - PGID=1000
       - TZ=Europe/Budapest
       - TOKEN=${TOKEN}
-
+    ports:
+      - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /dockerconfig/github_runner/config.toml:/app/config.toml
