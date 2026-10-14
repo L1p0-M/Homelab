@@ -70,3 +70,14 @@ scrape_configs:
       - target_label: __address__
         replacement: nut-exporter:9995
 {% endif %}
+
+{% if "ci" in groups %}
+  - job_name: "runners"
+    static_configs:
+      - targets:
+{% for host in groups["ci"] | default([]) %}
+{% if hostvars[host].ansible_host is defined %}
+        - '{{ hostvars[host].ansible_host }}:8080'
+{% endif %}
+{% endfor %}
+{% endif %}
