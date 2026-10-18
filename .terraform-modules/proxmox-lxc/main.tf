@@ -8,7 +8,7 @@ terraform {
 }
 
 
-# resource "proxmox_download_file" "latest_debian_13_trixie" {
+#resource "proxmox_download_file" "latest_debian_13_trixie" {
 #   content_type = "vztmpl"
 #   datastore_id = var.config.image_storage
 #   file_name    = "debian-13-generic-amd64.tar.xz"
@@ -58,7 +58,7 @@ resource "proxmox_virtual_environment_container" "lxc" {
   }
 
   operating_system {
-    template_file_id = "${var.config.image_storage}:vztmpl/debian-13-generic-amd64.tar.xz"
+    template_file_id = "${var.config.image_storage}:vztmpl/debian-13-standard_13.6-1_amd64.tar.zst"
     type = "debian"
   }
 
