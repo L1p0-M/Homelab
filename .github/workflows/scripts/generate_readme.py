@@ -176,6 +176,7 @@ if __name__ == "__main__":
                         move_readme(dir=dir)
                 else:
                     print("Unable to get data from the files")
+                    exit(0)
             if readme_datas:
                 generate_pr_summary(readme_datas=readme_datas)
                 exit(0)
