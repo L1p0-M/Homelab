@@ -1,6 +1,6 @@
 services:
   peanut:
-    image: brandawg93/peanut:6.1.1
+    image: brandawg93/peanut:6.1.2
     container_name: PeaNUT
     restart: unless-stopped
     environment:
