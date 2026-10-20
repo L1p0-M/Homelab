@@ -1,5 +1,5 @@
 target_type = "LXC"
-ansible_groups = ["Whisper"]
+ansible_groups = ["stt"]
 
 config = {
     id             = 402
@@ -16,7 +16,7 @@ config = {
     keyctl         = false
     image_storage  = "TrueNAS-Share"
     storage_name   = "local"
-    startup_order    = 1
+    startup_order    = 2
     device_passthrough = [
         {
             path = "/dev/nvidia0",
