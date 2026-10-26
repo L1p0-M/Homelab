@@ -14,9 +14,10 @@
     create_home: true
     password: "{{ deploy_user_pass }}"
 
-- name: Ensure ssh key exists
+- name: Ensure ssh key exists for deploy
   ansible.posix.authorized_key:
     key: "{{ deploy_ssh_key }}"
     manage_dir: true
     user: "{{ deploy_user }}"
     state: present
+  notify: "restart ssh"
