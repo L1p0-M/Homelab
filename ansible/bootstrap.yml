@@ -12,4 +12,4 @@
 
     - name: Apply base server bootstrap task
       ansible.builtin.include_tasks:
-        file: roles/base/tasks/01_users_groups.yml
+        file: roles/base/tasks/main.yml
