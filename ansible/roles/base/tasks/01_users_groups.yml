@@ -4,19 +4,30 @@
     name: homelab-devs
     state: present
 
-- name: Ensure deploy user exists
+- name: Ensure default users exists
   ansible.builtin.user:
-    name: "{{ deploy_user }}"
-    group: homelab-devs
+    name: "{{ item.name }}"
     groups: [sudo, homelab-devs]
     append: true
     state: present
     create_home: true
-    password: "{{ deploy_user_pass }}"
+    shell: /bin/bash
+    password: "{{ item.password }}"
+  loop:
+    - name: "{{ my_user }}"
+      password: "{{ my_user_pass }}"
+    - name: "{{ deploy_user }}"
+      password: "{{ deploy_user_pass }}"
 
-- name: Ensure ssh key exists
+- name: Ensure ssh key exists for users
   ansible.posix.authorized_key:
-    key: "{{ deploy_ssh_key }}"
+    key: "{{ item.pub_key }}"
     manage_dir: true
-    user: "{{ deploy_user }}"
+    user: "{{ item.name }}"
     state: present
+  loop:
+    - name: "{{ my_user }}"
+      pub_key: "{{ my_user_ssh_key }}"
+    - name: "{{ deploy_user }}"
+      pub_key: "{{ deploy_ssh_key }}"
+  notify: "restart ssh"

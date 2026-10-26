@@ -23,6 +23,15 @@
         owner: "root"
         group: "root"
 
+- name: Copy sshd config with disabled password auth
+  ansible.builtin.copy:
+    src: files/sshd_config
+    dest: /etc/ssh/sshd_config
+    mode: "0644"
+    owner: "root"
+    group: "root"
+  notify: "restart ssh"
+
 - name: Ensure QEMU Guest Agent is running
   ansible.builtin.service:
     name: qemu-guest-agent
