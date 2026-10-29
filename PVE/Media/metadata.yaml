@@ -15,4 +15,3 @@ ports:
     access: "Internal"
 docker:
   - "Jellyfin"
-  - "[Watcher-Agent](https://ghcr.io/l1p0-m/config-watcher-agent)"

@@ -21,7 +21,7 @@ ports:
     port: 51000
     protocol: "tcp/udp"
     access: "Internal/External"
-    
+
 docker:
   - "Audiobookshelf"
   - "Codeserver"
@@ -33,9 +33,7 @@ docker:
   - "Peanut"
   - "Portainer"
   - "Qbittorrent"
-  - "Searxng"
   - "Thememusicdownloader"
-  - "Watchtower"
   - "Bitwarden"
   - "Esphome"
   - "Glances"
@@ -47,4 +45,3 @@ docker:
   - "Prowlarr"
   - "Radarr"
   - "Sonarr"
-  - "[Watcher-Agent](https://ghcr.io/l1p0-m/config-watcher-agent)"
