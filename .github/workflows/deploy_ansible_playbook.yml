@@ -55,6 +55,9 @@ jobs:
     name: "Run Ansible Playbook / Deploy Compose Services"
     runs-on: self-hosted
     needs: detect-changes
+    concurrency:
+      group: ansible-${{ needs.detect-changes.outputs.args }}
+      cancel-in-progress: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
