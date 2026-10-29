@@ -10,4 +10,8 @@ UsePAM yes
 X11Forwarding no
 PrintMotd no
 AcceptEnv LANG LC_*
+{% if ansible_os_family == 'Debian' %}
 Subsystem sftp	/usr/lib/openssh/sftp-server
+{% elif ansible_os_family == 'Alpine' %}
+Subsystem sftp	/usr/lib/ssh/sftp-server
+{% endif %}

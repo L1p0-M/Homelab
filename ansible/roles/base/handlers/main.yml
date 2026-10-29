@@ -1,6 +1,6 @@
 ---
 - name: Restart ssh
   ansible.builtin.service:
-    name: "ssh.service"
+    name: "{{ 'sshd' if ansible_os_family == 'Alpine' else 'ssh' }}"
     state: restarted
   listen: "restart ssh"

@@ -19,12 +19,14 @@
   community.general.apk:
     name:
       - curl
+      - bash
       - wget
       - git
       - sudo
       - qemu-guest-agent
       - tzdata
       - prometheus-node-exporter
+      - openssh-server-pam
     state: present
     update_cache: true
   when: ansible_os_family == 'Alpine'
