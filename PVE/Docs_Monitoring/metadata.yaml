@@ -22,4 +22,3 @@ docker:
   - "PVE-Exporter"
   - "CAdvisor"
   - "OpenSpeedTest"
-  - "[Watcher-Agent](https://ghcr.io/l1p0-m/config-watcher-agent)"
