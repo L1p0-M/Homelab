@@ -1,10 +1,19 @@
 ---
+
 - name: Apply base configuration to all nodes
   hosts: all:!excluded
-  gather_facts: true
-  roles:
-    - role: base
-      tags: [base]
+  gather_facts: false
+  tasks:
+    - name: Gather facts from reachable hosts
+      ansible.builtin.setup:
+      ignore_unreachable: true
+      register: reachable_hosts
+
+    - name: Apply base configuration to reachable hosts
+      ansible.builtin.include_role:
+        name: base
+      when: reachable_hosts is defined and reachable_hosts.ansible_facts is defined
+  tags: [base]
 
 - name: Setup Docker on Docker hosts
   hosts: docker_hosts
