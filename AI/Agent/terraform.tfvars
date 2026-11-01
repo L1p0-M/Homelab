@@ -1,5 +1,5 @@
 target_type = "LXC"
-ansible_groups = ["agent"]
+ansible_groups = ["agent", "ai"]
 
 config = {
     id             = 404

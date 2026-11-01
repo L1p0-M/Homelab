@@ -1,5 +1,5 @@
 target_type = "LXC"
-ansible_groups = ["stt"]
+ansible_groups = ["stt", "ai"]
 
 config = {
     id             = 402
