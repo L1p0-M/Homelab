@@ -1,6 +1,6 @@
 services:
   ombi:
-    image: lscr.io/linuxserver/ombi:latest@sha256:ea8248433a3d37eaf46a59e4cb5160814d35a5b5ba35eac47a5018747acf2632
+    image: lscr.io/linuxserver/ombi:latest@sha256:cdff52cca1c613aaf67e72bf36de5ea8486fa43fe2c2b7e2dd3368d6a80510d7
     container_name: ombi
     environment:
       - PUID=1000
