@@ -8,6 +8,13 @@ records = {
     proxied  = true
     comment  = ""
   },
+  "portfolio" = {
+    name     = "portfolio"
+    type     = "CNAME"
+    content  = "${DOMAIN_NAME}"
+    proxied  = true
+    comment  = ""
+  },
   "bookshelf" = {
     name    = "bookshelf"
     type    = "CNAME"
