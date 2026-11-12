@@ -1,0 +1,10 @@
+---
+services:
+  portfolio:
+    image: ghcr.io/l1p0-m/portfolio-site:latest
+    container_name: portfolio
+    restart: unless-stopped
+networks:
+  default:
+    name: nginx_default
+    external: true
