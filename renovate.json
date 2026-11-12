@@ -18,6 +18,7 @@
         "ghcr.io/linuxserver/**",
         "linuxserver/**",
         "ghcr.io/l1p0-m/github-runner**"
+        "ghcr.io/l1p0-m/portfolio-site"
       ],
       "pinDigests": true,
       "digest": {
