@@ -23,6 +23,7 @@ app_stacks:
   - "../PVE/Docker/Configs/peanut"
   - "../PVE/Docker/Configs/photoprism"
   - "../PVE/Docker/Configs/portainer"
+  - "../PVE/Docker/Configs/portfolio"
   - "../PVE/Docker/Configs/prowlarr"
   - "../PVE/Docker/Configs/qbittorrent"
   - "../PVE/Docker/Configs/radarr"
