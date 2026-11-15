@@ -7,7 +7,6 @@ config = {
     cpu_cores      = 2
     cpu_type       = "qemu64"
     memory_mb      = 32768
-    disk_size_gb   = 32
     ip_address     = "192.168.1.90/24"
     network_bridge = "vmbr2"
     tags = [
@@ -15,11 +14,9 @@ config = {
         "nas",
         "production",
     ]
-    storage_name     = "local-lvm"
     startup_order    = 1
     startup_up_delay = 30
     scsi_hardware    = "virtio-scsi-single"
-    iothread         = true
     description      = <<-EOT
                 <div align='center'>
                 <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/truenas-core.png" height="70px" width="70px"/>
@@ -28,7 +25,23 @@ config = {
                 ### Ez a virtuális gép a NAS,ezen vannak a ZFS Poolok!
                 ### IP: 192.168.1.90
             EOT
-
+    disk = [
+        { 
+            disk_size_gb  = 32
+            iothread      = true
+            storage_name = "local-lvm"
+            interface    = "scsi0"
+            ssd          = true
+        },
+        { 
+            disk_size_gb  = 32
+            iothread      = true
+            storage_name = "local-lvm"
+            interface    = "scsi1"
+            ssd          = true
+            backup       = false
+        }
+    ]
     hostpci = [
         {
             device   = "hostpci0"

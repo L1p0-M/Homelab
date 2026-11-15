@@ -35,13 +35,17 @@ resource "proxmox_virtual_environment_vm" "vm" {
     dedicated = var.config.memory_mb
   }
 
-  disk {
-    datastore_id = var.config.storage_name
-    interface    = "scsi0"
-    size         = var.config.disk_size_gb
-    discard      = "on"
-    ssd          = true
-    iothread     = var.config.iothread
+  dynamic "disk" {
+    for_each = var.config.disk
+    content {
+      datastore_id = disk.value.storage_name
+      interface    = disk.value.interface
+      size         = disk.value.disk_size_gb
+      discard      = "on"
+      ssd          = disk.value.ssd
+      iothread     = disk.value.iothread
+      backup       = disk.value.backup
+    }
   }
 
   network_device {
@@ -90,7 +94,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   dynamic "initialization" {
     for_each = var.config.ip_address != null ? [1] : []
     content {
-      datastore_id = var.config.storage_name
+      datastore_id = var.config.cloud_datastore_id
       ip_config {
         ipv4 {
           address = var.config.ip_address

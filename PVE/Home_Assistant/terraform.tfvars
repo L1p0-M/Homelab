@@ -7,7 +7,6 @@ config = {
     cpu_cores      = 2
     cpu_type       = "qemu64"
     memory_mb      = 4096
-    disk_size_gb   = 32
     ip_address     = "192.168.1.22/24"
     network_bridge = "vmbr1"
     tags = [
@@ -15,7 +14,6 @@ config = {
         "linux",
         "production",
     ]
-    storage_name       = "local-lvm"
     startup_order      = 4
     startup_up_delay   = 10
     bios_type          = "ovmf"
@@ -30,5 +28,14 @@ config = {
                 ### IOT Szerver
                 ### IP: 192.168.1.22
             EOT
+    disk = [
+        { 
+            disk_size_gb  = 32
+            iothread      = true
+            storage_name = "local-lvm"
+            interface    = "scsi0"
+            ssd          = true
+        }
+    ]
 
 }
