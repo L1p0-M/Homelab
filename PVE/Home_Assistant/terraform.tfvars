@@ -19,7 +19,6 @@ config = {
     bios_type          = "ovmf"
     efi_disk           = "local-lvm"
     scsi_hardware      = "virtio-scsi-pci"
-    iothread           = false
     description        = <<-EOT
                 <div align='center'>
                 <img src="https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant-alt.png" height="70px" width="80px"/>
@@ -31,7 +30,7 @@ config = {
     disk = [
         { 
             disk_size_gb  = 32
-            iothread      = true
+            iothread      = false
             storage_name = "local-lvm"
             interface    = "scsi0"
             ssd          = true
