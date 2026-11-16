@@ -11,7 +11,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
   name        = var.config.vm_name
   node_name   = var.node_config.node_name
   vm_id       = var.config.vm_id
-  keyboard_layout = "en-us"
+  keyboard_layout = "hu"
   scsi_hardware = var.config.scsi_hardware
   description = var.config.description
   tags        = var.config.tags

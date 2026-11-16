@@ -1,0 +1,17 @@
+#cloud-config
+users:
+  - name: ${my_user}
+    uid: 1000
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) ALL']
+    ssh_authorized_keys:
+      - ${my_ssh_pub_key}
+
+  - name: ${deploy_user}
+    uid: 1001
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ${deploy_ssh_pub_key}
