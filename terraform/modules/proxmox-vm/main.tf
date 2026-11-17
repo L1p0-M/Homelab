@@ -1,11 +1,3 @@
-terraform {
-  required_providers {
-    proxmox = {
-      source  = "bpg/proxmox"
-      version = ">= 0.60.0"
-    }
-  }
-}
 
 resource "proxmox_virtual_environment_vm" "vm" {
   name        = var.config.vm_name

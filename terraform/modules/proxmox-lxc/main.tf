@@ -1,12 +1,3 @@
-terraform {
-  required_providers {
-    proxmox = {
-      source  = "bpg/proxmox"
-      version = ">= 0.60.0"
-    }
-  }
-}
-
 
 #resource "proxmox_download_file" "latest_debian_13_trixie" {
 #   content_type = "vztmpl"

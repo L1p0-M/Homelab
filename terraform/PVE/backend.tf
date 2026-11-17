@@ -1,19 +1,11 @@
 terraform {
-  required_version = ">= 1.6.0"
-
-  required_providers {
-    proxmox = {
-      source  = "bpg/proxmox"
-      version = ">= 0.60.0"
-    }
-  }
 
   backend "s3" {
     bucket = "terraform-homelab"
-    key    = "${NODE_NAME}/${TARGET_NAME}/terraform.tfstate"
+    key    = "PVE/terraform.tfstate"
 
     endpoints = {
-      s3 = "${CF_ENDPOINT_URL}"
+      s3 = "https://6c2ae2c66f79e23ac0cf8bb2b46bee21.r2.cloudflarestorage.com"
     }
 
     region = "auto"

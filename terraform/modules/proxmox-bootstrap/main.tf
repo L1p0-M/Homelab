@@ -1,41 +1,3 @@
-terraform {
-  required_providers {
-    proxmox = {
-      source  = "bpg/proxmox"
-      version = ">= 0.60.0"
-    }
-    sops = {
-      source  = "carlpett/sops"
-      version = "~> 1.1"
-    }
-  }
-}
-
-provider "proxmox" {
-  ssh {
-    password = data.sops_file.proxmox.data["PASSWORD"]
-    username = data.sops_file.proxmox.data["USERNAME"]
-  }
-}
-
-data "sops_file" "secrets" {
-  source_file = "${path.module}/secrets.yaml.enc"
-  input_type = "yaml"
-}
-
-data "sops_file" "proxmox" {
-  source_file = var.node_config.secrets
-  input_type = "dotenv"
-}
-
-variable "node_config" {
-  type = object({
-    node_name    = string
-    gateway      = string
-    storage_name = string
-    secrets      = string
-  })
-}
 
 resource "proxmox_virtual_environment_file" "cloud_config" {
   content_type = "snippets"
@@ -44,12 +6,7 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
 
   source_raw {
     file_name = "user-data.yaml"
-    data = templatefile("${path.module}/user_data.yaml.tftpl", {
-      my_ssh_pub_key   = data.sops_file.secrets.data["ssh_keys.my_user"]
-      deploy_ssh_pub_key = data.sops_file.secrets.data["ssh_keys.deploy_user"]
-      my_user = data.sops_file.secrets.data["users.my_user"]
-      deploy_user = data.sops_file.secrets.data["users.deploy_user"]
-    })
+    data = var.user_data
   }
 }
 
@@ -109,5 +66,4 @@ resource "proxmox_virtual_environment_vm" "ubuntu_template" {
   network_device {
     bridge = "vmbr0"
   }
-
 }
