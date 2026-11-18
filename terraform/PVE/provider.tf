@@ -22,8 +22,3 @@ provider "proxmox" {
     username = data.sops_file.secrets.data["nodes.pve.username"]
   }
 }
-
-data "sops_file" "secrets" {
-  source_file = "../secrets.yaml.enc"
-  input_type = "yaml"
-}
