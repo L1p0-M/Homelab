@@ -3,7 +3,6 @@ module "network_ups" {
     node_config = var.node_config
     depends_on = [module.bootstrap]
 
-    target_type = "LXC"
     ansible_groups = ["ups"]
 
     config = {

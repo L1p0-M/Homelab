@@ -93,12 +93,9 @@ resource "proxmox_virtual_environment_vm" "vm" {
           gateway = var.node_config.gateway
         }
       }
-      user_account {
-        keys     = compact([var.sensitive.ssh_public_key])
-        username = "l1p0"
-      }
     }
   }
+  
   dynamic "efi_disk" {
     for_each = var.config.bios_type == "ovmf" ? [1] : []
     content {

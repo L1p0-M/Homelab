@@ -3,7 +3,6 @@ module "docker" {
     node_config = var.node_config
     depends_on = [module.bootstrap]
 
-    target_type = "VM"
     ansible_groups = ["docker_hosts", "node_exporters"]
 
     config = {

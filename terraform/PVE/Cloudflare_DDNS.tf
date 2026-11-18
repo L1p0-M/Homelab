@@ -3,7 +3,6 @@ module "cloudflare_ddns" {
     node_config = var.node_config
     depends_on = [module.bootstrap]
 
-    target_type = "LXC"
     ansible_groups = ["ddns"]
 
     config = {

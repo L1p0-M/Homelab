@@ -3,7 +3,6 @@ module "wireguard" {
     node_config = var.node_config
     depends_on = [module.bootstrap]
 
-    target_type = "LXC"
     ansible_groups = ["vpn"]
 
     config = {

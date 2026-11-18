@@ -1,14 +1,4 @@
 
-#resource "proxmox_download_file" "latest_debian_13_trixie" {
-#   content_type = "vztmpl"
-#   datastore_id = var.config.image_storage
-#   file_name    = "debian-13-generic-amd64.tar.xz"
-#   node_name    = var.node_config.node_name
-#   overwrite    = false
-#   url          = "https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-amd64.tar.xz"
-# }
-
-
 resource "proxmox_virtual_environment_container" "lxc" {
   node_name    = var.node_config.node_name
   vm_id        = var.config.id

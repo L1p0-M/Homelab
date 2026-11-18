@@ -3,7 +3,6 @@ module "ci_worker" {
     node_config = var.node_config
     depends_on = [module.bootstrap]
 
-    target_type = "VM"
     ansible_groups = ["ci", "docker_hosts"]
 
     config = {
