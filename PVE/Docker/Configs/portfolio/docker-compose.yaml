@@ -1,7 +1,7 @@
 ---
 services:
   portfolio:
-    image: ghcr.io/l1p0-m/portfolio-site:latest@sha256:ae34058ea115315f81cdccc03c8be95c1a9af54574d06753c5a9e72b94cc665f
+    image: ghcr.io/l1p0-m/portfolio-site:latest@sha256:5ee5c27eb0d23d8d190feb1c5e812fb89618bad9e2836810cf5cbc03d6a1fe84
     container_name: portfolio
     restart: unless-stopped
 networks:
