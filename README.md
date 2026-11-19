@@ -9,6 +9,7 @@ Welcome to the documentation and configuration repository for my self-hosted 4-n
 [![Deploy/Update Infrastructure](https://img.shields.io/github/actions/workflow/status/L1p0-M/Homelab/infra_plan_deploy.yml?style=flat-square&logo=proxmox&logoColor=white&labelColor=0f1410&color=%23005082&label=Deploy%20%2F%20Update%20Infrastructure)](https://github.com/L1p0-M/Homelab/actions/workflows/infra_plan_deploy.yml)
 
 
+
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-378144?style=flat-square&logo=terraform&logoColor=white&labelColor=0f1410&color=%23005082)](https://www.terraform.io)
 [![Ansible](https://img.shields.io/badge/Ansible-IaC-378144?style=flat-square&logo=ansible&logoColor=white&labelColor=0f1410&color=%23005082)](https://docs.ansible.com)
 
@@ -22,7 +23,6 @@ Welcome to the documentation and configuration repository for my self-hosted 4-n
 ---
 
 ## 📐 Network & Architecture Topology
-
 
 ## Hardware
 
@@ -69,3 +69,131 @@ The purpose-built AI node enables local inference for private LLMs and AI models
 **Integration:** Integrated with internal services (Open-WebUI, Home Assistant).
 
 **Tool & Function Calling Integration:** My custom-built FastAPI proxy bridges the local LLMs with external tools, custom APIs, and system-level automation workflows.
+
+---
+
+## 📂 Repository Structure
+
+```
+Homelab/
+├── 🔧 Terraform Infrastructure
+│   ├── modules/                    # Reusable infrastructure modules
+│   │   ├── proxmox-vm/            # Proxmox VM configuration template
+│   │   ├── proxmox-lxc/           # Proxmox LXC container template
+│   │   ├── proxmox-bootstrap/     # Cloud-init VM template for bootstrapping
+│   │   └── cloudflare/            # DNS & Cloudflare management
+│   ├── PVE/                       # PVE node configuration (complete)
+│   │   ├── CI_Worker.tf           # GitHub/Gitea CI Runner
+│   │   ├── Cloudflare_DDNS.tf     # Dynamic DNS updater
+│   │   ├── Docker.tf              # Docker host + 25+ containers
+│   │   ├── Docs_Monitoring.tf     # Grafana, Prometheus, Portainer, Gitea
+│   │   ├── Home_Assistant.tf      # Home Assistant VM
+│   │   ├── Media.tf               # Jellyfin media server
+│   │   ├── Network_UPS.tf         # NUT UPS management
+│   │   ├── TrueNAS.tf             # TrueNAS storage VM (PCIe passthrough)
+│   │   ├── WHPrinter.tf           # Windows print & scan server
+│   │   └── Wireguard.tf           # WireGuard VPN
+│   ├── Cloudflare/                # DNS zones & records management
+│   └── AI/                        # AI node configuration (in progress)
+│       ├── Agent.tf               # LLM agent container
+│       ├── Cortana-Model.tf       # Fine-tuned model serving
+│       ├── TTS.tf                 # Text-to-Speech service
+│       └── Whisper.tf             # Speech-to-text service
+├── 🤖 Ansible Playbooks
+│   ├── roles/                     # Modular role collection
+│   │   ├── base/                  # System hardening, SSH, packages
+│   │   ├── ddns/                  # Cloudflare DDNS client
+│   │   ├── docker_host/           # Docker setup + stack deployment
+│   │   ├── printer/               # CUPS/SANE print server
+│   │   ├── ups/                   # NUT UPS monitoring
+│   │   └── vpn/                   # WireGuard VPN configuration
+│   ├── hosts/                     # Node inventory
+│   ├── group_vars/                # Shared variables per group
+│   └── host_vars/                 # Per-node variables
+├── 📁 PVE Services (per-service config)
+│   ├── CI_Worker/                 # CI runner configs
+│   ├── Docker/                    # Docker Compose stacks (25+)
+│   ├── Docs_Monitoring/           # Monitoring stack configs
+│   ├── Home_Assistant/            # HA configuration
+│   ├── Media/                     # Jellyfin config
+│   ├── Network_UPS/               # NUT config
+│   ├── TrueNAS/                   # TrueNAS export settings
+│   ├── WHPrinter/                 # Printer configs
+│   └── Wireguard/                 # VPN configs
+├── 🤖 AI Services
+│   ├── Agent/                     # Ollama/LangChain agent
+│   ├── Cortana-Model/             # Fine-tuned model config
+│   ├── TTS/                       # TTS service config
+│   └── Whisper/                   # Whisper STT config
+├── 🔒 secrets.yaml.enc            # Git-crypt encrypted secrets
+├── 🔄 renovate.json               # Renovate auto-update config
+└── 📄 LICENSE                     # MIT License
+```
+
+---
+
+## 🚀 Quick Start & Bootstrap
+
+### Prerequisites
+* **Proxmox VE** installed on all nodes (8.2+)
+* **Terraform** v1.6+ and **Ansible** v8+
+* **Cloudflare API token** with DNS and account permissions
+* **Git-crypt** for encrypted secrets management
+
+### Bootstrap Workflow
+
+The infrastructure follows a **two-phase bootstrap process**:
+
+#### Phase 1: Terraform Infrastructure Provisioning
+```bash
+# 1. Initialize Terraform modules
+terraform init
+
+# 2. Apply Cloudflare DNS first (DNS must exist before VM creation)
+cd terraform/Cloudflare && terraform apply
+
+# 3. Bootstrap PVE node (creates all VMs/LXCs with cloud-init templates)
+cd ../PVE && terraform apply -var-file=node.tfvars
+
+# 4. Apply AI node configuration (when ready)
+cd ../AI && terraform apply -var-file=node.tfvars
+```
+
+#### Phase 2: Ansible Configuration Management
+```bash
+# Bootstrap all provisioned nodes
+ansible-playbook site.yml -i hosts/production
+
+# Deploy specific roles
+ansible-playbook roles/docker_host/tasks/main.yml
+ansible-playbook roles/vpn/tasks/main.yml
+```
+
+### Cloud-init Template
+The `proxmox-bootstrap` module creates a **cloud-init enabled VM template** that:
+* Sets up hostname, SSH keys, and users automatically
+* Configures network interfaces (DHCP/static)
+* Installs essential packages on first boot
+* Enables unattended provisioning of new VMs/LXCs
+
+---
+
+## 🔐 Secrets Management
+
+All sensitive data is encrypted with **Git-crypt**. To decrypt:
+```bash
+git-crypt unlock <your-gpg-key-id>
+terraform plan -var-file=secrets.yaml.enc
+```
+
+### Required Variables
+* `cloudflare_api_token` — DNS management API token
+* `proxmox_url` — Proxmox API endpoint (e.g., `https://pve:8006/api2/json`)
+* `proxmox_user` — Proxmox user (e.g., `root@pam`)
+* `proxmox_password` / `proxmox_token` — Authentication
+
+---
+
+## 📜 License
+
+This project is licensed under the [MIT License](LICENSE).
