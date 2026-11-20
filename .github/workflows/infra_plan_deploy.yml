@@ -49,6 +49,9 @@ jobs:
     runs-on: self-hosted
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
+    concurrency:
+      group: terraform-${{ needs.detect-changes.outputs.files }}
+      cancel-in-progress: true
     env:
       SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
       AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
@@ -93,11 +96,13 @@ jobs:
       - name: Comment Plan output on PR
         uses: actions/github-script@v9
         if: github.event_name == 'pull_request'
+        env:
+          TARGET: ${{ matrix.files }}
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const fs = require('fs');
-            const planFile = `${process.matrix.files}/plan_output.txt`;
+            const planFile = `${process.env.TARGET}/plan_output.txt`;
 
             let planText = "";
             if (fs.existsSync(planFile)) {
@@ -112,7 +117,7 @@ jobs:
               planText = planText.substring(0, maxLen) + "\n... (truncated)";
             }
 
-            const output = `### 📋 Terraform Plan: \`${process.matrix.files}\`
+            const output = `### 📋 Terraform Plan: \`${process.env.TARGET}\`
 
             <details><summary>Show Plan Output</summary>
 
