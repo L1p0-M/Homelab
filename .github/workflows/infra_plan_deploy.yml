@@ -4,14 +4,14 @@ on:
     branches:
       - main
     paths:
-      - '/terraform/**/*.tf'
-      - '!/terraform/modules/*.tf'
+      - '**/*.tf'
+      - '!**/modules/*.tf'
   push:
     branches:
       - main
     paths:
-      - '/terraform/**/*.tf'
-      - '!/terraform/modules/*.tf'
+      - '**/*.tf'
+      - '!**/modules/*.tf'
 
 permissions:
   contents: read
