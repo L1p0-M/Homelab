@@ -54,6 +54,11 @@ resource "proxmox_virtual_environment_vm" "ubuntu_template" {
     user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
   }
 
+  agent {
+    enabled = true
+  }
+  stop_on_destroy = true
+
   disk {
     datastore_id = "local-lvm"
     import_from  = proxmox_download_file.latest_ubuntu_26_vm.id
@@ -94,6 +99,11 @@ resource "proxmox_virtual_environment_vm" "alpine_template" {
     }
     user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
   }
+
+  agent {
+    enabled = true
+  }
+  stop_on_destroy = true
 
   disk {
     datastore_id = "local-lvm"
