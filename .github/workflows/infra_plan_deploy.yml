@@ -50,6 +50,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
     env:
+      SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
       AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
     permissions:
