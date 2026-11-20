@@ -3,17 +3,15 @@ on:
   pull_request:
     branches:
       - main
-      - dev
     paths:
-      - '**/terraform.tfvars'
-      - '**/terraform.tfvars.template'
+      - '/terraform/**/*.tf'
+      - '!/terraform/modules/*.tf'
   push:
     branches:
       - main
-      - dev
     paths:
-      - '**/terraform.tfvars'
-      - '**/terraform.tfvars.template'
+      - '/terraform/**/*.tf'
+      - '!/terraform/modules/*.tf'
 
 permissions:
   contents: read
@@ -40,10 +38,11 @@ jobs:
         with:
           dir_names: true
           matrix: true
-          dir_names_max_depth: 2
+          dir_names_max_depth: 3
           files: |
-            **/terraform.tfvars
-            **/terraform.tfvars.template
+            **/*.tf
+          files_ignore: |
+            **/modules/*.tf
 
   plan-deploy-changes:
     name: Plan/Deploy Infrastructure Changes
@@ -53,9 +52,6 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
-      CF_ENDPOINT_URL: ${{ secrets.CF_ENDPOINT_URL }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-      DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
     permissions:
       pull-requests: write
       contents: read
@@ -69,99 +65,27 @@ jobs:
         id: parameters
         run: |
           TARGET_PATH="${{ matrix.files }}"
-          NODE_NAME="${TARGET_PATH%%/*}"
-          TARGET_NAME="${TARGET_PATH##*/}"
-          echo "Node: $NODE_NAME"
-          echo "VM: $TARGET_NAME"
-          echo "NODE_NAME=$NODE_NAME" >> $GITHUB_ENV
-          echo "TARGET_NAME=$TARGET_NAME" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Create environment variables for ${{ env.NODE_NAME}}
-        id: set-env
-        if: env.NODE_NAME != env.TARGET_NAME
-        env:
-          PROXMOX_VE_ENDPOINT_PVE: ${{ secrets.PROXMOX_VE_ENDPOINT_PVE }}
-          PROXMOX_VE_API_TOKEN_PVE: ${{ secrets.PROXMOX_VE_API_TOKEN_PVE }}
-          PROXMOX_VE_ENDPOINT_AI: ${{ secrets.PROXMOX_VE_ENDPOINT_AI }}
-          PROXMOX_VE_API_TOKEN_AI: ${{ secrets.PROXMOX_VE_API_TOKEN_AI }}
-        run: |
-          PROXMOX_ENDPOINT_NAME="PROXMOX_VE_ENDPOINT_${NODE_NAME^^}"
-          PROXMOX_API_TOKEN="PROXMOX_VE_API_TOKEN_${NODE_NAME^^}"
-          PROXMOX_VE_INSECURE="true"
-
-          VAR_ENDPOINT="${!PROXMOX_ENDPOINT_NAME}"
-          VAR_TOKEN="${!PROXMOX_API_TOKEN}"
-
-          if [ -z "$VAR_ENDPOINT" ]; then
-            echo "error: Endpoint environment variable is not set or empty!"
-            exit 1
-          fi
-
-           if [ -z "$VAR_TOKEN" ]; then
-            echo "error: Token environment variable is not set or empty!"
-            exit 1
-          fi
-
-          TFVARS_FILE="$NODE_NAME/$TARGET_NAME/terraform.tfvars"
-          if [ -f "$TFVARS_FILE" ]; then
-            TARGET_TYPE=$(grep -E '^\s*target_type\s*=' $TFVARS_FILE | cut -d'=' -f2 | tr -d ' "' )
-          else
-            exit 1
-          fi
-
-          echo "PROXMOX_VE_ENDPOINT=$VAR_ENDPOINT" >> $GITHUB_ENV
-          echo "PROXMOX_VE_API_TOKEN=$VAR_TOKEN" >> $GITHUB_ENV
-          echo "PROXMOX_VE_INSECURE=$PROXMOX_VE_INSECURE" >> $GITHUB_ENV
-          echo "TARGET_TYPE=$TARGET_TYPE" >> $GITHUB_ENV
-
-      - name: Create needed terraform files from template for "${{ env.TARGET_NAME }}"
-        run: |
-          if [ "$NODE_NAME" != "$TARGET_NAME" ]; then
-            if [ "${TARGET_TYPE^^}" == "LXC" ]; then
-              BASEDIR="proxmox-lxc"
-            elif [ "${TARGET_TYPE^^}" == "VM" ]; then
-              BASEDIR="proxmox-vm"
-            fi
-
-            WORKDIR_PATH="$NODE_NAME/$TARGET_NAME"
-            echo "Creating main.tf from template..."
-            cp ".terraform-modules/$BASEDIR/main.tf.template" "$WORKDIR_PATH/main.tf"
-            echo "Creating variables.tf from template..."
-            cp ".terraform-modules/$BASEDIR/variables.tf" "$WORKDIR_PATH/variables.tf"
-            echo "Creating backend.tf from template..."
-            envsubst < ".terraform-modules/backend/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
-          else
-            WORKDIR_PATH="$NODE_NAME"
-            envsubst < "$WORKDIR_PATH/backend.tf.template" > "$WORKDIR_PATH/backend.tf"
-            envsubst < "$WORKDIR_PATH/terraform.tfvars.template" > "$WORKDIR_PATH/terraform.tfvars"
-          fi
-
-          echo "WORKDIR_PATH=$WORKDIR_PATH" >> $GITHUB_ENV
-
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v4
 
-      - name: Run Terraform init for "${{ env.TARGET_NAME }}"
-        working-directory: ${{ env.WORKDIR_PATH }}
+      - name: Run Terraform init for "${{ matrix.files }}"
+        working-directory: ${{ matrix.files }}
         run: |
           terraform init -input=false
 
-      - name: Run Terraform plan for "${{ env.TARGET_NAME }}"
-        working-directory: ${{ env.WORKDIR_PATH }}
+      - name: Run Terraform plan for "${{ matrix.files }}"
+        working-directory: ${{ matrix.files }}
         run: |
-          if [ "$NODE_NAME" != "$TARGET_NAME" ]; then
-            terraform plan -var-file=../node.tfvars -no-color -out=tfplan > plan_output.txt
-          else
-            terraform plan -no-color -out=tfplan > plan_output.txt
-          fi
+          terraform plan -no-color -out=tfplan > plan_output.txt
           cat plan_output.txt
 
-      - name: Deploy Changes to "${{ env.TARGET_NAME }}"
+      - name: Deploy Changes to "${{ matrix.files }}"
         if: github.event_name == 'push'
-        working-directory: ${{ env.WORKDIR_PATH }}
+        working-directory: ${{ matrix.files }}
         run: |
             terraform apply -auto-approve tfplan
 
@@ -172,7 +96,7 @@ jobs:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const fs = require('fs');
-            const planFile = `${process.env.WORKDIR_PATH}/plan_output.txt`;
+            const planFile = `${process.matrix.files}/plan_output.txt`;
 
             let planText = "";
             if (fs.existsSync(planFile)) {
@@ -181,21 +105,13 @@ jobs:
               planText = "Plan output file not found.";
             }
 
-            const rawDomain = process.env.DOMAIN_NAME;
-            if (rawDomain && rawDomain.trim() !== "") {
-              const escapedDomain = rawDomain.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-              const regex = new RegExp(escapedDomain, 'g');
-
-              planText = planText.replace(regex, 'hidden.internal');
-            }
-
             // GitHub limit is 65,000 char
             const maxLen = 60000;
             if (planText.length > maxLen) {
               planText = planText.substring(0, maxLen) + "\n... (truncated)";
             }
 
-            const output = `### 📋 Terraform Plan: \`${process.env.WORKDIR_PATH}\`
+            const output = `### 📋 Terraform Plan: \`${process.matrix.files}\`
 
             <details><summary>Show Plan Output</summary>
 
