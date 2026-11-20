@@ -42,7 +42,7 @@ jobs:
           files: |
             **/*.tf
           files_ignore: |
-            **/modules/**.tf
+            **/modules/**/*.tf
 
   plan-deploy-changes:
     name: Plan/Deploy Infrastructure Changes
@@ -50,7 +50,7 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.has_changes == 'true'
     concurrency:
-      group: terraform-${{ needs.detect-changes.outputs.files }}
+      group: terraform-${{ matrix.files }}
       cancel-in-progress: true
     env:
       SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
@@ -65,11 +65,6 @@ jobs:
       fail-fast: false
       max-parallel: 2
     steps:
-      - name: Check parameters
-        id: parameters
-        run: |
-          TARGET_PATH="${{ matrix.files }}"
-
       - name: Checkout repository
         uses: actions/checkout@v7
 
