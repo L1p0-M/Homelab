@@ -42,7 +42,7 @@ jobs:
           files: |
             **/*.tf
           files_ignore: |
-            **/modules/*.tf
+            **/modules/**.tf
 
   plan-deploy-changes:
     name: Plan/Deploy Infrastructure Changes
