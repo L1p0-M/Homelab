@@ -2,9 +2,9 @@
 - name: Bootstrap new node (Create deploy user and configure SSH)
   hosts: all
   gather_facts: false
-  remote_user: root
+  remote_user: "{{ bootstrap_user }}"
   vars:
-    ansible_user: root
+    ansible_user: "{{ bootstrap_user }}"
 
   tasks:
     - name: Gather basic system facts

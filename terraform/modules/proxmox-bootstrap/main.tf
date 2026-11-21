@@ -133,7 +133,7 @@ resource "proxmox_virtual_environment_container" "lxc_template" {
   vm_id        = 997
   template     = true
   description  = "Template LXC"
-  tags         = ["terraform", "alpine", "cloudinit"]
+  tags         = ["terraform", "debian", "cloudinit"]
   unprivileged = true
   delete_unreferenced_disks_on_destroy = true
   purge_on_destroy = true
