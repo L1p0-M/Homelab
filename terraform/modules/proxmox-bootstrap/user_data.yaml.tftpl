@@ -1,0 +1,28 @@
+#cloud-config
+disable_root: false
+ssh_authorized_keys:
+  - ${bootstrap_ssh_pub_key}
+users:
+  - name: ${my_user}
+    uid: 1000
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) ALL']
+    ssh_authorized_keys:
+      - ${my_ssh_pub_key}
+
+  - name: ${deploy_user}
+    uid: 1001
+    groups: sudo
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    ssh_authorized_keys:
+      - ${deploy_ssh_pub_key}
+
+ssh_pwauth: false
+package_update: true
+package_upgrade: true
+packages:
+  - qemu-guest-agent
+  - git
+  - python3-pip
