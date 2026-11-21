@@ -7,6 +7,7 @@ module "whprinter" {
 
     config = {
         vm_id          = 120
+        template_vm_id = 998
         vm_name        = "WHPrinter"
         cpu_cores      = 1
         memory_mb      = 512

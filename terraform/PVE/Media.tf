@@ -7,6 +7,7 @@ module "media" {
 
     config = {
         vm_id          = 109
+        template_vm_id = 999
         vm_name        = "Media"
         cpu_cores      = 10
         memory_mb      = 16384

@@ -7,6 +7,7 @@ module "docs_monitoring" {
 
     config = {
         vm_id          = 105
+        template_vm_id = 999
         vm_name        = "Docs-Monitoring"
         cpu_cores      = 2
         memory_mb      = 2048

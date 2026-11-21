@@ -7,6 +7,7 @@ module "docker" {
 
     config = {
         vm_id          = 100
+        template_vm_id = 999
         vm_name        = "Docker"
         cpu_cores      = 10
         memory_mb      = 16384

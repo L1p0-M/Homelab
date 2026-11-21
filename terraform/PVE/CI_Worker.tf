@@ -7,6 +7,7 @@ module "ci_worker" {
 
     config = {
         vm_id          = 106
+        template_vm_id = 999
         vm_name        = "CI-Worker"
         cpu_cores      = 4
         memory_mb      = 32768
