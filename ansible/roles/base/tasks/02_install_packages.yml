@@ -12,6 +12,7 @@
       - qemu-guest-agent
       - ca-certificates
       - prometheus-node-exporter
+      - util-linux-extra
     state: present
   when: ansible_os_family == 'Debian'
 

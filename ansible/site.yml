@@ -1,5 +1,4 @@
 ---
-
 - name: Apply base configuration to all nodes
   hosts: all:!excluded
   gather_facts: false

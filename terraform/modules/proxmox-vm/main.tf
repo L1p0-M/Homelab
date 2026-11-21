@@ -1,0 +1,114 @@
+
+resource "proxmox_virtual_environment_vm" "vm" {
+  name        = var.config.vm_name
+  node_name   = var.node_config.node_name
+  vm_id       = var.config.vm_id
+  keyboard_layout = "hu"
+  scsi_hardware = var.config.scsi_hardware
+  description = var.config.description
+  tags        = var.config.tags
+  bios        = var.config.bios_type
+  tablet_device = var.config.tablet_device
+
+  dynamic "clone" {
+    for_each = var.config.template_vm_id != null ? [1] : []
+    content {
+      vm_id = var.config.template_vm_id
+      full  = true
+    }
+  }
+
+  cpu {
+    cores = var.config.cpu_cores
+    type  = var.config.cpu_type
+  }
+
+  memory {
+    dedicated = var.config.memory_mb
+  }
+
+  dynamic "disk" {
+    for_each = var.config.disk
+    content {
+      datastore_id = disk.value.storage_name
+      interface    = disk.value.interface
+      size         = disk.value.disk_size_gb
+      discard      = "on"
+      ssd          = disk.value.ssd
+      iothread     = disk.value.iothread
+      backup       = disk.value.backup
+    }
+  }
+
+  network_device {
+    bridge = var.config.network_bridge
+    firewall = var.config.firewall
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
+  startup {
+    down_delay = var.config.startup_down_delay
+    up_delay   = var.config.startup_up_delay
+    order      = var.config.startup_order
+  }
+
+  agent {
+    enabled = true
+    trim    = false
+    timeout = "15m"
+    type    = "virtio"
+  }
+
+  dynamic "usb" {
+    for_each = var.config.usb_passthrough
+    content {
+      mapping = usb.value.mapping
+      host    = usb.value.host
+      usb3    = usb.value.usb3
+
+    }
+  }
+
+  dynamic "hostpci" {
+    for_each = var.config.hostpci
+    content {
+      device = hostpci.value.device
+      id     = hostpci.value.id
+      pcie   = hostpci.value.pcie
+      rombar = hostpci.value.rombar
+      xvga   = hostpci.value.xvga
+    }
+  }
+
+  dynamic "initialization" {
+    for_each = var.config.ip_address != null ? [1] : []
+    content {
+      datastore_id = var.config.cloud_datastore_id
+      ip_config {
+        ipv4 {
+          address = var.config.ip_address
+          gateway = var.node_config.gateway
+        }
+      }
+    }
+  }
+  
+  dynamic "efi_disk" {
+    for_each = var.config.bios_type == "ovmf" ? [1] : []
+    content {
+      datastore_id = var.config.efi_disk
+      file_format  = "raw"
+      type         = "4m"
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      initialization,
+      clone,
+    ]
+  }
+}
