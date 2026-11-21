@@ -7,6 +7,7 @@ module "network_ups" {
 
     config = {
         id             = 102
+        template_id    = 997
         name           = "Network-UPS"
         cpu_cores      = 1
         memory_mb      = 206

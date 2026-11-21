@@ -6,6 +6,13 @@ resource "proxmox_virtual_environment_container" "lxc" {
   tags         = var.config.tags
   unprivileged = var.config.unprivileged
 
+  dynamic "clone" {
+    for_each = var.config.template_id != null ? [1] : []
+    content {
+      vm_id = var.config.template_id
+      full  = true
+    }
+  }
 
   features {
     nesting = var.config.nesting
@@ -38,11 +45,6 @@ resource "proxmox_virtual_environment_container" "lxc" {
     firewall = var.config.firewall
   }
 
-  operating_system {
-    template_file_id = "${var.config.image_storage}:vztmpl/debian-13-standard_13.6-1_amd64.tar.zst"
-    type = "debian"
-  }
-
   startup {
     down_delay = var.config.startup_down_delay
     up_delay   = var.config.startup_up_delay
@@ -65,16 +67,13 @@ resource "proxmox_virtual_environment_container" "lxc" {
         gateway = var.node_config.gateway
       }
     }
-    user_account {
-      keys     = var.sensitive.ssh_public_key != null ? [var.sensitive.ssh_public_key] : []
-      password = var.sensitive.user_password
-    }
   }
 
   lifecycle {
     ignore_changes = [
       initialization,
-      operating_system
+      operating_system,
+      clone,
     ]
   }
 }

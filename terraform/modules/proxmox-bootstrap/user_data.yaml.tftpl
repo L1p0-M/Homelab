@@ -1,4 +1,7 @@
 #cloud-config
+disable_root: false
+ssh_authorized_keys:
+  - ${bootstrap_ssh_pub_key}
 users:
   - name: ${my_user}
     uid: 1000

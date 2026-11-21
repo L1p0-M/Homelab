@@ -1,6 +1,11 @@
 variable user_data {
   type        = string
-  description = "description"
+  sensitive   = true
+}
+
+variable "lxc_key" {
+  type        = string
+  sensitive   = true
 }
 
 variable "node_config" {

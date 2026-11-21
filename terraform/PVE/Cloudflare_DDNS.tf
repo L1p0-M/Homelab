@@ -7,6 +7,7 @@ module "cloudflare_ddns" {
 
     config = {
         id             = 111
+        template_id    = 997
         name           = "Cloudflare-DDNS"
         cpu_cores      = 2
         memory_mb      = 1024

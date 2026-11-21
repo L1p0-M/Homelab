@@ -4,14 +4,6 @@ variable "ansible_groups" {
   description = "Required for CI/CD Pipeline to know which Ansible groups to use"
 }
 
-variable "sensitive" {
-  type = object({
-    ssh_public_key = optional(string, null)
-    user_password  = optional(string, null)
-  })
-  default = {}
-  sensitive = true
-}
 
 variable "node_config" {
   type = object({
@@ -42,6 +34,7 @@ variable "config" {
     startup_down_delay = optional(number, -1)
     startup_up_delay   = optional(number, -1)
     startup_order      = optional(number, 0)
+    template_id        = optional(number)
     device_passthrough = optional(list(object({
       path = optional(string, null)
       })), [])

@@ -7,6 +7,7 @@ module "wireguard" {
 
     config = {
         id             = 104
+        template_id    = 997
         name           = "Wireguard"
         cpu_cores      = 1
         memory_mb      = 206
