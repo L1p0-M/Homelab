@@ -6,6 +6,7 @@ module "cortana_model" {
 
     config = {
         id             = 401
+        template_id    = 997
         name           = "Cortana-Model"
         cpu_cores      = 16
         memory_mb      = 122880

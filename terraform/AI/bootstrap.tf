@@ -9,4 +9,6 @@ module "bootstrap" {
         deploy_user = data.sops_file.secrets.data["users.deploy_user.username"]
         })
 
+    lxc_key = data.sops_file.secrets.data["users.bootstrap_user.ssh_key"]
+
 }

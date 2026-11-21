@@ -6,6 +6,7 @@ module "tts" {
 
     config = {
         id             = 403
+        template_id    = 997
         name           = "TTS"
         cpu_cores      = 16
         memory_mb      = 8192

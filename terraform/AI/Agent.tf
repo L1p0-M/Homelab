@@ -7,6 +7,7 @@ module "agent" {
 
     config = {
         id             = 404
+        template_id    = 997
         name           = "Agent"
         cpu_cores      = 16
         memory_mb      = 8192
