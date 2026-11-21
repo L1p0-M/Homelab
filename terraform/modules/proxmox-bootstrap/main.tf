@@ -12,7 +12,7 @@ resource "proxmox_virtual_environment_file" "cloud_config" {
 
 resource "proxmox_download_file" "latest_ubuntu_26_vm" {
   content_type = "import"
-  datastore_id = "local"
+  datastore_id = var.template_storage.image
   node_name    = var.node_config.node_name
   url          = "https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img"
   file_name    = "resolute-server-cloudimg-amd64.qcow2"
@@ -21,7 +21,7 @@ resource "proxmox_download_file" "latest_ubuntu_26_vm" {
 
 resource "proxmox_download_file" "latest_alpine_vm" {
   content_type = "import"
-  datastore_id = "local"
+  datastore_id = var.template_storage.image
   node_name    = var.node_config.node_name
   url          = "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/cloud/alpine-3.24.2-x86_64-cloudinit-metal-r0.qcow2"
   file_name    = "alpine-cloudimg-amd64.qcow2"
@@ -30,7 +30,7 @@ resource "proxmox_download_file" "latest_alpine_vm" {
 
 resource "proxmox_download_file" "latest_debian_13_lxc" {
   content_type = "vztmpl"
-  datastore_id = "local"
+  datastore_id = var.template_storage.image
   node_name    = var.node_config.node_name
   url          = "http://download.proxmox.com/images/system/debian-13-standard_13.6-1_amd64.tar.zst"
 
@@ -60,7 +60,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_template" {
   stop_on_destroy = true
 
   disk {
-    datastore_id = "local-lvm"
+    datastore_id = var.template_storage.disk
     import_from  = proxmox_download_file.latest_ubuntu_26_vm.id
     interface    = "scsi0"
     size         = 32
@@ -106,7 +106,7 @@ resource "proxmox_virtual_environment_vm" "alpine_template" {
   stop_on_destroy = true
 
   disk {
-    datastore_id = "local-lvm"
+    datastore_id = var.template_storage.disk
     import_from  = proxmox_download_file.latest_alpine_vm.id
     interface    = "scsi0"
     size         = 8
@@ -160,7 +160,7 @@ resource "proxmox_virtual_environment_container" "lxc_template" {
   }
 
   disk {
-    datastore_id = "local-lvm"
+    datastore_id = var.template_storage.disk
     size         = 4
   }
 

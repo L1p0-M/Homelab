@@ -15,3 +15,11 @@ variable "node_config" {
     storage_name = string
   })
 }
+
+variable "template_storage" {
+  type = object({
+    image  = optional(string, "local")
+    disk   = optional(string, "local-lvm")
+  })
+  default = {}
+}

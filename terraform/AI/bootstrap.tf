@@ -11,5 +11,9 @@ module "bootstrap" {
         })
 
     lxc_key = data.sops_file.secrets.data["users.bootstrap_user.ssh_key"]
+    template_storage = {
+        image  = "HDD_DIR"
+        disk   = "HDD"
+    }
 
 }

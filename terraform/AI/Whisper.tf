@@ -17,7 +17,7 @@ module "whisper" {
         unprivileged   = true
         keyctl         = false
         image_storage  = "TrueNAS-Share"
-        storage_name   = "local"
+        storage_name   = "HDD"
         startup_order    = 2
         device_passthrough = [
             {
