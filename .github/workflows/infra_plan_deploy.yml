@@ -130,39 +130,3 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
-
-  check-inventory-changes:
-    name: Check/Commit Ansible Inventory Changes
-    runs-on: self-hosted
-    concurrency:
-      group: inventory-changes
-      cancel-in-progress: true
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
-    permissions:
-      pull-requests: write
-      contents: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref }}
-
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v4
-
-      - name: Check ansible inventory for changes
-        if: github.event_name == 'pull_request'
-        id: generate-inventory
-        run: |
-          python3 -u .github/workflows/scripts/post_terraform.py --output ansible/inventory.ini --search ./terraform --modules ./terraform/modules
-
-      - name: Commit back the inventory file
-        if: github.event_name == 'pull_request' && steps.generate-inventory.outputs.has_changes == 'true'
-        run: |
-          git config user.name "Cortana-Renovate"
-          git config user.email "cortana@l1p0-industries.hu"
-          git add ansible/inventory.ini
-          git commit -m "ops(ansible): Auto-update Ansible inventory"
-          git push
