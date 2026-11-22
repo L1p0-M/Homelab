@@ -146,9 +146,19 @@ def write_inventory_to_file(inventory_content: list) -> bool:
 
 def write_to_github_output(has_changes):
     github_output = os.getenv('GITHUB_OUTPUT')
+    pr_body = [
+        "### Automated Ansible Inventory Update\n",
+        "GitOps Pipeline successfully processed and updated the **Ansible inventory** based on the latest configuration changes.\n",
+        "\n---",
+        "> 🤖 *Generated automatically via CI/CD Pipeline. Please review and merge.*"
+    ]
+    content = "\n".join(pr_body)
     if github_output:
         with open(github_output, 'a') as f:
             f.write(f"has_changes={has_changes}\n")
+            f.write("pr_body<<EOF\n")
+            f.write(f"{content}\n")
+            f.write("EOF\n")
 
 
 if __name__ == "__main__":

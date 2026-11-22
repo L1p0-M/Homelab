@@ -67,8 +67,8 @@ jobs:
           elif [[ "$INVENTORY_CHANGE" == 'true' ]]; then
             BRANCH="inventory-updates"
             TITLE="ops(ansible): Auto-update Ansible inventory"
-            BODY=""
-            COMMIT="'ops(ansible): Auto-update Ansible inventory"
+            BODY="${{ steps.generate-stacks.outputs.pr_body }}"
+            COMMIT="ops(ansible): Auto-update Ansible inventory"
 
             echo "body<<EOF" >> $GITHUB_OUTPUT
             echo "$BODY" >> $GITHUB_OUTPUT
