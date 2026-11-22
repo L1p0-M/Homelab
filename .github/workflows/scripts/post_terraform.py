@@ -10,6 +10,7 @@ import subprocess
 def find_tf_file(search_path: str = "terraform", excluded: str = None) -> dict:
     outputs = {}
     checked_dirs = []
+    project_dir = os.getcwd()
     for files in sorted(pathlibpath(search_path).rglob("*.tf")):
         if excluded and excluded == pathlibpath(files).parent:
             continue
@@ -37,6 +38,7 @@ def find_tf_file(search_path: str = "terraform", excluded: str = None) -> dict:
         cmd_output = json.loads(proc.stdout)
         if cmd_output and cmd_output != {}:
             outputs[str(basedir)] = cmd_output
+        os.chdir(project_dir)
 
     return outputs
 
