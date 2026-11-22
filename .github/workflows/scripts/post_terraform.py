@@ -23,6 +23,7 @@ def find_tf_file(search_path: str = "terraform", excluded: str = None) -> dict:
         os.chdir(basedir)
 
         try:
+            subprocess.run(["terraform", "init"], shell=False, check=True)
             proc = subprocess.run(["terraform", "output", "-json"], shell=False, stdout=subprocess.PIPE, check=True)
         except subprocess.CalledProcessError:
             continue
