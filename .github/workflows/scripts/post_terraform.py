@@ -20,6 +20,10 @@ def find_tf_file(search_path: str = "terraform", excluded: str = None) -> dict:
             continue
 
         print(f"Found *.tf file at: {basedir}")
+        if not os.path.exists(basedir):
+            checked_dirs.append(str(basedir))
+            continue
+
         os.chdir(basedir)
 
         try:

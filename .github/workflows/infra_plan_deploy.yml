@@ -131,6 +131,25 @@ jobs:
               body: output
             })
 
+  check-inventory-changes:
+    name: Check/Commit Ansible Inventory Changes
+    runs-on: self-hosted
+    concurrency:
+      group: inventory-changes
+      cancel-in-progress: true
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+
       - name: Check ansible inventory for changes
         if: github.event_name == 'pull_request'
         id: generate-inventory
