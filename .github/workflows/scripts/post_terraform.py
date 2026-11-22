@@ -112,10 +112,10 @@ def generate_ansible_inventory(vars: dict) -> list:
 def check_if_file_changed(file_path: str, new_file: str) -> bool:
     if os.path.exists(file_path):
         try:
-            with open(file_path, "rb") as existing_file:
-                exiting_digest = hashlib.file_digest(existing_file, "sha256")
-            with open(new_file, "rb") as new_file:
-                new_digest = hashlib.file_digest(new_file, "sha256")
+            with open(file_path, "rb") as e:
+                exiting_digest = hashlib.file_digest(e, "sha256")
+            with open(new_file, "rb") as n:
+                new_digest = hashlib.file_digest(n, "sha256")
             if exiting_digest.hexdigest() != new_digest.hexdigest():
                 movefile(src=new_file, dst=file_path)
 
