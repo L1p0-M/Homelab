@@ -4,8 +4,8 @@ on:
     branches:
       - main
     paths:
-      - '**/terraform.tfvars'
-      - 'PVE/**/Configs/**'
+      - '**/*.tf'
+      - '!**/modules/*.tf'
 
   workflow_dispatch:
 
@@ -23,14 +23,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Python Dependencies
-        run: |
-          pip install python-hcl2
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
 
-      - name: Generate Ansible Inventory file for VM/LXC
+      - name: Check ansible inventory for changes
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
         id: generate-inventory
         run: |
-          python3 -u .github/workflows/scripts/generate_ansible_inventory.py --output ansible/inventory.ini --search ./
+          python3 -u .github/workflows/scripts/post_terraform.py --output ansible/inventory.ini --search ./terraform --modules ./terraform/modules
 
       - name: Generate Ansible App-Stacks for VM/LXC
         id: generate-stacks
@@ -63,10 +65,10 @@ jobs:
             echo "EOF" >> $GITHUB_OUTPUT
 
           elif [[ "$INVENTORY_CHANGE" == 'true' ]]; then
-            BRANCH="${{ steps.generate-inventory.outputs.pr_branch || 'inventory-updates' }}"
-            TITLE="${{ steps.generate-inventory.outputs.pr_title || 'CI(ansible): Auto-update Ansible inventory' }}"
-            BODY="${{ steps.generate-inventory.outputs.pr_body }}"
-            COMMIT="${{ steps.generate-inventory.outputs.pr_title || 'CI(ansible): Auto-update Ansible inventory' }}"
+            BRANCH="inventory-updates"
+            TITLE="ops(ansible): Auto-update Ansible inventory"
+            BODY=""
+            COMMIT="'ops(ansible): Auto-update Ansible inventory"
 
             echo "body<<EOF" >> $GITHUB_OUTPUT
             echo "$BODY" >> $GITHUB_OUTPUT

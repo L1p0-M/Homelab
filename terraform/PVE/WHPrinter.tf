@@ -14,9 +14,9 @@ module "whprinter" {
         ip_address     = "192.168.1.250/24"
         network_bridge = "vmbr0"
         tags = [
-        "alpine",
-        "linux",
-        "production",
+            "alpine",
+            "linux",
+            "production",
         ]
         scsi_hardware   = "virtio-scsi-single"
         usb_passthrough = [

@@ -14,12 +14,14 @@ jobs:
     name: "Detect Changed Files"
     outputs:
       files: ${{ steps.changed-files.outputs.all_changed_files }}
-      yaml: ${{ steps.changed-files.outputs.yaml_all_changed_files}}
-      python: ${{ steps.changed-files.outputs.python_all_changed_files}}
+      yaml: ${{ steps.changed-files.outputs.yaml_all_changed_files }}
+      python: ${{ steps.changed-files.outputs.python_all_changed_files }}
+      terraform: ${{ steps.changed-files.outputs.terraform_all_changed_files }}
       has_changes: ${{ steps.changed-files.outputs.any_changed }}
       yaml_has_changes: ${{ steps.changed-files.outputs.yaml_any_changed }}
       ansible_has_changes: ${{ steps.changed-files.outputs.ansible_any_changed }}
       python_has_changes: ${{ steps.changed-files.outputs.python_any_changed }}
+      terraform_has_changes: ${{ steps.changed-files.outputs.terraform_any_changed }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -39,6 +41,8 @@ jobs:
               - 'ansible/**'
             python:
               - '**.py'
+            terraform:
+              - '**.tf'
 
   check-yaml:
     runs-on: self-hosted
@@ -132,6 +136,33 @@ jobs:
             python3 -m flake8 --ignore E501 "$file"
           done
 
+  check-terraform:
+    runs-on: self-hosted
+    name: "Validate Terraform config"
+    needs: detect-changes
+    if: needs.detect-changes.outputs.terraform_has_changes == 'true'
+    env:
+      CHANGED_FILES: ${{ needs.detect-changes.outputs.terraform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+
+      - name: Run Terraform validate
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CF_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CF_SECRET_ACCESS_KEY }}
+        run: |
+          for file in ${CHANGED_FILES}; do
+            echo "Validating config for $file"
+            configdir=$(dirname "$file")
+            cd "$configdir"
+            terraform init
+            terraform validate
+          done
+
   gitleaks-scan:
     name: "Gitleaks Secret Scan"
     runs-on: self-hosted
@@ -152,7 +183,7 @@ jobs:
     name: "Check Response"
     runs-on: self-hosted
     if: ${{ always() }}
-    needs: [detect-changes, check-yaml, check-ansible, gitleaks-scan, check-python]
+    needs: [detect-changes, check-yaml, check-ansible, gitleaks-scan, check-python, check-terraform]
     steps:
       - name: Verify Checks Results
         run: |
@@ -160,16 +191,19 @@ jobs:
           ANSIBLE_RES="${{ needs.check-ansible.result }}"
           GITLEAKS_RES="${{ needs.gitleaks-scan.result }}"
           PYTHON_RES="${{ needs.check-python.result }}"
+          TERRAFORM_RES="${{ needs.check-terraform.result }}"
 
           echo "YAML Check result: $YAML_RES"
           echo "Ansible Check result: $ANSIBLE_RES"
           echo "Gitleaks result: $GITLEAKS_RES"
           echo "Python result: $PYTHON_RES"
+          echo "Terraform result: $TERRAFORM_RES"
 
           if [[ "$YAML_RES" == "failure" || "$YAML_RES" == "cancelled" || \
                 "$ANSIBLE_RES" == "failure" || "$ANSIBLE_RES" == "cancelled" || \
                 "$GITLEAKS_RES" == "failure" || "$GITLEAKS_RES" == "cancelled" || \
-                "$PYTHON_RES" == "failure" || "$PYTHON_RES" == "cancelled" ]]; then
+                "$PYTHON_RES" == "failure" || "$PYTHON_RES" == "cancelled" ]] || \
+                "$TERRAFORM_RES" == "failure" || "$TERRAFORM_RES" == "cancelled" ]]; then
             echo "Check failed!"
             exit 1
           fi
