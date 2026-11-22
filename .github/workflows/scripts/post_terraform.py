@@ -7,7 +7,7 @@ import json
 import subprocess
 
 
-def find_tf_file(search_path: str= "terraform", excluded: str= None) -> dict:
+def find_tf_file(search_path: str = "terraform", excluded: str = None) -> dict:
     outputs = {}
     checked_dirs = []
     for files in sorted(pathlibpath(search_path).rglob("*.tf")):
@@ -35,6 +35,7 @@ def find_tf_file(search_path: str= "terraform", excluded: str= None) -> dict:
 
     return outputs
 
+
 def process_output(output: dict) -> list:
     inventory_vars = {}
     for key, values in output.items():
@@ -47,7 +48,6 @@ def process_output(output: dict) -> list:
         inventory_vars[node_name] = guest_config
 
     return generate_ansible_inventory(vars=inventory_vars)
-    
 
 
 def generate_ansible_inventory(vars: dict) -> list:
@@ -78,7 +78,7 @@ def generate_ansible_inventory(vars: dict) -> list:
                         lines.append(f"{hostname} ansible_host={ip}")
 
                     for role in roles:
-                        if not role in ansible_groups:
+                        if role not in ansible_groups:
                             ansible_groups[role] = []
                         ansible_groups[role].append(f"{hostname} ansible_host={ip}")
 
@@ -96,7 +96,7 @@ def generate_ansible_inventory(vars: dict) -> list:
         print("Generating Ansible inventory file...")
         print(content)
         return content
-    
+
     except Exception as e:
         print(f"Error while creating inventory: {e}")
         return []
@@ -123,7 +123,7 @@ def write_inventory_to_file(inventory_content: list) -> bool:
     try:
         if inventory_content == []:
             return False
-        
+
         output_path = pathlibpath("./inventory.ini.new")
 
         with open(output_path, "w") as inventory_file:
@@ -163,7 +163,6 @@ if __name__ == "__main__":
                 if not changed:
                     exit(0)
                 write_to_github_output(has_changes=True)
-
 
     except Exception as e:
         print(f"An error occurred: {e}")
