@@ -118,6 +118,7 @@ def check_if_file_changed(file_path: str, new_file: str) -> bool:
                 new_digest = hashlib.file_digest(n, "sha256")
             if exiting_digest.hexdigest() != new_digest.hexdigest():
                 movefile(src=new_file, dst=file_path)
+                return True
 
         except Exception as e:
             print(f"Failed to check old/new file digest: {e}")
