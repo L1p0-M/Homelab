@@ -6,6 +6,8 @@ on:
     paths:
       - '**/*.tf'
       - '!**/modules/*.tf'
+      - '**/docker-compose.yaml'
+      - '**/docker-compose.yml'
 
   workflow_dispatch:
 
