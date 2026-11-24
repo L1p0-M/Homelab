@@ -6,6 +6,7 @@ from shutil import move as movefile
 import json
 import subprocess
 from dataclasses import dataclass, field
+from typing import Any, Dict
 
 
 @dataclass()
@@ -38,67 +39,26 @@ class GithubWorkflow:
         except Exception as e:
             print(f"{e}")
             return False
-    
+
 
 class AnsibleInventory:
-    def __init__(self, terraform_path: str = "terraform", inventory_path: str = "ansible/inventory.ini", excluded: str = "terraform/modules"):
+    def __init__(self, terraform_output: dict, inventory_path: str = "ansible/inventory.ini"):
         self.inventory_path = inventory_path
-        self.terraform_path = terraform_path
-        self.excluded_path = excluded
+        self.terraform_output = terraform_output
         self.new_file = "./inventory.ini.new"
 
     def generate(self) -> bool:
         try:
-            outputs_from_states = self.find_tf_file()
-            if isinstance(outputs_from_states, dict) and outputs_from_states != {}:
-                ansible_inv = self.process_output(output=outputs_from_states)
+            if isinstance(self.terraform_output.output, dict) and self.terraform_output.output != {}:
+                ansible_inv = self.process_output(output=self.terraform_output.output)
                 if self.write_inventory_to_file(inventory_content=ansible_inv):
                     return self.check_if_file_changed()
-        
+
         except Exception as e:
             print(f"An error occurred: {e}")
             if os.path.exists("inventory.ini.new"):
                 os.remove("inventory.ini.new")
             return False
-        
-        
-    def find_tf_file(self) -> dict:
-        outputs = {}
-        checked_dirs = []
-        project_dir = os.getcwd()
-        full_path = pathlibpath(project_dir).joinpath(self.excluded_path)
-        for files in sorted(pathlibpath(self.terraform_path).rglob("*.tf")):
-            if full_path and pathlibpath(files).parent.is_relative_to(full_path):
-                print(f"{files} Excluded")
-                continue
-
-            basedir = pathlibpath(files).parent
-
-            if str(basedir) in checked_dirs:
-                continue
-
-            print(f"Found *.tf file at: {basedir}")
-            if not os.path.exists(basedir):
-                checked_dirs.append(str(basedir))
-                continue
-
-            os.chdir(basedir)
-
-            try:
-                subprocess.run(["terraform", "init"], shell=False, check=True)
-                proc = subprocess.run(["terraform", "output", "-json"], shell=False, stdout=subprocess.PIPE, check=True)
-            except subprocess.CalledProcessError:
-                continue
-
-            checked_dirs.append(str(basedir))
-
-            cmd_output = json.loads(proc.stdout)
-            if cmd_output and cmd_output != {}:
-                outputs[str(basedir)] = cmd_output
-            os.chdir(project_dir)
-
-        return outputs
-
 
     def process_output(self, output: dict) -> list:
         inventory_vars = {}
@@ -112,7 +72,6 @@ class AnsibleInventory:
             inventory_vars[node_name] = guest_config
 
         return self.generate_ansible_inventory(vars=inventory_vars)
-
 
     def generate_ansible_inventory(self, vars: dict) -> list:
         try:
@@ -165,7 +124,6 @@ class AnsibleInventory:
             print(f"Error while creating inventory: {e}")
             return []
 
-
     def check_if_file_changed(self) -> bool:
         if os.path.exists(self.inventory_path):
             try:
@@ -186,7 +144,6 @@ class AnsibleInventory:
 
         raise RuntimeError(f"{self.inventory_path} path not exist on host!")
 
-
     def write_inventory_to_file(self, inventory_content: list) -> bool:
         try:
             if inventory_content == []:
@@ -204,6 +161,55 @@ class AnsibleInventory:
             return False
 
 
+@dataclass(frozen=True)
+class TerraformOutput:
+    """Store Terraform output"""
+    output: Dict[str, Any] = field(default_factory=dict)
+
+
+class Terraform:
+    def __init__(self, terraform_path: str = "terraform", modules_path: str = "terraform/modules"):
+        self.terraform_path = terraform_path
+        self.modules_path = modules_path
+
+    def get_outputs(self) -> dict:
+        outputs = {}
+        checked_dirs = []
+        project_dir = os.getcwd()
+        full_path = pathlibpath(project_dir).joinpath(self.modules_path)
+        for files in sorted(pathlibpath(self.terraform_path).rglob("*.tf")):
+            if full_path and pathlibpath(files).parent.is_relative_to(full_path):
+                print(f"{files} Excluded")
+                continue
+
+            basedir = pathlibpath(files).parent
+
+            if str(basedir) in checked_dirs:
+                continue
+
+            print(f"Found *.tf file at: {basedir}")
+            if not os.path.exists(basedir):
+                checked_dirs.append(str(basedir))
+                continue
+
+            os.chdir(basedir)
+
+            try:
+                subprocess.run(["terraform", "init"], shell=False, check=True)
+                proc = subprocess.run(["terraform", "output", "-json"], shell=False, stdout=subprocess.PIPE, check=True)
+            except subprocess.CalledProcessError:
+                continue
+
+            checked_dirs.append(str(basedir))
+
+            cmd_output = json.loads(proc.stdout)
+            if cmd_output and cmd_output != {}:
+                outputs[str(basedir)] = cmd_output
+            os.chdir(project_dir)
+
+        return outputs
+
+
 class MasterClass:
     def __init__(self, output_path, search_path, modules_path):
         self.output_path = output_path
@@ -212,13 +218,15 @@ class MasterClass:
 
     def start(self) -> bool:
         try:
-            githubdata = GithubOutputData()
-            inventory = AnsibleInventory(terraform_path=self.search_path, inventory_path=self.output_path, excluded=self.modules_path)
-            changed = inventory.generate()
-            githubdata.inventory_changed = changed
+            terraform = Terraform(terraform_path=self.search_path, modules_path=self.modules_path)
+            terraform_output = TerraformOutput(output=terraform.get_outputs())
+
+            inventory = AnsibleInventory(inventory_path=self.output_path, terraform_output=terraform_output)
+            githubdata = GithubOutputData(inventory_changed=inventory.generate())
+
             githubworkflow = GithubWorkflow(dataclass=githubdata)
             return githubworkflow.write_to_github_output()
-        
+
         except Exception as e:
             print(e)
             return False
@@ -238,5 +246,3 @@ if __name__ == "__main__":
     if main.start():
         exit(0)
     exit(1)
-
-
