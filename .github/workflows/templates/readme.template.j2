@@ -27,10 +27,10 @@
 | :--- | :--- |
 | **CPU Cores** | `{{ data.terraform.cpu | default('Unknown') }} vCPU` |
 | **RAM Memory** | `{{ data.terraform.memory | default('Unknown') }} MB` |
-{% for disk in data.terraform.disk %}
-| **Root Disk** | `{{ disk.disk_size_gb | default('Unknown') }} GB` |
+{% for disk in data.terraform.disk -%}
+| **Disk** | `{{ disk.disk_size_gb | default('Unknown') }} GB` |
 | **Storage Pool** | `{{ disk.storage_name | default('Unkown') }}` |
-{% endfor %}
+{% endfor -%}
 
 ---
 
