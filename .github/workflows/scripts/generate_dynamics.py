@@ -16,6 +16,7 @@ import yaml
 class GithubOutputData:
     """Store Github Output vars"""
     inventory_changed: bool = False
+    readme_changed: bool = False
     pull_request_body: list[str] = field(default_factory=list)
     pull_request_title: str = "ops(ansible): Auto-Update Ansible Inventory"
     commit_message: str = "ops(ansible): Auto-Update Ansible Inventory"
@@ -27,21 +28,59 @@ class GithubWorkflow:
 
     def write_to_github_output(self) -> bool:
         try:
-            print(f"Inventory changed: {self.data.inventory_changed}, pr_title: {self.data.pull_request_title}")
+            print(f"Inventory changed: {self.data.inventory_changed}, readmes changed: {self.data.readme_changed}")
+            if not self.generate_pr():
+                return False
+
             github_output = os.getenv('GITHUB_OUTPUT')
             content = "\n".join(self.data.pull_request_body)
             if github_output:
-                with open(github_output, 'a') as f:
-                    f.write(f"has_changes={self.data.inventory_changed}\n")
-                    f.write("pr_body<<EOF\n")
-                    f.write(f"{content}\n")
-                    f.write("EOF\n")
-                return True
+                try:
+                    with open(github_output, 'a') as f:
+                        f.write(f"has_changes={self.data.inventory_changed or self.data.readme_changed}\n")
+                        f.write(f"pr_title={self.data.pull_request_title}")
+                        f.write(f"commit_message={self.data.commit_message}")
+                        f.write("pr_body<<EOF\n")
+                        f.write(f"{content}\n")
+                        f.write("EOF\n")
+                    return True
+
+                except OSError as e:
+                    print(e)
+                    return False
             return False
 
         except Exception as e:
             print(f"{e}")
             return False
+
+    def generate_pr(self) -> bool:
+        self.data.pull_request_body = [
+            "### Automated Infrastructure Documentation Update\n",
+            "\nGitOps Pipeline successfully processed and updated based on the latest configuration changes.\n",
+            "\n---",
+            "#### Updated Components\n",
+            f"- [{'x' if self.data.readme_changed else ''}] `README.md` *(rendered Jinja2 infrastructure documentation)*",
+            f"- [{'x' if self.data.inventory_changed else ''}] `inventory.ini` *(created from terraform outputs)*",
+            "\n---",
+            "> 🤖 *Generated automatically via CI/CD Pipeline. Please review and merge.*"
+        ]
+        print(self.data.pull_request_body)
+
+        message = None
+        if self.data.readme_changed and self.data.inventory_changed:
+            message = "docs: Auto-Update Inventory & Readme(s)"
+        elif self.data.readme_changed and not self.data.inventory_changed:
+            message = "docs: Auto-Update Guest's README"
+        elif not self.data.readme_changed and self.data.inventory_changed:
+            message = "docs: Auto-Update Ansible Inventory"
+
+        if not message:
+            return False
+
+        self.data.pull_request_title = message
+        self.data.commit_message = self.data.pull_request_title
+        return True
 
 
 @dataclass(frozen=True)
@@ -52,30 +91,66 @@ class MetadataOutput:
 
 class HostReadme:
     def __init__(self, terraform_output: dict):
-        self.workdir = os.environ.get("GITHUB_WORKSPACE") if os.environ.get("GITHUB_WORKSPACE", False)  else os.getcwd()
+        self.workdir = os.environ.get("GITHUB_WORKSPACE") if os.environ.get("GITHUB_WORKSPACE", False) else os.getcwd()
         self.terraform_output = terraform_output
         self.readme_template = self.get_readme_template()
         self.metadata = None
         self.terraform = Terraform()
+        self.diffcheck = None
 
     def generate(self) -> bool:
         try:
-            print(f"generating readmes....")
-            if isinstance(self.terraform_output.output, dict) and self.terraform_output.output != {}:
-                self.metadata = MetadataOutput(output=self.get_data_from_metadata())
-                if isinstance(self.metadata.output, dict) and self.metadata.output != {}:
-                    success = self.generate_readme()
+            print("Generating readmes....")
+            if not (isinstance(self.terraform_output.output, dict) and self.terraform_output.output != {}):
+                raise RuntimeError("Terraform output is empty! Exiting")
+
+            self.metadata = MetadataOutput(output=self.get_data_from_metadata())
+            if not (isinstance(self.metadata.output, dict) and self.metadata.output != {}):
+                print("Metadata output is empty! Genereting README without it!")
+
+            readme_files = self.generate_readme()
+            if readme_files == []:
+                raise RuntimeError("No Readme files are generated! Exiting")
+
+            changed = False
+            for filename in readme_files:
+                path_vars = filename.replace("_generated-README.md", "").split("--")
+                node = path_vars[0]
+                guestname = path_vars[1]
+                if node and guestname:
+                    old_path = pathlibpath(self.workdir).joinpath(pathlibpath(node)).joinpath(pathlibpath(guestname)).joinpath("README.md")
+                    self.diffcheck = DiffCheck(old_file_path=str(old_path), new_file_path=str(filename))
+                    if self.diffcheck.check():
+                        os.makedirs(name=str(pathlibpath(old_path).parent), exist_ok=True)
+                        movefile(src=str(filename), dst=str(old_path))
+                        changed = True
+                    else:
+                        os.remove(path=str(filename))
+            return changed
 
         except Exception as e:
             print(f"An error occurred: {e}")
             return False
 
+        finally:
+            if readme_files != []:
+                for files in readme_files:
+                    print(f"Removing generated readme file, because it matches the old one: {files}")
+                    if os.path.exists(str(files)):
+                        os.remove(path=str(files))
+
     def get_data_from_metadata(self) -> dict:
         metadatas = {}
         for files in sorted(pathlibpath(self.workdir).rglob("metadata.yaml")):
             print(f"Found metadata at: {files}")
-            with open(files, 'r') as f:
-                yaml_data = yaml.load(f, Loader=yaml.FullLoader)
+            try:
+                with open(files, 'r') as f:
+                    yaml_data = yaml.load(f, Loader=yaml.FullLoader)
+
+            except OSError as e:
+                print(e)
+                continue
+
             if yaml_data:
                 metadatas[str(pathlibpath(files).parent.name).replace("_", "-")] = yaml_data
         return metadatas
@@ -87,16 +162,17 @@ class HostReadme:
             if not template_content:
                 raise RuntimeError("Failed to read jinja2 template")
             return Template(template_content)
-    
-    def generate_readme(self) -> bool:
+
+    def generate_readme(self) -> list:
         try:
             tf_vars = self.terraform.process_output(output=self.terraform_output.output)
             metadata_vars = self.metadata.output
 
+            new_files = []
+
             for node, guests in tf_vars.items():
                 for guest in guests.values():
-                    if not any(guest.get("hostname", "") in str(pathlibpath(name).name) for name in metadata_vars.keys()):
-                        continue
+
                     data = {
                         "metadata": metadata_vars.get(guest.get("hostname"), {}),
                         "terraform": guest,
@@ -105,17 +181,25 @@ class HostReadme:
 
                     output = self.readme_template.render(
                         data=data,
-                        generation_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        generation_date=datetime.now().strftime("%Y-%m-%d")
                     )
-                    print(output)
-                    #with open(f'{node}-{guests.get("hostname")}_generated-README.md', 'w') as f:
-                    #   f.write(output)
-                    print("README.md successfully generated!")
-            return True
+
+                    filename = f'{node}--{guest.get("hostname").replace("-", "_")}_generated-README.md'
+                    try:
+                        with open(filename, 'w') as f:
+                            f.write(output)
+                            new_files.append(filename)
+
+                    except OSError as e:
+                        print(e)
+                        continue
+
+            print("README.md successfully generated!")
+            return new_files
 
         except Exception as e:
             print(f"Error while generating README.md: {e}")
-            return False
+            return []
 
 
 class AnsibleInventory:
@@ -124,20 +208,26 @@ class AnsibleInventory:
         self.terraform_output = terraform_output
         self.new_file = "./inventory.ini.new"
         self.terraform = Terraform()
+        self.diffcheck = DiffCheck(old_file_path=self.inventory_path, new_file_path=self.new_file)
 
     def generate(self) -> bool:
         try:
             if isinstance(self.terraform_output.output, dict) and self.terraform_output.output != {}:
                 ansible_inv = self.generate_ansible_inventory(vars=self.terraform.process_output(output=self.terraform_output.output))
                 if self.write_inventory_to_file(inventory_content=ansible_inv):
-                    return self.check_if_file_changed()
+                    if self.diffcheck.check():
+                        movefile(src=self.new_file, dst=self.inventory_path)
+                        return True
+                    return False
 
         except Exception as e:
             print(f"An error occurred: {e}")
-            if os.path.exists("inventory.ini.new"):
-                os.remove("inventory.ini.new")
             return False
 
+        finally:
+            if os.path.exists("inventory.ini.new"):
+                print("Removing generated inventory file,because it matches the old one...")
+                os.remove("inventory.ini.new")
 
     def generate_ansible_inventory(self, vars: dict) -> list:
         try:
@@ -189,26 +279,6 @@ class AnsibleInventory:
         except Exception as e:
             print(f"Error while creating inventory: {e}")
             return []
-
-    def check_if_file_changed(self) -> bool:
-        if os.path.exists(self.inventory_path):
-            try:
-                with open(self.inventory_path, "rb") as e:
-                    exiting_digest = hashlib.file_digest(e, "sha256")
-                with open(self.new_file, "rb") as n:
-                    new_digest = hashlib.file_digest(n, "sha256")
-                if exiting_digest.hexdigest() != new_digest.hexdigest():
-                    print("Detected changes in Inventory!")
-                    movefile(src=self.new_file, dst=self.inventory_path)
-                    return True
-                print("No changes detected in Inventory!")
-                return False
-
-            except Exception as e:
-                print(f"Failed to check old/new file digest: {e}")
-                return False
-
-        raise RuntimeError(f"{self.inventory_path} path not exist on host!")
 
     def write_inventory_to_file(self, inventory_content: list) -> bool:
         try:
@@ -288,12 +358,32 @@ class Terraform:
         return outputs
 
 
+class DiffCheck:
+    def __init__(self, old_file_path: str, new_file_path: str):
+        self.new_file_path = new_file_path
+        self.old_file_path = old_file_path
+
+    def check(self) -> bool:
+        if not os.path.exists(self.old_file_path):
+            return True
+        try:
+            with open(self.old_file_path, "rb") as e:
+                exiting_digest = hashlib.file_digest(e, "sha256")
+            with open(self.new_file_path, "rb") as n:
+                new_digest = hashlib.file_digest(n, "sha256")
+            return exiting_digest.hexdigest() != new_digest.hexdigest()
+
+        except OSError as e:
+            print(f"Eror while comparing files with sha256: {e}")
+            return False
+
+
 class MasterClass:
     def __init__(self, output_path, search_path, modules_path):
         self.output_path = output_path
         self.search_path = search_path
         self.modules_path = modules_path
-        self.workdir = os.environ.get("GITHUB_WORKSPACE") if os.environ.get("GITHUB_WORKSPACE", False)  else os.getcwd()
+        self.workdir = os.environ.get("GITHUB_WORKSPACE") if os.environ.get("GITHUB_WORKSPACE", False) else os.getcwd()
         print(f"Working directory: {self.workdir}")
 
     def start(self) -> bool:
@@ -302,21 +392,16 @@ class MasterClass:
             terraform_output = TerraformOutput(output=terraform.get_outputs())
 
             inventory = AnsibleInventory(inventory_path=self.output_path, terraform_output=terraform_output)
-            os.chdir(self.workdir)
+            os.chdir(self.workdir)  # Makeing sure we are at workdir for the initialization
             readme = HostReadme(terraform_output=terraform_output)
-            readme.generate()
-            githubdata = GithubOutputData(inventory_changed=inventory.generate())
 
+            githubdata = GithubOutputData(inventory_changed=inventory.generate(), readme_changed=readme.generate())
             githubworkflow = GithubWorkflow(dataclass=githubdata)
             return githubworkflow.write_to_github_output()
 
         except Exception as e:
             print(e)
             return False
-
-        finally:
-            if os.path.exists("inventory.ini.new"):
-                os.remove("inventory.ini.new")
 
 
 if __name__ == "__main__":
