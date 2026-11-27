@@ -5,5 +5,9 @@ output "host_info" {
     ip    = split("/", var.config.ip_address)[0]
     roles = [for group in try(var.ansible_groups, []) : tostring(group)]
     hostname = var.config.vm_name
+    id = var.config.vm_id
+    cpu = var.config.cpu_cores
+    memory = var.config.memory_mb
+    disk = [for disk in try(var.config.disk, []) : disk]
   }
 }
