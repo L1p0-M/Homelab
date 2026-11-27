@@ -84,19 +84,65 @@ class GithubWorkflow:
 
 
 @dataclass(frozen=True)
+class Stacks:
+    """Store docker stacks for readme generation"""
+    host: str
+    stacks: list[str] = field(default_factory=list)
+    templates: list[str] = field(default_factory=list)
+
+
+class DockerStacks:
+    def __init__(self):
+        self.workdir = os.environ.get("GITHUB_WORKSPACE") if os.environ.get("GITHUB_WORKSPACE", False) else os.getcwd()
+        self.stacks = {}
+
+    def find_stacks(self) -> dict:
+        stacks = {}
+        for files in sorted(pathlibpath(self.workdir).rglob("docker-compose.*")):
+            path_to_stack = str(pathlibpath(files).parent.relative_to(pathlibpath(self.workdir).joinpath("ansible"), walk_up=True))
+            print(path_to_stack)
+            guest = str(pathlibpath(str(path_to_stack).replace("../", "")).parts[1]).replace("_", "-")
+
+            templates_pathes = []
+            for template in sorted(pathlibpath(files).parent.rglob("**.j2")):
+                templates_pathes.append(str(pathlibpath(template).relative_to(pathlibpath(self.workdir).joinpath("ansible"), walk_up=True)))
+
+            print(templates_pathes)
+            if guest in stacks and stacks[guest].get("stacks", None):
+                stacks[guest]["stacks"].append(path_to_stack)
+                if templates_pathes != [] and isinstance(stacks[guest].get("templates", None), list):
+                    for temp in templates_pathes:
+                        stacks[guest]["templates"].append(temp)
+                continue
+
+            stacks[guest] = {
+                "stacks": [path_to_stack],
+                "templates": templates_pathes
+            }
+
+        if stacks != {}:
+            for guest, values in stacks.items():
+                self.stacks[guest] = Stacks(host=guest, stacks=values.get("stacks", []), templates=values.get("templates", []))
+            print(self.stacks)
+            return self.stacks
+        return {}
+
+
+@dataclass(frozen=True)
 class MetadataOutput:
     """Store metadatas"""
     output: Dict[str, Any] = field(default_factory=dict)
 
 
 class HostReadme:
-    def __init__(self, terraform_output: dict):
+    def __init__(self, terraform_output: dict, docker_stacks: dict = {}):
         self.workdir = os.environ.get("GITHUB_WORKSPACE") if os.environ.get("GITHUB_WORKSPACE", False) else os.getcwd()
         self.terraform_output = terraform_output
         self.readme_template = self.get_readme_template()
         self.metadata = None
         self.terraform = Terraform()
         self.diffcheck = None
+        self.dockerstacks = docker_stacks
 
     def generate(self) -> bool:
         try:
@@ -172,11 +218,17 @@ class HostReadme:
 
             for node, guests in tf_vars.items():
                 for guest in guests.values():
+                    host = self.dockerstacks.get(guest.get("hostname").replace("_", "-"))
+                    stacks_data = []
+                    if host:
+                        for docker_stacks in host.stacks:
+                            stacks_data.append(str(pathlibpath(docker_stacks).parts[-1]))
 
                     data = {
                         "metadata": metadata_vars.get(guest.get("hostname"), {}),
                         "terraform": guest,
-                        "node": node
+                        "node": node,
+                        "docker": stacks_data
                     }
 
                     output = self.readme_template.render(
@@ -393,7 +445,9 @@ class MasterClass:
 
             inventory = AnsibleInventory(inventory_path=self.output_path, terraform_output=terraform_output)
             os.chdir(self.workdir)  # Makeing sure we are at workdir for the initialization
-            readme = HostReadme(terraform_output=terraform_output)
+            dockerstacks = DockerStacks()
+            stacks = dockerstacks.find_stacks()
+            readme = HostReadme(terraform_output=terraform_output, docker_stacks=stacks)
 
             githubdata = GithubOutputData(inventory_changed=inventory.generate(), readme_changed=readme.generate())
             githubworkflow = GithubWorkflow(dataclass=githubdata)

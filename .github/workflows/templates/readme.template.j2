@@ -51,7 +51,7 @@
 
 ### Running Docker Stacks
 This node is responsible for managing the following Docker stacks:
-{% for stack in data.metadata.docker -%}
+{% for stack in data.docker -%}
 - 📦 {{ stack }}
 {% endfor -%}
 {% endif %}
